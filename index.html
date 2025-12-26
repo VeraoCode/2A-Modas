@@ -3,216 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2A Modas e Perfumes | Andréia Alves</title>
+    <title>2A Modas e Perfumes</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- CONFIGURAÇÕES GERAIS --- */
+        /* --- DESIGN SYSTEM --- */
         :root {
-            --primary: #c48b78;
-            --primary-dark: #a66d5b;
-            --text-main: #1f1f1f;
-            --text-light: #666666;
-            --bg-body: #ffffff;
-            --bg-light: #f8f9fa;
-            --white: #ffffff;
-            --success: #27ae60;
-            --danger: #e74c3c;
+            --primary: #c48b78; /* Rose Gold */
+            --primary-hover: #a66d5b;
+            --text-main: #2c3e50;
+            --text-light: #95a5a6;
+            --bg-body: #fcfcfc;
+            --card-bg: #ffffff;
             --mp-blue: #009EE3;
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
-            --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
-            --radius: 8px;
-            --transition: all 0.3s ease;
+            --radius: 12px;
+            --shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; font-family: 'Inter', sans-serif; }
         
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
+        body { background-color: var(--bg-body); color: var(--text-main); -webkit-font-smoothing: antialiased; }
         h1, h2, h3, h4, .font-title { font-family: 'Montserrat', sans-serif; }
-        button { cursor: pointer; font-family: inherit; transition: 0.3s; }
-        input, select, textarea { font-family: inherit; }
+        button { cursor: pointer; transition: 0.2s ease; }
 
         /* --- HEADER --- */
         header {
-            position: fixed; top: 0; width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 15px 5%;
+            position: fixed; top: 0; width: 100%; z-index: 1000;
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05); padding: 15px 5%;
             display: flex; justify-content: flex-end;
-            z-index: 1000;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
         .cart-btn {
-            position: relative; background: transparent; border: none;
-            font-size: 1.5rem; color: var(--text-main); width: 40px; height: 40px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .cart-badge {
-            position: absolute; top: -2px; right: -2px;
-            background: var(--primary); color: white;
-            font-size: 0.7rem; width: 18px; height: 18px;
+            background: white; border: 1px solid #eee; width: 45px; height: 45px;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-weight: 600;
+            font-size: 1.2rem; color: var(--text-main); box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .cart-btn:hover { border-color: var(--primary); color: var(--primary); }
+        
+        .cart-badge {
+            position: absolute; top: 12px; right: 4.5%;
+            background: var(--primary); color: white; font-size: 0.7rem;
+            width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-weight: 700;
         }
 
-        /* --- HERO SECTION --- */
+        /* --- HERO --- */
         .hero {
-            min-height: 85vh;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 100px 20px 40px;
-            background: radial-gradient(circle at top, #fff9f7 0%, #ffffff 100%);
+            padding: 120px 20px 60px; text-align: center;
+            background: radial-gradient(circle at top, #fff5f2 0%, #fff 100%);
         }
-
         .brand-img {
-            width: 220px; height: 220px; border-radius: 50%;
-            object-fit: cover; margin-bottom: 30px;
-            box-shadow: var(--shadow-lg); border: 5px solid var(--white);
+            width: 180px; height: 180px; border-radius: 50%; object-fit: cover;
+            border: 4px solid white; box-shadow: var(--shadow); margin-bottom: 25px;
             animation: float 6s ease-in-out infinite;
         }
-
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-
-        .hero h1 { font-size: 2.8rem; font-weight: 700; letter-spacing: -1px; margin-bottom: 10px; color: var(--text-main); }
-        .hero p { font-size: 1.1rem; color: var(--text-light); max-width: 600px; margin-bottom: 30px; line-height: 1.6; }
-
-        .btn-primary {
-            padding: 14px 40px; background: var(--text-main); color: var(--white);
-            border: none; border-radius: 50px; font-weight: 600; text-transform: uppercase;
-            letter-spacing: 1px; font-size: 0.85rem; box-shadow: var(--shadow-sm);
-        }
-        .btn-primary:hover { background: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-
-        /* --- VITRINE --- */
-        .container { max-width: 1200px; margin: 0 auto; padding: 60px 20px; }
         
-        .nav-filters { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 50px; }
+        .hero h1 { font-size: 2.5rem; margin-bottom: 10px; color: var(--text-main); }
+        .hero p { color: var(--text-light); margin-bottom: 30px; font-weight: 300; letter-spacing: 0.5px; }
 
+        .btn-cta {
+            background: var(--text-main); color: white; border: none;
+            padding: 12px 35px; border-radius: 30px; font-weight: 600; text-transform: uppercase;
+            font-size: 0.8rem; letter-spacing: 1px;
+        }
+        .btn-cta:hover { background: var(--primary); transform: translateY(-2px); }
+
+        /* --- PRODUTOS --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        
+        .nav-filters { display: flex; justify-content: center; gap: 10px; margin-bottom: 50px; flex-wrap: wrap; }
         .filter-btn {
-            background: transparent; border: 1px solid #e0e0e0;
-            padding: 10px 24px; border-radius: 50px;
-            color: var(--text-light); font-weight: 500; font-size: 0.9rem;
+            background: transparent; border: 1px solid #eee; padding: 8px 20px;
+            border-radius: 20px; color: var(--text-light); font-weight: 500; font-size: 0.9rem;
         }
-        .filter-btn:hover, .filter-btn.active {
-            background: var(--text-main); color: var(--white); border-color: var(--text-main);
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--text-main); color: white; border-color: var(--text-main);
         }
 
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 30px; }
+        .products-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px;
+        }
 
         .product-card {
-            background: var(--white); border-radius: var(--radius);
-            transition: 0.3s; cursor: pointer; position: relative; overflow: hidden;
+            background: var(--card-bg); border-radius: var(--radius);
+            transition: all 0.3s ease; border: 1px solid #f0f0f0;
+            position: relative; overflow: hidden;
         }
-        .product-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+        .product-card:hover { transform: translateY(-8px); box-shadow: var(--shadow); border-color: var(--primary); }
 
         .card-img {
-            width: 100%; height: 320px; background: var(--bg-light);
-            border-radius: var(--radius); overflow: hidden; position: relative;
+            height: 350px; width: 100%; background: #f9f9f9; position: relative; overflow: hidden;
         }
         .card-img img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-        .product-card:hover img { transform: scale(1.05); }
+        .product-card:hover .card-img img { transform: scale(1.08); }
 
         .stock-tag {
-            position: absolute; top: 10px; left: 10px;
-            background: rgba(255,255,255,0.95); padding: 5px 10px;
-            font-size: 0.7rem; font-weight: 600; border-radius: 4px;
-            text-transform: uppercase; letter-spacing: 0.5px; z-index: 2;
+            position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9);
+            padding: 4px 10px; font-size: 0.7rem; font-weight: 700; border-radius: 4px; z-index: 2;
         }
-        .out-of-stock { background: var(--danger); color: white; }
 
-        .card-info { padding: 15px 5px; text-align: left; }
-        .p-cat { font-size: 0.75rem; text-transform: uppercase; color: var(--text-light); letter-spacing: 1px; display: block; margin-bottom: 5px; }
-        .p-title { font-size: 1rem; font-weight: 600; margin-bottom: 5px; color: var(--text-main); }
-        .p-price { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+        .card-info { padding: 20px; text-align: center; }
+        .p-cat { font-size: 0.7rem; text-transform: uppercase; color: var(--text-light); letter-spacing: 1px; }
+        .p-title { font-size: 1.1rem; margin: 5px 0; font-weight: 600; color: var(--text-main); }
+        .p-price { color: var(--primary); font-weight: 700; font-size: 1.1rem; }
 
         /* --- MODAL --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-            display: none; justify-content: center; align-items: center;
-            z-index: 2000; padding: 20px; opacity: 0; transition: opacity 0.3s;
+            z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px;
         }
-        .modal-overlay.active { display: flex; opacity: 1; }
-
+        .modal-overlay.active { display: flex; animation: fadeIn 0.3s; }
+        
         .modal-box {
-            background: var(--white); width: 100%; max-width: 900px;
-            display: grid; grid-template-columns: 1fr 1.2fr;
-            border-radius: var(--radius); overflow: hidden;
-            box-shadow: var(--shadow-lg); max-height: 90vh; overflow-y: auto;
+            background: white; width: 100%; max-width: 900px;
+            display: grid; grid-template-columns: 1fr 1fr;
+            border-radius: 20px; overflow: hidden; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
         }
-
+        
         .modal-img-container { height: 100%; min-height: 400px; background: #f0f0f0; }
         .modal-img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .modal-content { padding: 40px; position: relative; }
         
-        .modal-content { padding: 40px; display: flex; flex-direction: column; justify-content: center; position: relative; }
-        .btn-close { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 1.5rem; color: var(--text-light); }
+        .variant-options { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .opt-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 6px; }
+        .opt-btn.selected { background: var(--text-main); color: white; border-color: var(--text-main); }
+        .opt-color { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+        .opt-color.selected { transform: scale(1.2); border-color: var(--text-main); }
 
-        .variant-group { margin: 20px 0; }
-        .variant-label { font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; display: block; }
-        .options-container { display: flex; gap: 10px; flex-wrap: wrap; }
-        
-        .opt-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 4px; font-size: 0.9rem; cursor: pointer; }
-        .opt-btn.selected { border-color: var(--text-main); background: var(--text-main); color: white; }
-
-        .opt-color { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .opt-color.selected { transform: scale(1.1); border-color: var(--text-main); }
-
-        .btn-add-cart {
-            width: 100%; padding: 16px; background: var(--success); color: white;
-            border: none; border-radius: var(--radius); font-weight: 600;
-            margin-top: 20px; font-size: 1rem;
+        .btn-add {
+            width: 100%; padding: 16px; background: var(--text-main); color: white;
+            border: none; border-radius: 10px; font-weight: 600; margin-top: 25px;
         }
-        .btn-add-cart:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-add:hover { background: var(--primary); }
 
-        /* --- CARRINHO --- */
+        /* --- CARRINHO & CHECKOUT --- */
         .cart-sidebar {
             position: fixed; top: 0; right: -450px; width: 400px; height: 100%;
             background: white; padding: 30px; box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-            transition: var(--transition); z-index: 2001; display: flex; flex-direction: column;
+            transition: 0.3s; z-index: 2001; display: flex; flex-direction: column;
         }
         .cart-sidebar.open { right: 0; }
-
-        .cart-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
-        .cart-items { flex: 1; overflow-y: auto; list-style: none; }
         
         .btn-checkout {
-            padding: 15px; border-radius: 8px; font-weight: 600; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 10px; 
-            border: none; color: white; transition: var(--transition); width: 100%; font-size: 0.95rem; margin-bottom: 10px;
+            padding: 15px; border-radius: 10px; font-weight: 600; width: 100%;
+            border: none; display: flex; align-items: center; justify-content: center; gap: 10px;
+            margin-bottom: 10px; color: white; font-size: 0.95rem;
         }
-        .btn-whats { background: #25D366; } .btn-whats:hover { background: #1ebc57; }
-        .btn-mp { background: var(--mp-blue); } .btn-mp:hover { background: #008ac7; }
+        
+        /* Botão Mercado Pago Personalizado */
+        .btn-mp { background: #009EE3; transition: 0.3s; }
+        .btn-mp:hover { background: #007eb5; }
+        .mp-logo-svg { width: 24px; height: 24px; fill: white; margin-right: 8px; }
 
-        /* --- ADMIN --- */
-        #admin-panel {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #f4f6f9; z-index: 3000; overflow-y: auto; padding: 20px;
+        .btn-whats { background: #25D366; }
+        .btn-whats:hover { background: #1ebc57; }
+
+        /* --- LOGIN ADMIN --- */
+        .login-box {
+            background: white; padding: 40px; border-radius: 15px; text-align: center; width: 100%; max-width: 400px;
         }
+        .login-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        
+        /* --- ADMIN PANEL --- */
+        #admin-panel { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:#f4f6f9; z-index:3000; overflow-y:auto; padding:20px; }
         #admin-panel.active { display: block; }
-        .admin-container { max-width: 900px; margin: 30px auto; background: white; padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow-sm); }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--text-light); }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem; }
+        .admin-wrapper { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; }
 
-        /* Responsivo */
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         @media (max-width: 768px) {
-            .hero h1 { font-size: 2.2rem; }
-            .modal-box { grid-template-columns: 1fr; }
+            .modal-box { grid-template-columns: 1fr; } 
             .modal-img-container { height: 250px; min-height: 250px; }
             .cart-sidebar { width: 100%; }
-            .form-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -225,12 +194,12 @@
         </button>
     </header>
 
-    <section class="hero">
-        <img src="logo.jpg" alt="2A Modas" class="brand-img" onerror="this.src='https://placehold.co/200x200?text=Logo'">
+    <div class="hero">
+        <img src="logo.jpg" alt="2A Modas" class="brand-img" onerror="this.src='https://placehold.co/200x200/e6e6e6/c48b78?text=2A'">
         <h1 class="font-title">2A Modas e Perfumes</h1>
-        <p>Curadoria exclusiva de estilo e essência para você.</p>
-        <button class="btn-primary" onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})">Ver Coleção</button>
-    </section>
+        <p>Elegância que inspira. Descubra sua melhor versão.</p>
+        <button class="btn-cta" onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})">Ver Coleção</button>
+    </div>
 
     <div class="container" id="vitrine">
         <nav class="nav-filters">
@@ -239,7 +208,6 @@
             <button class="filter-btn" onclick="app.filter('infantil', this)">Infantil</button>
             <button class="filter-btn" onclick="app.filter('perfumes', this)">Perfumes</button>
         </nav>
-        
         <div class="products-grid" id="products-list"></div>
     </div>
 
@@ -247,279 +215,257 @@
         <div class="modal-box">
             <div class="modal-img-container"><img id="m-img" src=""></div>
             <div class="modal-content">
-                <button class="btn-close" onclick="app.closeModal()">&times;</button>
+                <button onclick="app.closeModal()" style="position:absolute; top:20px; right:20px; border:none; background:none; font-size:1.5rem;">&times;</button>
                 <span id="m-cat" class="p-cat">Categoria</span>
                 <h2 id="m-title" class="font-title" style="margin-bottom:10px;">Produto</h2>
-                <div id="m-price" style="font-size:1.5rem; color:var(--primary); font-weight:700; margin-bottom:20px;">R$ 0,00</div>
-                <p id="m-desc" style="color:var(--text-light); line-height:1.6; margin-bottom:20px;">Descrição</p>
-                <div id="m-stock-warning" style="color:var(--danger); font-weight:600; margin-bottom:10px; display:none;">Esgotado</div>
+                <div id="m-price" class="p-price" style="font-size:1.5rem; margin-bottom:20px;">R$ 0,00</div>
+                <p id="m-desc" style="color:#666; margin-bottom:20px; line-height:1.6;">Desc</p>
+                <div id="m-stock-warning" style="color:red; font-weight:bold; display:none; margin-bottom:10px;">Esgotado</div>
 
-                <div class="variant-group">
-                    <label class="variant-label" id="variant-label-text">Opções:</label>
-                    <div class="options-container" id="variant-options"></div>
+                <div style="margin-bottom:20px;">
+                    <strong style="font-size:0.9rem;">Escolha:</strong>
+                    <div class="variant-options" id="variant-options"></div>
                 </div>
 
-                <div class="variant-group">
-                    <label class="variant-label">Quantidade:</label>
-                    <div style="display:flex; align-items:center; border:1px solid #ddd; width:fit-content; border-radius:4px;">
-                        <button onclick="app.updateQty(-1)" style="padding:5px 15px; border:none; background:none;">-</button>
-                        <span id="m-qty" style="padding:0 10px; font-weight:600;">1</span>
-                        <button onclick="app.updateQty(1)" style="padding:5px 15px; border:none; background:none;">+</button>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <strong style="font-size:0.9rem;">Qtd:</strong>
+                    <div style="border:1px solid #ddd; border-radius:5px; display:flex;">
+                        <button onclick="app.updateQty(-1)" style="padding:5px 12px; border:none; background:none;">-</button>
+                        <span id="m-qty" style="padding:5px; font-weight:600;">1</span>
+                        <button onclick="app.updateQty(1)" style="padding:5px 12px; border:none; background:none;">+</button>
                     </div>
                 </div>
 
-                <button class="btn-add-cart" id="btn-add-cart" onclick="app.addToCart()">Adicionar à Sacola</button>
+                <button class="btn-add" id="btn-add-cart" onclick="app.addToCart()">Adicionar à Sacola</button>
             </div>
         </div>
     </div>
 
     <div class="cart-sidebar">
-        <div class="cart-header">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:20px;">
             <h3 class="font-title">Sua Sacola</h3>
-            <button onclick="app.toggleCart()" style="background:none; border:none; font-size:1.5rem;">&times;</button>
+            <button onclick="app.toggleCart()" style="border:none; background:none; font-size:1.5rem;">&times;</button>
         </div>
-        <ul class="cart-items" id="cart-items-list"></ul>
-        <div style="border-top:1px solid #eee; padding-top:20px; margin-top:auto;">
-            <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:20px;">
+        
+        <ul id="cart-items-list" style="flex:1; overflow-y:auto; list-style:none;"></ul>
+
+        <div style="border-top:1px solid #eee; padding-top:20px;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.1rem; margin-bottom:20px;">
                 <span>Total</span><span>R$ <span id="cart-total">0.00</span></span>
             </div>
+            
             <button class="btn-checkout btn-whats" onclick="app.checkoutWhatsApp()">
-                <i class="fab fa-whatsapp"></i> Pedir no WhatsApp
+                <i class="fab fa-whatsapp" style="font-size:1.2rem;"></i> Pedir no WhatsApp
             </button>
+            
             <button class="btn-checkout btn-mp" onclick="app.checkoutMercadoPago()">
-                <i class="fas fa-hand-holding-dollar"></i> Pagar Agora (Pix/Card)
+                <svg class="mp-logo-svg" viewBox="0 0 50 50">
+                    <path d="M25,0C11.19,0,0,11.19,0,25s11.19,25,25,25s25-11.19,25-25S38.81,0,25,0z M31.6,28.7c-0.6,0.5-1.5,0.8-2.6,0.8h-1.9 v3.6h-2.9v-3.6h-1.3c-0.8,0-1.4-0.1-1.9-0.4c-0.5-0.3-0.8-0.7-0.9-1.3l2.8-0.6c0.1,0.4,0.3,0.6,0.5,0.8 c0.2,0.1,0.6,0.2,1.1,0.2h2.7c0.6,0,1-0.1,1.3-0.3c0.3-0.2,0.4-0.5,0.4-0.8c0-0.3-0.1-0.6-0.4-0.8c-0.2-0.2-0.8-0.5-1.6-0.7 l-1.3-0.4c-1.4-0.4-2.4-0.9-3-1.6c-0.6-0.7-0.9-1.6-0.9-2.7c0-1.2,0.5-2.2,1.4-2.9c0.9-0.7,2.2-1.1,3.9-1.1h1.3V13h2.9v3.1h1 c0.8,0,1.4,0.1,1.9,0.3c0.5,0.2,0.8,0.6,1,1.2l-2.7,0.7c-0.1-0.3-0.3-0.5-0.5-0.6c-0.2-0.1-0.6-0.2-1.1-0.2h-2.4 c-0.6,0-1,0.1-1.3,0.3c-0.2,0.2-0.4,0.5-0.4,0.8c0,0.3,0.1,0.5,0.4,0.7c0.2,0.2,0.8,0.5,1.7,0.7l1.2,0.3c1.5,0.4,2.5,1,3.1,1.7 C32.3,26.7,32.6,27.6,31.6,28.7z"/>
+                </svg>
+                Pagamento via Pix/Cartão
             </button>
         </div>
     </div>
 
-    <footer style="text-align:center; padding:50px; background:#f9f9f9; margin-top:50px;">
-        <p style="color:#999; font-size:0.8rem;">&copy; 2025 2A Modas e Perfumes.</p>
-        <button onclick="admin.toggle()" style="background:none; border:none; color:#ddd; font-size:0.7rem; margin-top:10px;">Admin</button>
-    </footer>
+    <div class="modal-overlay" id="login-modal">
+        <div class="login-box">
+            <h3 class="font-title" style="margin-bottom:20px;">Área Administrativa</h3>
+            <input type="email" id="login-email" class="login-input" placeholder="E-mail">
+            <input type="password" id="login-pass" class="login-input" placeholder="Senha">
+            <button onclick="admin.login()" class="btn-add">Entrar</button>
+            <button onclick="document.getElementById('login-modal').classList.remove('active')" style="background:none; border:none; margin-top:15px; color:#999;">Cancelar</button>
+        </div>
+    </div>
 
     <div id="admin-panel">
-        <div class="admin-container">
-            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                <h2 class="font-title">Painel Administrativo</h2>
-                <button onclick="admin.toggle()" class="btn-primary" style="background:var(--danger); padding:10px 20px;">Sair</button>
+        <div class="admin-wrapper">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                <h2 class="font-title">Painel de Controle</h2>
+                <button onclick="admin.logout()" style="background:#e74c3c; color:white; border:none; padding:8px 15px; border-radius:5px;">Sair</button>
             </div>
-            
-            <form id="admin-form" onsubmit="admin.saveProduct(event)">
+
+            <form onsubmit="admin.save(event)">
                 <input type="hidden" id="edit-id">
-                <div class="form-grid">
-                    <div class="form-group"><label>Nome</label><input type="text" id="adm-name" required></div>
-                    <div class="form-group"><label>Preço (R$)</label><input type="number" step="0.01" id="adm-price" required></div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
+                    <input type="text" id="adm-name" class="login-input" placeholder="Nome do Produto" required>
+                    <input type="number" id="adm-price" class="login-input" step="0.01" placeholder="Preço (R$)" required>
                 </div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Categoria</label>
-                        <select id="adm-cat">
-                            <option value="feminino">Feminino</option>
-                            <option value="infantil">Infantil</option>
-                            <option value="perfumes">Perfumes</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Estoque</label><input type="number" id="adm-stock" required></div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
+                    <select id="adm-cat" class="login-input">
+                        <option value="feminino">Feminino</option>
+                        <option value="infantil">Infantil</option>
+                        <option value="perfumes">Perfumes</option>
+                    </select>
+                    <input type="number" id="adm-stock" class="login-input" placeholder="Estoque" required>
                 </div>
-                <div class="form-group"><label>Imagem URL</label><input type="text" id="adm-img" required></div>
-                <div class="form-group">
-                    <label>Tipo Variação</label>
-                    <select id="adm-type">
+                <input type="text" id="adm-img" class="login-input" placeholder="URL da Imagem" required>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
+                    <select id="adm-type" class="login-input">
                         <option value="color">Cores</option>
                         <option value="volume">Volume (ml)</option>
                     </select>
+                    <input type="text" id="adm-opts" class="login-input" placeholder="Opções (ex: Azul, Vermelho)" required>
                 </div>
-                <div class="form-group"><label>Opções (separar por vírgula)</label><input type="text" id="adm-options" placeholder="Ex: Azul, Preto" required></div>
-                <div class="form-group"><label>Descrição</label><textarea id="adm-desc" rows="3"></textarea></div>
-                <button type="submit" class="btn-primary" style="width:100%;">Salvar</button>
-                <button type="button" onclick="admin.clearForm()" style="width:100%; margin-top:10px; border:1px solid #ddd; padding:10px; background:white;">Limpar</button>
+                <textarea id="adm-desc" class="login-input" rows="3" placeholder="Descrição..."></textarea>
+                
+                <button type="submit" class="btn-add" style="margin-top:0;">Salvar Produto</button>
+                <button type="button" onclick="admin.clear()" style="width:100%; border:1px solid #ddd; background:white; padding:10px; border-radius:10px; margin-top:10px;">Limpar</button>
             </form>
 
-            <div style="margin-top:40px;">
-                <h3>Produtos Cadastrados</h3>
-                <div id="admin-list" style="margin-top:20px;"></div>
-            </div>
+            <div id="admin-list" style="margin-top:40px;"></div>
         </div>
     </div>
 
+    <footer style="text-align:center; padding:50px; color:#999; font-size:0.8rem;">
+        &copy; 2025 2A Modas e Perfumes.
+        <br><br>
+        <button onclick="document.getElementById('login-modal').classList.add('active')" style="background:none; border:none; color:#ddd;">Admin</button>
+    </footer>
+
     <script>
-        // --- DADOS INICIAIS E SEGURANÇA ---
+        // --- CONFIGURAÇÃO DO BACKEND ---
+        // Cole sua URL do Google Cloud aqui para o pagamento funcionar
+        const CLOUD_URL = "SUA_URL_DO_GOOGLE_CLOUD_AQUI"; 
+
+        // --- DADOS INICIAIS ---
         const initialData = [
             { id: 1, name: "Vestido Longo Silk", price: 249.90, category: "feminino", image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600", stock: 5, type: "color", options: ["Azul", "Preto"], desc: "Elegância pura." },
-            { id: 2, name: "Eau de Rose", price: 299.90, category: "perfumes", image: "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=600", stock: 10, type: "volume", options: ["50ml", "100ml"], desc: "Floral intenso." },
-            { id: 3, name: "Conjunto Kids", price: 89.90, category: "infantil", image: "https://images.unsplash.com/photo-1622290291314-88e3c4a47bc7?w=600", stock: 8, type: "color", options: ["Unico"], desc: "Conforto total." }
+            { id: 2, name: "Eau de Rose", price: 299.90, category: "perfumes", image: "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=600", stock: 10, type: "volume", options: ["50ml", "100ml"], desc: "Floral intenso." }
         ];
 
-        // Carregamento Seguro (Evita tela branca)
         let loadedProducts = initialData;
-        try {
-            const saved = localStorage.getItem('2a_products');
-            if (saved) loadedProducts = JSON.parse(saved);
-        } catch (e) {
-            console.error("Erro dados salvos, resetando.", e);
-            localStorage.removeItem('2a_products');
-        }
+        try { const saved = localStorage.getItem('2a_products'); if(saved) loadedProducts = JSON.parse(saved); } 
+        catch(e) { localStorage.removeItem('2a_products'); }
 
-        const state = {
-            products: loadedProducts,
-            cart: [],
-            currentProduct: null,
-            selectedVariant: null,
-            qty: 1
-        };
+        const state = { products: loadedProducts, cart: [], item: null, var: null, qty: 1 };
 
-        // --- LÓGICA DO APP ---
+        // --- APLICAÇÃO ---
         const app = {
-            init: () => {
-                app.renderProducts(state.products);
-                admin.renderList();
-            },
-            saveData: () => {
-                localStorage.setItem('2a_products', JSON.stringify(state.products));
-                app.renderProducts(state.products);
-                admin.renderList();
-            },
-            renderProducts: (list) => {
-                const container = document.getElementById('products-list');
-                container.innerHTML = "";
+            init: () => { app.render(state.products); },
+            
+            render: (list) => {
+                const div = document.getElementById('products-list'); div.innerHTML = "";
                 list.forEach(p => {
-                    const stockTag = p.stock > 0 ? '' : '<span class="stock-tag out-of-stock">Esgotado</span>';
-                    container.innerHTML += `
-                        <div class="product-card" onclick="app.openModal(${p.id})">
-                            <div class="card-img">${stockTag}<img src="${p.image}" alt="${p.name}"></div>
-                            <div class="card-info">
-                                <span class="p-cat">${p.category}</span>
-                                <div class="p-title">${p.name}</div>
-                                <div class="p-price">R$ ${p.price.toFixed(2)}</div>
-                            </div>
+                    const tag = p.stock < 1 ? '<span class="stock-tag" style="background:red; color:white;">Esgotado</span>' : '';
+                    div.innerHTML += `
+                        <div class="product-card" onclick="app.modal(${p.id})">
+                            <div class="card-img">${tag}<img src="${p.image}"></div>
+                            <div class="card-info"><span class="p-cat">${p.category}</span><div class="p-title">${p.name}</div><div class="p-price">R$ ${p.price.toFixed(2)}</div></div>
                         </div>`;
                 });
             },
+
             filter: (cat, btn) => {
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                const filtered = cat === 'all' ? state.products : state.products.filter(p => p.category === cat);
-                app.renderProducts(filtered);
+                app.render(cat === 'all' ? state.products : state.products.filter(p => p.category === cat));
             },
-            openModal: (id) => {
+
+            modal: (id) => {
                 const p = state.products.find(x => x.id === id);
-                state.currentProduct = p; state.qty = 1; state.selectedVariant = null;
+                state.item = p; state.qty = 1; state.var = null;
                 
                 document.getElementById('m-img').src = p.image;
                 document.getElementById('m-title').innerText = p.name;
                 document.getElementById('m-price').innerText = `R$ ${p.price.toFixed(2)}`;
-                document.getElementById('m-desc').innerText = p.desc || '';
-                document.getElementById('m-cat').innerText = p.category;
+                document.getElementById('m-desc').innerText = p.desc;
                 document.getElementById('m-qty').innerText = 1;
 
                 const btn = document.getElementById('btn-add-cart');
                 const warn = document.getElementById('m-stock-warning');
-                if(p.stock <= 0) { btn.disabled = true; btn.innerText = "Indisponível"; warn.style.display='block'; }
-                else { btn.disabled = false; btn.innerText = "Adicionar à Sacola"; warn.style.display='none'; }
+                
+                if(p.stock < 1) { btn.disabled=true; btn.innerText="Indisponível"; warn.style.display='block'; }
+                else { btn.disabled=false; btn.innerText="Adicionar à Sacola"; warn.style.display='none'; }
 
-                const optsContainer = document.getElementById('variant-options');
-                optsContainer.innerHTML = "";
-                document.getElementById('variant-label-text').innerText = p.type === 'volume' ? "Tamanho:" : "Cor:";
-
+                const opts = document.getElementById('variant-options'); opts.innerHTML = "";
                 p.options.forEach(opt => {
                     if(p.type === 'volume') {
-                        const b = document.createElement('button'); b.className = 'opt-btn'; b.innerText = opt;
-                        b.onclick = () => { app.selectVar(opt, b, 'vol'); }; optsContainer.appendChild(b);
+                        opts.innerHTML += `<button class="opt-btn" onclick="app.sel('${opt}', this, 'btn')">${opt}</button>`;
                     } else {
-                        const d = document.createElement('div'); d.className = 'opt-color'; d.title = opt;
-                        let map = {"azul":"#3498db","preto":"#222","branco":"#fff","rosa":"#e91e63"};
-                        d.style.background = map[opt.toLowerCase()] || "#ccc";
-                        if(opt.toLowerCase()==='branco') d.style.border="1px solid #ddd";
-                        d.onclick = () => { app.selectVar(opt, d, 'col'); }; optsContainer.appendChild(d);
+                        let c = {"azul":"#3498db","preto":"#222","branco":"#fff"}[opt.toLowerCase()] || "#ccc";
+                        opts.innerHTML += `<div class="opt-color" style="background:${c}" title="${opt}" onclick="app.sel('${opt}', this, 'col')"></div>`;
                     }
                 });
                 document.getElementById('product-modal').classList.add('active');
             },
-            closeModal: () => document.getElementById('product-modal').classList.remove('active'),
-            selectVar: (val, el, type) => {
-                state.selectedVariant = val;
-                document.querySelectorAll(type==='vol'?'.opt-btn':'.opt-color').forEach(e=>e.classList.remove('selected'));
+
+            sel: (val, el, type) => {
+                state.var = val;
+                document.querySelectorAll(type==='btn'?'.opt-btn':'.opt-color').forEach(e=>e.classList.remove('selected'));
                 el.classList.add('selected');
             },
+            
             updateQty: (n) => {
                 state.qty += n; if(state.qty<1) state.qty=1;
-                if(state.currentProduct && state.qty > state.currentProduct.stock) { state.qty = state.currentProduct.stock; alert("Limite estoque"); }
                 document.getElementById('m-qty').innerText = state.qty;
             },
+
+            closeModal: () => document.getElementById('product-modal').classList.remove('active'),
+            toggleCart: () => document.querySelector('.cart-sidebar').classList.toggle('open'),
+
             addToCart: () => {
-                if(!state.selectedVariant) return alert("Selecione uma opção");
-                state.currentProduct.stock -= state.qty; app.saveData();
-                state.cart.push({...state.currentProduct, qty: state.qty, variant: state.selectedVariant, total: state.currentProduct.price*state.qty});
-                app.updateCartUI(); app.closeModal(); app.toggleCart();
+                if(!state.var) return alert("Selecione uma opção");
+                state.item.stock -= state.qty;
+                localStorage.setItem('2a_products', JSON.stringify(state.products));
+                state.cart.push({...state.item, qty: state.qty, var: state.var, total: state.item.price*state.qty});
+                app.cartUI(); app.closeModal(); app.toggleCart();
             },
-            updateCartUI: () => {
-                const list = document.getElementById('cart-items-list'); list.innerHTML = ""; let total = 0;
+
+            cartUI: () => {
+                const ul = document.getElementById('cart-items-list'); ul.innerHTML=""; let total=0;
                 state.cart.forEach((i, idx) => {
                     total += i.total;
-                    list.innerHTML += `
-                    <li style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
-                        <div><strong>${i.name}</strong><br><small>${i.variant} (x${i.qty})</small></div>
-                        <div style="text-align:right">R$ ${i.total.toFixed(2)}<br><small onclick="state.cart.splice(${idx},1);app.updateCartUI()" style="color:red;cursor:pointer;">remover</small></div>
+                    ul.innerHTML += `<li style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                        <div><strong>${i.name}</strong><br><small>${i.var} x${i.qty}</small></div>
+                        <div style="text-align:right">R$ ${i.total.toFixed(2)}<br><small onclick="state.cart.splice(${idx},1);app.cartUI()" style="color:red; cursor:pointer">remover</small></div>
                     </li>`;
                 });
                 document.getElementById('cart-total').innerText = total.toFixed(2);
                 document.getElementById('cart-count').innerText = state.cart.length;
             },
-            toggleCart: () => document.querySelector('.cart-sidebar').classList.toggle('open'),
-            
+
             checkoutWhatsApp: () => {
-                if(state.cart.length===0) return alert("Vazio");
+                if(!state.cart.length) return alert("Vazio");
                 let msg = "Olá! Pedido 2A Modas:\n\n"; let t=0;
-                state.cart.forEach(i=>{ msg+=`▪ ${i.name} (${i.variant}) x${i.qty} - R$ ${i.total.toFixed(2)}\n`; t+=i.total; });
+                state.cart.forEach(i=>{ msg+=`${i.name} (${i.var}) x${i.qty} - R$ ${i.total.toFixed(2)}\n`; t+=i.total; });
                 msg += `\n*TOTAL: R$ ${t.toFixed(2)}*`;
-                window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(msg)}`, '_blank');
+                window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(msg)}`);
             },
 
             checkoutMercadoPago: async () => {
-                if(state.cart.length===0) return alert("Vazio");
+                if(!state.cart.length) return alert("Vazio");
                 const btn = document.querySelector('.btn-mp');
-                const original = btn.innerText; btn.innerText = "Processando..."; btn.disabled=true;
+                const original = btn.innerHTML; btn.innerHTML = "Processando..."; btn.disabled=true;
                 
                 try {
-                    // Substitua pela URL do seu Google Cloud Function
-                    const CLOUD_URL = "https://criarpagamentoss-967029810770.southamerica-east1.run.app"; 
-                    
-                    if(CLOUD_URL.includes("SUA_URL")) throw new Error("Configure a URL do Backend");
-
-                    const items = state.cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, variant: i.variant }));
-                    const res = await fetch(CLOUD_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({items}) });
+                    if(CLOUD_URL.includes("SUA_URL")) throw new Error("URL não configurada");
+                    const res = await fetch(CLOUD_URL, {
+                        method:'POST', headers:{'Content-Type':'application/json'},
+                        body:JSON.stringify({items: state.cart.map(i=>({name:i.name, price:i.price, qty:i.qty, variant:i.var}))})
+                    });
                     const data = await res.json();
-                    
                     if(data.init_point) window.location.href = data.init_point;
                     else alert("Erro ao gerar link");
-                } catch(e) {
-                    console.error(e); alert("Erro conexão ou URL não configurada.");
-                } finally {
-                    btn.innerText = original; btn.disabled=false;
-                }
+                } catch(e) { console.error(e); alert("Erro de conexão"); } 
+                finally { btn.innerHTML = original; btn.disabled=false; }
             }
         };
 
         // --- ADMIN ---
         const admin = {
-            toggle: () => {
-                const p = document.getElementById('admin-panel');
-                p.classList.toggle('active');
-                if(p.classList.contains('active')) admin.renderList();
+            login: () => {
+                const e = document.getElementById('login-email').value;
+                const p = document.getElementById('login-pass').value;
+                // CREDENCIAIS SIMPLES PARA SITE ESTÁTICO
+                if(e === "admin@2amodas.com" && p === "admin123") {
+                    document.getElementById('login-modal').classList.remove('active');
+                    document.getElementById('admin-panel').classList.add('active');
+                    admin.renderList();
+                } else { alert("Dados incorretos!"); }
             },
-            renderList: () => {
-                const l = document.getElementById('admin-list'); l.innerHTML = "";
-                state.products.forEach(p => {
-                    l.innerHTML += `
-                    <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; align-items:center;">
-                        <div style="display:flex; align-items:center;"><img src="${p.image}" style="width:40px;height:40px;border-radius:4px;margin-right:10px;">
-                        <div><strong>${p.name}</strong><br><small>Est: ${p.stock}</small></div></div>
-                        <div><button onclick="admin.edit(${p.id})" style="color:blue;margin-right:10px;border:none;background:none;">Editar</button>
-                        <button onclick="admin.del(${p.id})" style="color:red;border:none;background:none;">X</button></div>
-                    </div>`;
-                });
-            },
-            saveProduct: (e) => {
+            logout: () => document.getElementById('admin-panel').classList.remove('active'),
+            
+            save: (e) => {
                 e.preventDefault();
                 const id = document.getElementById('edit-id').value;
                 const obj = {
@@ -530,13 +476,32 @@
                     stock: parseInt(document.getElementById('adm-stock').value),
                     image: document.getElementById('adm-img').value,
                     type: document.getElementById('adm-type').value,
-                    options: document.getElementById('adm-options').value.split(',').map(s=>s.trim()),
+                    options: document.getElementById('adm-opts').value.split(',').map(s=>s.trim()),
                     desc: document.getElementById('adm-desc').value
                 };
-                if(id) { const idx=state.products.findIndex(x=>x.id==id); state.products[idx]=obj; }
+                if(id) { const idx = state.products.findIndex(x=>x.id==id); state.products[idx]=obj; }
                 else state.products.push(obj);
-                app.saveData(); admin.clearForm(); alert("Salvo!");
+                
+                localStorage.setItem('2a_products', JSON.stringify(state.products));
+                app.init(); admin.renderList(); admin.clear(); alert("Salvo!");
             },
+
+            renderList: () => {
+                const d = document.getElementById('admin-list'); d.innerHTML = "";
+                state.products.forEach(p => {
+                    d.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img src="${p.image}" style="width:40px; height:40px; border-radius:5px;">
+                            <div><strong>${p.name}</strong><br>Est: ${p.stock}</div>
+                        </div>
+                        <div>
+                            <button onclick="admin.edit(${p.id})" style="color:blue; border:none; background:none; margin-right:10px;">Editar</button>
+                            <button onclick="admin.del(${p.id})" style="color:red; border:none; background:none;">Excluir</button>
+                        </div>
+                    </div>`;
+                });
+            },
+            
             edit: (id) => {
                 const p = state.products.find(x=>x.id==id);
                 document.getElementById('edit-id').value=p.id;
@@ -546,15 +511,15 @@
                 document.getElementById('adm-stock').value=p.stock;
                 document.getElementById('adm-img').value=p.image;
                 document.getElementById('adm-type').value=p.type;
-                document.getElementById('adm-options').value=p.options.join(',');
+                document.getElementById('adm-opts').value=p.options.join(', ');
                 document.getElementById('adm-desc').value=p.desc;
             },
-            del: (id) => { if(confirm("Excluir?")) { state.products=state.products.filter(x=>x.id!==id); app.saveData(); } },
-            clearForm: () => { document.getElementById('admin-form').reset(); document.getElementById('edit-id').value=""; }
+            
+            del: (id) => { if(confirm("Apagar?")) { state.products=state.products.filter(x=>x.id!==id); localStorage.setItem('2a_products', JSON.stringify(state.products)); app.init(); admin.renderList(); } },
+            clear: () => { document.querySelector('form').reset(); document.getElementById('edit-id').value=""; }
         };
 
         app.init();
     </script>
 </body>
 </html>
-
