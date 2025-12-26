@@ -24,36 +24,47 @@
         h2, h3 { font-family:'Plus Jakarta Sans', sans-serif; font-weight: 700; }
         button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); user-select: none; }
 
-        /* LOADING */
+        /* LOADING & STATUS */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        
-        /* HEADER & HERO */
+        #status-bar { position:fixed; top:0; left:0; width:100%; height:auto; min-height:30px; background:#222; color:white; font-size:0.8rem; display:flex; align-items:center; justify-content:center; z-index:99999; font-weight:600; padding:5px; text-align:center; }
+        .ok { background:#27ae60 !important; } .err { background:#c0392b !important; }
+
+        /* HEADER */
         .header-floating { position: fixed; top: 20px; right: 5%; z-index: 1000; display:flex; gap:10px; align-items: center; }
         .icon-btn { width:45px; height:45px; border-radius:50%; border:none; background:white; box-shadow:0 4px 15px rgba(0,0,0,0.15); color:var(--accent); font-size:1.1rem; display:flex; align-items:center; justify-content:center; position:relative; }
+        .icon-btn:active { transform:scale(0.95); }
         .badge { position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; width:20px; height:20px; border-radius:50%; font-size:0.7rem; display:flex; align-items:center; justify-content:center; font-weight:bold; border:2px solid white; }
-        .login-btn-header { padding: 0 20px; height: 45px; background: white; border: none; border-radius: 30px; font-weight: 700; color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+        
+        .login-btn-header { padding: 0 20px; height: 45px; background: white; border: none; border-radius: 30px; font-weight: 700; color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-size: 0.85rem; overflow: hidden; max-width: 200px; white-space: nowrap; text-overflow: ellipsis; }
+        .login-btn-header:hover { transform: translateY(-2px); }
+        .login-btn-header i { color: var(--primary); }
 
+        /* HERO */
         .hero { padding: 100px 20px 40px; text-align:center; background: radial-gradient(circle at top, #fff5f2 0%, transparent 100%); display: flex; flex-direction: column; align-items: center; }
         .hero img { width:140px; height:140px; border-radius:50%; object-fit:cover; border:4px solid white; box-shadow:var(--shadow); margin-bottom:15px; }
         .hero h1 { font-size:2.5rem; margin-bottom:5px; color:var(--accent); line-height: 1.1; }
         .btn-cta { padding: 14px 40px; background: var(--accent); color: white; border-radius: 50px; border: none; font-weight: 700; font-size: 1rem; box-shadow: 0 10px 25px rgba(44,62,80,0.25); margin-top: 30px; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* GRID & PRODUCTS */
+        /* CONTAINER */
         .container { max-width:1200px; margin:0 auto; padding:20px; flex: 1; }
         .filters { display:flex; justify-content:center; gap:8px; margin-bottom:30px; flex-wrap:wrap; }
         .filter-btn { padding: 8px 20px; border-radius: 30px; border: 1px solid #e0e0e0; background: white; color: #555; font-weight: 600; font-size: 0.9rem; }
         .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
         .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:15px; }
         .card { background:white; border-radius:var(--radius); overflow:hidden; border:1px solid #f0f0f0; position:relative; cursor:pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .card:active { transform:scale(0.98); }
         .card img { width:100%; height:200px; object-fit:cover; background:#f9f9f9; }
         .card-info { padding:12px; text-align:center; }
         .tag-promo { position:absolute; top:8px; right:8px; background:#e91e63; color:white; padding:3px 8px; border-radius:20px; font-size:0.6rem; font-weight:bold; z-index: 2; }
+        .tag-delivery { font-size: 0.65rem; color: #27ae60; display: block; margin-top: 4px; font-weight: 600; }
 
         /* MODALS */
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(5px); z-index:2000; display:none; align-items:center; justify-content:center; padding:15px; }
         .overlay.active { display:flex; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from{transform:scale(0.95); opacity:0;} to{transform:scale(1); opacity:1;} }
+        
         .box { background:white; width:100%; max-width:900px; border-radius:15px; overflow:hidden; max-height:95vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         .box.single-col { display:block; max-width:500px; grid-template-columns: 1fr; }
         
@@ -62,8 +73,12 @@
         .sidebar.open { right:0; }
         .cart-item { display:grid; grid-template-columns: 60px 1fr auto; gap:10px; align-items:center; padding:15px 0; border-bottom:1px solid #f5f5f5; }
         .cart-thumb { width:60px; height:60px; border-radius:8px; object-fit:cover; background:#f9f9f9; }
+        .qty-controls { display:flex; align-items:center; background:#f4f4f4; border-radius:25px; padding:2px; width:fit-content; margin-top:5px; }
+        .qty-btn { width:25px; height:25px; border-radius:50%; border:none; background:white; color:var(--accent); font-weight:bold; box-shadow:0 1px 3px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center; }
+        .qty-val { padding:0 10px; font-size:0.85rem; font-weight:600; min-width:25px; text-align:center; }
+        .btn-remove { width:30px; height:30px; border-radius:50%; border:none; background:#fff5f5; color:#e74c3c; display:flex; align-items:center; justify-content:center; }
         
-        /* ------------- ADMIN STYLES MODERNO ------------- */
+        /* ADMIN STYLES */
         .input { width:100%; padding:14px; border:1px solid #e0e0e0; border-radius:10px; font-size:1rem; margin-bottom:12px; background: #fdfdfd; transition: 0.3s; }
         .input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(196, 139, 120, 0.1); }
         
@@ -71,9 +86,8 @@
         .admin-tab { padding:10px 20px; border-radius:30px; border:1px solid #eee; background:transparent; font-weight:600; cursor:pointer; color: #777; transition: all 0.3s; }
         .admin-tab.active { background:var(--accent); color:white; border-color: var(--accent); box-shadow: 0 4px 10px rgba(44,62,80,0.3); }
 
-        /* CHECKBOXES MODERNOS (CHIPS) */
         .checkbox-wrapper { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
-        .modern-checkbox input { display: none; } /* Esconde o input original */
+        .modern-checkbox input { display: none; }
         .variation-chip {
             display: flex; align-items: center; gap: 8px;
             padding: 10px 20px; border: 1px solid #eee;
@@ -93,19 +107,22 @@
 
         .admin-section-title { font-size: 0.9rem; text-transform: uppercase; color: #999; font-weight: 700; margin: 20px 0 10px; letter-spacing: 1px; }
 
-        /* LISTA ADMIN */
         .mini-prod { display:flex; align-items:center; gap:12px; padding:12px; border-bottom:1px solid #eee; background: #fff; margin-bottom: 5px; border-radius: 8px; }
         .mini-prod img { width:50px; height:50px; border-radius:8px; object-fit:cover; border: 1px solid #eee; }
+        .stock-info { font-size: 0.8rem; color: #666; margin-top: 2px; }
+        .stock-warn { color: #e74c3c; font-weight: bold; }
         .btn-mini-edit { background: var(--accent); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; border: none; }
         
-        /* ------------------------------------------------ */
-
         .var-btn { padding:12px; border:1px solid #eee; border-radius:8px; background:white; margin:4px; cursor:pointer; font-size: 0.9rem; }
         .var-btn.selected { background:var(--accent); color:white; border-color: var(--accent); }
+        .var-btn.disabled { opacity:0.5; cursor:not-allowed; }
+        
         .btn-mp, .btn-whats { width:100%; padding:16px; border-radius:12px; border:none; font-weight:bold; margin-top:10px; color:white; display:flex; align-items:center; justify-content:center; gap:10px; font-size: 1rem; }
         .btn-mp { background:#009EE3; } .btn-whats { background:#25D366; }
         
-        /* CLIENTE */
+        .btn-addr-trigger { width:100%; padding:15px; border:2px dashed var(--accent); background:none; border-radius:12px; color:var(--accent); font-weight:bold; cursor:pointer; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:10px; }
+        .btn-addr-trigger.filled { border-style:solid; border-color:#27ae60; background:#eafff0; color:#27ae60; }
+        
         .client-order { border:1px solid #eee; padding:15px; border-radius:12px; margin-bottom:12px; background:#fff; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         .track-container { margin-top: 15px; position: relative; padding-top: 20px; padding-bottom: 20px; }
         .track-line { height: 4px; background: #eee; border-radius: 2px; position: relative; }
@@ -113,6 +130,9 @@
         .truck-icon { position: absolute; top: 0; transform: translateX(-50%); font-size: 1.5rem; color: #2c3e50; transition: left 1s ease; left: 0%; background: white; padding: 0 5px; }
         .track-steps { display: flex; justify-content: space-between; font-size: 0.65rem; color: #aaa; margin-top: 8px; font-weight: bold; text-transform: uppercase; }
         .track-steps span.active { color: #27ae60; }
+
+        .order-card { background: white; border: 1px solid #eee; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; font-weight: bold; color: var(--accent); font-size: 0.9rem; }
 
         .carousel-wrapper { overflow: hidden; white-space: nowrap; padding: 10px 0; }
         .carousel-track { display: inline-flex; gap: 15px; animation: scrollPromo 20s linear infinite; }
@@ -142,6 +162,8 @@
         <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--primary);"></i>
         <p style="margin-top:15px; color:#666;">Carregando loja...</p>
     </div>
+
+    <div id="status-bar" style="display:none;"></div>
 
     <div class="header-floating">
         <button class="login-btn-header" onclick="auth.checkProfile()" id="btn-login-display">
@@ -393,7 +415,7 @@
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
+const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
         const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
 
@@ -711,8 +733,9 @@
             },
             checkAdmin: () => { 
                 const pass = document.getElementById('admin-pass-input').value;
-                if(pass === "123") { 
-                    app.closeModal('admin-login-modal'); app.showModal('admin-modal'); admin.renderList(); admin.renderOrders(); admin.updateStats(); 
+                if(pass === "admin") { 
+                    app.closeModal('admin-login-modal'); app.showModal('admin-modal'); 
+                    setTimeout(() => { admin.renderList(); admin.renderOrders(); admin.updateStats(); }, 100);
                 } else alert("Senha incorreta");
             },
             tab: (t) => {
@@ -764,7 +787,6 @@
                 document.getElementById('f-promo').checked = p.is_promo;
                 admin.clear(true); document.getElementById('edit-id').value = p.id;
                 
-                // POPULATE VARS - AQUI ESTA A MAGICA DA EDICAO
                 const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                 if(vars) {
                     const checks = document.querySelectorAll('input[type="checkbox"]');
@@ -784,7 +806,6 @@
                         }
                     });
                 }
-                // Muda para aba cadastro visualmente
                 document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
                 document.querySelectorAll('.admin-tab')[2].classList.add('active'); // Aba Produtos
                 admin.tab('prod');
@@ -842,44 +863,6 @@
                     document.getElementById('st-profit').innerText = `R$ ${(rev-cost).toFixed(2)}`;
                     if(div) div.innerHTML = miniList;
                 } catch(e) { console.error("Erro dashboard:", e); }
-            }
-        };
-
-        // --- AUTH ---
-        const auth = {
-            checkProfile: () => { 
-                if(state.user) { app.showModal('client-modal'); auth.loadClientOrders(); document.getElementById('client-info-txt').innerHTML = `<strong>${safeVal(state.user.name)}</strong><br>${safeVal(state.user.email)}`; } 
-                else app.showModal('auth-modal'); 
-            },
-            toggle: (m) => { document.getElementById('form-login').style.display=m==='login'?'block':'none'; document.getElementById('form-register').style.display=m==='register'?'block':'none'; },
-            login: async () => {
-                const e = document.getElementById('l-email').value, p = document.getElementById('l-pass').value;
-                const {data} = await sb.from('customers').select('*').eq('email',e).eq('password',p).single();
-                if(data) { 
-                    state.user=data; localStorage.setItem('2a_user', JSON.stringify(data)); 
-                    if(data.address && Array.isArray(data.address)) localStorage.setItem('2a_addrs', JSON.stringify(data.address));
-                    else if(!localStorage.getItem('2a_addrs')) localStorage.setItem('2a_addrs', '[]');
-                    app.updateUI(); history.back(); 
-                } else alert("Inválido");
-            },
-            register: async () => {
-                const n=document.getElementById('r-name').value, e=document.getElementById('r-email').value, p=document.getElementById('r-pass').value;
-                await sb.from('customers').insert([{id: Date.now(), name:n, email:e, password:p, address: []}]);
-                alert("Sucesso! Faça login."); auth.toggle('login');
-            },
-            logout: () => { localStorage.removeItem('2a_user'); location.reload(); },
-            loadClientOrders: async () => {
-                if(!state.user) return;
-                const { data } = await sb.from('orders').select('*').eq('customer_email', state.user.email);
-                const div = document.getElementById('client-orders-list'); div.innerHTML = "";
-                if(!data || data.length === 0) { div.innerHTML = "Sem pedidos."; return; }
-                data.forEach(o => {
-                    let progress = 10;
-                    if(o.status === 'Enviado') progress = 50; if(o.status === 'Entregue') progress = 100;
-                    const items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
-                    const itemsTxt = items.map(i => `${i.qty}x ${i.name}`).join(', ');
-                    div.innerHTML += `<div class="client-order"><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><strong>Data: ${o.date}</strong><span>R$ ${o.total.toFixed(2)}</span></div><small>${itemsTxt}</small><div class="track-container"><div class="truck-icon" style="left:${progress}%"><i class="fas fa-truck"></i></div><div class="track-line"><div class="track-fill" style="width:${progress}%"></div></div><div class="track-steps"><span class="${o.status==='Pendente'?'active':''}">Pendente</span><span class="${o.status==='Enviado'?'active':''}">Enviado</span><span class="${o.status==='Entregue'?'active':''}">Entregue</span></div></div></div>`;
-                });
             }
         };
 
