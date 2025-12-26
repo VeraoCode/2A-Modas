@@ -7,6 +7,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -365,17 +366,22 @@
     </div>
 
     <script>
-        // --- ⚠️ CONFIGURAÇÃO OBRIGATÓRIA (COLE SUAS CHAVES AQUI) ---
+        // --- CONFIGURAÇÃO (COLE SUAS CHAVES) ---
         const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
         const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
+        
+        // --- EMAILJS CONFIG ---
+        const EMAILJS_PUBLIC_KEY = 'vEXIgVw6GynR5W1qj'; 
+        const EMAILJS_SERVICE_ID = 'service_3x4ghcd';
+        const EMAILJS_TEMPLATE_CLIENTE = 'template_rwf0bay';
+        const EMAILJS_TEMPLATE_ADMIN = 'template_rwf0bay'; // Pode ser o mesmo do cliente
 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const state = { products: [], cart: [], current: null, var: null, qty: 1, user: null, address: null };
         const PRESETS_VOL = ['25ml','50ml','75ml','100ml','200ml','P','M','G','GG','Unico'];
         const COLOR_MAP = { 'Preto': '#000000', 'Branco': '#ffffff', 'Vermelho': '#e74c3c', 'Azul': '#3498db', 'Rosa': '#e91e63', 'Verde': '#2ecc71', 'Nude': '#e3c0a5', 'Estampado': 'linear-gradient(45deg, red, blue)', 'Bege': '#f5f5dc', 'Amarelo': '#f1c40f', 'Cinza': '#95a5a6' };
         
-        // --- FUNÇÃO DE SEGURANÇA (EVITA CRASH E NULL) ---
         const safeVal = (v) => (v === null || v === undefined || v === "null") ? "" : v;
         const setSafe = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = safeVal(val); };
 
@@ -404,7 +410,6 @@
                 items.forEach(p => {
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                     const minP = Math.min(...vars.map(v => v.price));
-                    // CORREÇÃO: Abre o modal diretamente
                     cDiv.innerHTML += `<div class="promo-card" onclick="app.closeModal('promo-modal'); setTimeout(() => app.openModal('${p.id}'), 100)"><img src="${p.image_url}"><div><strong>${p.name}</strong><br><small style="color:var(--primary)">R$ ${minP.toFixed(2)}</small></div></div>`;
                 });
                 app.showModal('promo-modal');
@@ -413,17 +418,10 @@
                 const p = state.products.find(x => String(x.id) === String(id));
                 if(!p) return;
                 state.current = p; state.qty=1; state.var=null;
-                
                 document.getElementById('m-img').src = p.image_url || "";
-                
-                setSafe('m-title', p.name);
-                setSafe('m-cat', p.category);
-                setSafe('m-desc', p.description);
-                setSafe('m-price', "Selecione...");
-                
+                setSafe('m-title', p.name); setSafe('m-cat', p.category); setSafe('m-desc', p.description); setSafe('m-price', "Selecione...");
                 const vDiv = document.getElementById('m-vars'); vDiv.innerHTML = "";
                 const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-                
                 if(vars) {
                     vars.forEach(v => {
                         const btn = document.createElement('button');
@@ -456,18 +454,12 @@
             },
             addCart: () => {
                 if(!state.var) return alert("Selecione uma opção");
-                
-                // Verifica estoque considerando o que já tem no carrinho
                 const existingItem = state.cart.find(i => i.name === state.current.name && i.variant === state.var.name);
                 const currentCartQty = existingItem ? existingItem.qty : 0;
-                
                 if (currentCartQty + state.qty > parseInt(state.var.stock)) {
                     return alert(`Estoque insuficiente. Você já tem ${currentCartQty} no carrinho e o estoque é ${state.var.stock}.`);
                 }
-
-                if(existingItem) {
-                    existingItem.qty += state.qty;
-                } else {
+                if(existingItem) { existingItem.qty += state.qty; } else {
                     state.cart.push({name: state.current.name, variant: state.var.name, price: parseFloat(state.var.price), qty: state.qty, image: state.current.image_url});
                 }
                 app.renderCart(); app.closeModal('product-modal'); app.toggleCart();
@@ -476,22 +468,7 @@
                 const ul = document.getElementById('cart-list'); if(!ul) return; ul.innerHTML=""; let t=0;
                 state.cart.forEach((i,idx) => {
                     t += i.price*i.qty;
-                    ul.innerHTML += `
-                    <li class="cart-item">
-                        <img src="${i.image || 'https://via.placeholder.com/70'}" class="cart-thumb">
-                        <div>
-                            <b>${i.name}</b><br><small>${i.variant}</small>
-                            <div class="qty-controls">
-                                <button class="qty-btn" onclick="app.cQty(${idx},-1)">-</button>
-                                <span class="qty-val">${i.qty}</span>
-                                <button class="qty-btn" onclick="app.cQty(${idx},1)">+</button>
-                            </div>
-                        </div>
-                        <div style="text-align:right">
-                            R$ ${(i.price*i.qty).toFixed(2)}<br>
-                            <button class="btn-remove" onclick="state.cart.splice(${idx},1);app.renderCart()"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </li>`;
+                    ul.innerHTML += `<li class="cart-item"><img src="${i.image || 'https://via.placeholder.com/70'}" class="cart-thumb"><div><b>${i.name}</b><br><small>${i.variant}</small><div class="qty-controls"><button class="qty-btn" onclick="app.cQty(${idx},-1)">-</button><span class="qty-val">${i.qty}</span><button class="qty-btn" onclick="app.cQty(${idx},1)">+</button></div></div><div style="text-align:right">R$ ${(i.price*i.qty).toFixed(2)}<br><button class="btn-remove" onclick="state.cart.splice(${idx},1);app.renderCart()"><i class="fas fa-trash"></i></button></div></li>`;
                 });
                 document.getElementById('cart-total').innerText = `R$ ${t.toFixed(2)}`;
                 document.getElementById('cart-count').innerText = state.cart.length;
@@ -504,29 +481,17 @@
                 const list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
                 const div = document.getElementById('saved-addresses-list'); div.innerHTML="";
                 list.forEach((a,i) => {
-                    div.innerHTML += `
-                    <div style="border:1px solid #eee; padding:10px; margin-bottom:5px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-                        <div onclick="app.setAddr(${i})" style="cursor:pointer; flex:1;">
-                            <b>${a.type || 'Endereço'}</b>: ${a.street}<br><small>${a.name}</small>
-                        </div>
-                        <div>
-                            <i class="fas fa-edit" onclick="app.editAddress(${i})" style="color:blue; margin-right:10px; cursor:pointer;"></i>
-                            <i class="fas fa-trash" onclick="app.delAddress(${i})" style="color:red; cursor:pointer;"></i>
-                        </div>
-                    </div>`;
+                    div.innerHTML += `<div style="border:1px solid #eee; padding:10px; margin-bottom:5px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;"><div onclick="app.setAddr(${i})" style="cursor:pointer; flex:1;"><b>${a.type || 'Endereço'}</b>: ${a.street}<br><small>${a.name}</small></div><div><i class="fas fa-edit" onclick="app.editAddress(${i})" style="color:blue; margin-right:10px; cursor:pointer;"></i><i class="fas fa-trash" onclick="app.delAddress(${i})" style="color:red; cursor:pointer;"></i></div></div>`;
                 });
                 app.showModal('address-modal');
             },
             addNewAddress: () => {
                 const val = id => document.getElementById(id).value;
-                const a = { 
-                    name: val('addr-name'), phone: val('addr-phone'), 
-                    street: val('addr-street'), ref: val('addr-ref'),
-                    type: document.getElementById('addr-type').value
-                };
+                const a = { name: val('addr-name'), phone: val('addr-phone'), street: val('addr-street'), ref: val('addr-ref'), type: document.getElementById('addr-type').value };
                 if(!a.name || !a.street) return alert("Preencha obrigatórios");
                 const list = JSON.parse(localStorage.getItem('2a_addrs') || '[]'); list.push(a);
                 localStorage.setItem('2a_addrs', JSON.stringify(list));
+                if(state.user) sb.from('customers').update({ address: list }).eq('id', state.user.id).then();
                 state.address = a; localStorage.setItem('2a_active_addr', JSON.stringify(a));
                 app.updateUI(); app.closeModal('address-modal');
             },
@@ -534,6 +499,7 @@
                 const list = JSON.parse(localStorage.getItem('2a_addrs'));
                 list.splice(i, 1);
                 localStorage.setItem('2a_addrs', JSON.stringify(list));
+                if(state.user) sb.from('customers').update({ address: list }).eq('id', state.user.id).then();
                 app.openAddressModal();
             },
             editAddress: (i) => {
@@ -560,7 +526,7 @@
                 }
             },
 
-            // CHECKOUT & STOCK UPDATE
+            // CHECKOUT & EMAILS
             checkout: async (method) => {
                 if(!state.cart.length) return alert("Carrinho vazio");
                 if(method === 'mercadopago' && !state.user) {
@@ -570,40 +536,60 @@
                 if(!state.address) { app.openAddressModal(); return alert("Selecione entrega"); }
 
                 const btn = document.querySelector('.btn-mp');
-                
                 try {
                     if(btn) btn.innerText = "Processando...";
                     
                     if(method === 'whatsapp') { 
+                        const orderData = await app.registerOrder(null, 'WhatsApp / Dinheiro'); 
                         await app.updateStockDatabase(); 
+                        await app.sendEmails(orderData); 
                         app.sendPaidOrder('Dinheiro/Combinar'); 
                     } 
                     else {
-                        // 1. Registra o pedido no banco (Pendente)
-                        await app.registerOrder(null, 'Mercado Pago (Pendente)'); 
+                        const newOrderId = Date.now().toString();
+                        const orderData = await app.registerOrder(newOrderId, 'Mercado Pago (Pendente)');
                         
-                        // 2. Chama a API do Mercado Pago
                         localStorage.setItem('2a_cart', JSON.stringify(state.cart));
                         const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
+                        
+                        // Envia e-mail de "Pedido Recebido"
+                        await app.sendEmails(orderData);
+
                         const res = await fetch(GOOGLE_CLOUD_URL, {
                             method:'POST', headers:{'Content-Type':'application/json'}, 
                             body:JSON.stringify({items, buyer: { email: state.user.email, name: state.user.name }, address: state.address})
                         });
                         const data = await res.json();
                         
-                        if(data.init_point) {
-                            window.location.href = data.init_point;
-                        } else {
-                            throw new Error("Falha ao gerar link");
-                        }
+                        if(data.init_point) window.location.href = data.init_point;
+                        else throw new Error("Falha ao gerar link");
                     }
                 } catch(e) {
                     console.error(e);
-                    if(confirm("Erro de conexão com Mercado Pago. Deseja finalizar pelo WhatsApp?")) {
-                        app.sendPaidOrder('Erro MP - Finalizado Whats');
-                    }
+                    if(confirm("Erro de conexão. Finalizar pelo WhatsApp?")) app.sendPaidOrder('Erro MP - Finalizado Whats');
                     if(btn) btn.innerText = "Via Pix/Cartão/Débito"; 
                 }
+            },
+            sendEmails: async (order) => {
+                if(!state.user || !state.user.email) return;
+                
+                // Formata resumo para o e-mail
+                const itemsTxt = state.cart.map(i => `${i.qty}x ${i.name} (${i.variant}) - R$ ${i.price.toFixed(2)}`).join('\n');
+                const total = state.cart.reduce((a,b)=>a+(b.price*b.qty),0).toFixed(2);
+                
+                const templateParams = {
+                    to_name: state.user.name,
+                    to_email: state.user.email,
+                    message: `\nITENS:\n${itemsTxt}\n\nTOTAL: R$ ${total}\n\nENDEREÇO:\n${state.address.street}, ${state.address.ref}`,
+                    admin_email: 'erickveraosilva@gmail.com' 
+                };
+
+                // Envia Cliente
+                emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENTE, templateParams);
+                
+                // Envia Admin (Copia os dados, mas muda o destinatário)
+                const adminParams = {...templateParams, to_email: 'erickveraosilva@gmail.com', to_name: 'Admin 2A'};
+                emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, adminParams);
             },
             updateStockDatabase: async () => {
                 for (const item of state.cart) {
@@ -634,36 +620,19 @@
                     status: 'Pendente'
                 };
                 await sb.from('orders').insert([order]);
+                return order; // Retorna objeto para usar no email
             },
             sendPaidOrder: (paymentType = 'Dinheiro/Outros') => {
                 let addr = state.address;
-                let msg = `*NOVO PEDIDO 2A MODAS (${state.user ? state.user.name : addr.name})*\n`;
-                msg += `--------------------------------\n`;
-                msg += `*PAGAMENTO:* ${paymentType}\n`;
-                msg += `*TOTAL:* R$ ${document.getElementById('cart-total').innerText.replace('R$ ','')}\n`;
-                msg += `--------------------------------\n`;
-                msg += `*DADOS DE ENTREGA:*\n`;
-                msg += `📍 ${addr.street}\n`;
-                msg += `📌 Ref: ${addr.ref}\n`;
-                msg += `📞 Contato: ${addr.phone}\n`;
-                msg += `🏠 Tipo: ${addr.type || 'Casa'}\n`;
-                msg += `--------------------------------\n`;
-                msg += `*ITENS DO PEDIDO:*\n`;
+                let msg = `*NOVO PEDIDO 2A MODAS (${state.user ? state.user.name : addr.name})*\n--------------------------------\n*PAGAMENTO:* ${paymentType}\n*TOTAL:* R$ ${document.getElementById('cart-total').innerText.replace('R$ ','')}\n--------------------------------\n*DADOS DE ENTREGA:*\n📍 ${addr.street}\n📌 Ref: ${addr.ref}\n📞 Contato: ${addr.phone}\n🏠 Tipo: ${addr.type || 'Casa'}\n--------------------------------\n*ITENS DO PEDIDO:*\n`;
                 state.cart.forEach(i=>{ msg += `▪ ${i.qty}x ${i.name} (${i.variant})\n`; });
-                
                 localStorage.removeItem('2a_cart');
                 window.location.href = `https://wa.me/5567998951120?text=${encodeURIComponent(msg)}`;
             },
 
             // UTILS
-            showModal: (id) => { 
-                const el = document.getElementById(id);
-                if(el) { el.classList.add('active'); history.pushState({modal:id}, null, ""); }
-            },
-            closeModal: (id) => { 
-                const el = document.getElementById(id);
-                if(el) { el.classList.remove('active'); history.back(); }
-            },
+            showModal: (id) => { document.getElementById(id).classList.add('active'); history.pushState({modal:id}, null, ""); },
+            closeModal: (id) => { document.getElementById(id).classList.remove('active'); history.back(); },
             closeAllModals: () => { document.querySelectorAll('.overlay.active').forEach(el => el.classList.remove('active')); },
             filter: (cat, btn) => {
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -672,7 +641,7 @@
             }
         };
 
-        // --- AUTH & CLIENT ---
+        // --- AUTH ---
         const auth = {
             checkProfile: () => { 
                 if(state.user) { 
@@ -686,50 +655,28 @@
                 const e = document.getElementById('l-email').value, p = document.getElementById('l-pass').value;
                 const {data} = await sb.from('customers').select('*').eq('email',e).eq('password',p).single();
                 if(data) { 
-                    state.user=data; 
-                    localStorage.setItem('2a_user', JSON.stringify(data)); 
-                    app.updateUI(); 
-                    history.back(); 
-                }
-                else alert("Inválido");
+                    state.user=data; localStorage.setItem('2a_user', JSON.stringify(data)); 
+                    if(data.address && Array.isArray(data.address)) localStorage.setItem('2a_addrs', JSON.stringify(data.address));
+                    app.updateUI(); history.back(); 
+                } else alert("Inválido");
             },
             register: async () => {
                 const n=document.getElementById('r-name').value, e=document.getElementById('r-email').value, p=document.getElementById('r-pass').value;
-                await sb.from('customers').insert([{id: Date.now(), name:n, email:e, password:p, address:{}}]);
+                await sb.from('customers').insert([{id: Date.now(), name:n, email:e, password:p, address: []}]);
                 alert("Sucesso! Faça login."); auth.toggle('login');
             },
             logout: () => { localStorage.removeItem('2a_user'); location.reload(); },
             loadClientOrders: async () => {
-                if(!state.user || !state.user.email) {
-                    document.getElementById('client-orders-list').innerHTML = "Faça login para ver seus pedidos.";
-                    return;
-                }
+                if(!state.user || !state.user.email) { document.getElementById('client-orders-list').innerHTML = "Faça login."; return; }
                 const { data } = await sb.from('orders').select('*').eq('customer_email', state.user.email);
                 const div = document.getElementById('client-orders-list'); div.innerHTML = "";
-                if(!data || data.length === 0) { div.innerHTML = "Você ainda não fez pedidos."; return; }
+                if(!data || data.length === 0) { div.innerHTML = "Sem pedidos."; return; }
                 data.forEach(o => {
                     let progress = 10;
-                    if(o.status === 'Enviado') progress = 50;
-                    if(o.status === 'Entregue') progress = 100;
+                    if(o.status === 'Enviado') progress = 50; if(o.status === 'Entregue') progress = 100;
                     const items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
                     const itemsTxt = items.map(i => `${i.qty}x ${i.name}`).join(', ');
-                    div.innerHTML += `
-                    <div class="client-order">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                            <strong>Data: ${o.date}</strong>
-                            <span>R$ ${o.total.toFixed(2)}</span>
-                        </div>
-                        <small>${itemsTxt}</small>
-                        <div class="track-container">
-                            <div class="truck-icon" style="left:${progress}%"><i class="fas fa-truck"></i></div>
-                            <div class="track-line"><div class="track-fill" style="width:${progress}%"></div></div>
-                            <div class="track-steps">
-                                <span class="${o.status==='Pendente'?'active':''}">Pendente</span>
-                                <span class="${o.status==='Enviado'?'active':''}">Enviado</span>
-                                <span class="${o.status==='Entregue'?'active':''}">Entregue</span>
-                            </div>
-                        </div>
-                    </div>`;
+                    div.innerHTML += `<div class="client-order"><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><strong>Data: ${o.date}</strong><span>R$ ${o.total.toFixed(2)}</span></div><small>${itemsTxt}</small><div class="track-container"><div class="truck-icon" style="left:${progress}%"><i class="fas fa-truck"></i></div><div class="track-line"><div class="track-fill" style="width:${progress}%"></div></div><div class="track-steps"><span class="${o.status==='Pendente'?'active':''}">Pendente</span><span class="${o.status==='Enviado'?'active':''}">Enviado</span><span class="${o.status==='Entregue'?'active':''}">Entregue</span></div></div></div>`;
                 });
             }
         };
@@ -741,32 +688,17 @@
                 const vDiv = document.getElementById('volume-checks');
                 if(!cDiv || !vDiv) return;
                 cDiv.innerHTML = ""; vDiv.innerHTML = "";
-                Object.keys(COLOR_MAP).forEach(c => {
-                    const dot = `<span class="color-dot" style="background:${COLOR_MAP[c]}"></span>`;
-                    cDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${c}" onchange="admin.toggleInput(this)"> ${dot} ${c}</label>`;
-                });
+                Object.keys(COLOR_MAP).forEach(c => { cDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${c}" onchange="admin.toggleInput(this)"> <span class="color-dot" style="background:${COLOR_MAP[c]}"></span> ${c}</label>`; });
                 PRESETS_VOL.forEach(v => vDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${v}" onchange="admin.toggleInput(this)"> ${v}</label>`);
             },
             toggleInput: (cb) => {
                 const id = `grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`;
                 const area = document.getElementById('active-vars-area');
-                if(cb.checked) {
-                    area.innerHTML += `<div id="${id}" class="var-inputs show"><strong style="grid-column:span 2">${cb.value}</strong><input type="hidden" class="v-name" value="${cb.value}"><input type="number" class="input v-cost" placeholder="Custo (R$)"><input type="number" class="input v-price" placeholder="Venda (R$)"><input type="number" class="input v-stock" placeholder="Estoque"></div>`;
-                } else { document.getElementById(id)?.remove(); }
+                if(cb.checked) area.innerHTML += `<div id="${id}" class="var-inputs show"><strong style="grid-column:span 2">${cb.value}</strong><input type="hidden" class="v-name" value="${cb.value}"><input type="number" class="input v-cost" placeholder="Custo (R$)"><input type="number" class="input v-price" placeholder="Venda (R$)"><input type="number" class="input v-stock" placeholder="Estoque"></div>`;
+                else document.getElementById(id)?.remove();
             },
-            checkAdmin: () => {
-                if(prompt("Senha:") === "123") {
-                    app.closeModal('auth-modal'); app.showModal('admin-modal'); 
-                    admin.renderList(); admin.renderOrders(); admin.updateStats();
-                }
-            },
-            tab: (t) => {
-                document.getElementById('tab-dash').style.display=t==='dash'?'block':'none';
-                document.getElementById('tab-prod').style.display=t==='prod'?'block':'none';
-                document.getElementById('tab-orders').style.display=t==='orders'?'block':'none';
-                document.querySelectorAll('.admin-tab').forEach(e=>e.classList.remove('active'));
-                event.target.classList.add('active');
-            },
+            checkAdmin: () => { if(prompt("Senha:") === "123") { app.closeModal('auth-modal'); app.showModal('admin-modal'); admin.renderList(); admin.renderOrders(); admin.updateStats(); } },
+            tab: (t) => { document.getElementById('tab-dash').style.display=t==='dash'?'block':'none'; document.getElementById('tab-prod').style.display=t==='prod'?'block':'none'; document.getElementById('tab-orders').style.display=t==='orders'?'block':'none'; },
             save: async () => {
                 const btn = document.getElementById('btn-save'); btn.innerText="Processando..."; btn.disabled=true;
                 try {
@@ -802,31 +734,22 @@
             edit: (id) => {
                 const p = state.products.find(x => String(x.id) === String(id));
                 document.getElementById('edit-id').value = p.id;
-                
                 document.getElementById('f-name').value = safeVal(p.name);
                 document.getElementById('f-cat').value = safeVal(p.category);
                 document.getElementById('f-cost').value = safeVal(p.cost_price);
                 document.getElementById('f-desc').value = safeVal(p.description);
                 document.getElementById('f-promo').checked = p.is_promo;
-                
-                admin.clear(true);
-                document.getElementById('edit-id').value = p.id;
-
+                admin.clear(true); document.getElementById('edit-id').value = p.id;
                 const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                 if(vars) {
                     const checks = document.querySelectorAll('input[type="checkbox"]');
                     vars.forEach(v => {
                         checks.forEach(cb => {
                             if(cb.value === v.name) {
-                                cb.checked = true;
-                                admin.toggleInput(cb);
+                                cb.checked = true; admin.toggleInput(cb);
                                 setTimeout(() => {
                                     const div = document.getElementById(`grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`);
-                                    if(div) {
-                                        div.querySelector('.v-cost').value = safeVal(v.cost || p.cost_price);
-                                        div.querySelector('.v-price').value = safeVal(v.price);
-                                        div.querySelector('.v-stock').value = safeVal(v.stock);
-                                    }
+                                    if(div) { div.querySelector('.v-cost').value = safeVal(v.cost || p.cost_price); div.querySelector('.v-price').value = safeVal(v.price); div.querySelector('.v-stock').value = safeVal(v.stock); }
                                 }, 50);
                             }
                         });
@@ -837,10 +760,8 @@
             del: async (id) => { if(confirm("Excluir?")) { await sb.from('products').delete().eq('id', id); await app.load(); admin.renderList(); } },
             clear: (soft=false) => { 
                 if(!soft) document.getElementById('edit-id').value=""; 
-                document.getElementById('f-name').value=""; 
-                document.getElementById('f-desc').value=""; 
-                document.getElementById('f-cost').value=""; 
-                document.getElementById('f-file').value=""; 
+                document.getElementById('f-name').value=""; document.getElementById('f-desc').value=""; 
+                document.getElementById('f-cost').value=""; document.getElementById('f-file').value=""; 
                 document.getElementById('active-vars-area').innerHTML="";
                 document.querySelectorAll('.checkbox-grid input').forEach(c => c.checked=false);
             },
@@ -848,21 +769,8 @@
                 const div = document.getElementById('admin-list'); div.innerHTML="";
                 state.products.forEach(p => {
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-                    let stock = 0;
-                    if(vars) vars.forEach(v => stock += parseInt(v.stock||0));
-
-                    div.innerHTML += `
-                    <div class="mini-prod">
-                        <img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/50'"> 
-                        <div style="flex:1">
-                            <strong>${p.name}</strong>
-                            <div class="stock-info">Estoque: <span class="${stock<5?'stock-warn':''}">${stock}</span></div>
-                        </div>
-                        <div>
-                            <button onclick="admin.edit('${p.id}'); admin.tab('prod')" style="color:blue;border:none;background:none"><i class="fas fa-edit"></i></button> 
-                            <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>`;
+                    let stock = 0; if(vars) vars.forEach(v => stock += parseInt(v.stock||0));
+                    div.innerHTML += `<div class="mini-prod"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/50'"> <div style="flex:1"><strong>${p.name}</strong><div class="stock-info">Estoque: <span class="${stock<5?'stock-warn':''}">${stock}</span></div></div><div><button onclick="admin.edit('${p.id}'); admin.tab('prod')" style="color:blue;border:none;background:none"><i class="fas fa-edit"></i></button> <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none"><i class="fas fa-trash"></i></button></div></div>`;
                 });
             },
             renderOrders: async () => {
@@ -879,50 +787,25 @@
                     });
                 }
             },
-            updateStatus: async (id, val) => {
-                await sb.from('orders').update({status: val}).eq('id', id);
-                alert("Status atualizado!");
-            },
+            updateStatus: async (id, val) => { await sb.from('orders').update({status: val}).eq('id', id); alert("Status atualizado!"); },
             updateStats: () => {
-                let cost=0, rev=0;
-                let miniList = "";
+                let cost=0, rev=0; let miniList = "";
                 const div = document.getElementById('mini-prod-list');
-                
                 try {
-                    if(!state.products || state.products.length === 0) {
-                        if(div) div.innerHTML = "<p style='color:#666'>Sem dados.</p>";
-                        return;
-                    }
-
+                    if(!state.products || state.products.length === 0) { if(div) div.innerHTML = "<p style='color:#666'>Sem dados.</p>"; return; }
                     state.products.forEach(p => {
                         const vars = typeof p.variations === 'string' ? JSON.parse(p.variations || '[]') : (p.variations || []);
                         let stock = 0, pRev = 0;
-                        
                         if(vars) {
                             vars.forEach(v => {
                                 let q = parseInt(v.stock)||0;
                                 let vCost = parseFloat(v.cost) || parseFloat(p.cost_price) || 0;
-                                cost += (vCost * q); // Custo do estoque atual
-                                rev += (parseFloat(v.price||0) * q); // Venda potencial do estoque
-                                pRev += (parseFloat(v.price||0) * q);
-                                stock += q;
+                                cost += (vCost * q); rev += (parseFloat(v.price||0) * q);
+                                pRev += (parseFloat(v.price||0) * q); stock += q;
                             });
                         }
-                        
-                        // Lista no dashboard com botão de editar
-                        miniList += `
-                        <div class="mini-prod">
-                            <img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/50'"> 
-                            <div style="flex:1">
-                                <strong>${p.name}</strong><br>
-                                <span class="stock-info ${stock === 0 ? 'stock-warn' : ''}">
-                                    ${stock === 0 ? 'ESGOTADO' : 'Estoque: ' + stock}
-                                </span>
-                            </div>
-                            <button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-mini-edit">Editar</button>
-                        </div>`;
+                        miniList += `<div class="mini-prod"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/50'"> <div style="flex:1"><strong>${p.name}</strong><br><span class="stock-info ${stock === 0 ? 'stock-warn' : ''}">${stock === 0 ? 'ESGOTADO' : 'Estoque: ' + stock}</span></div><button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-mini-edit">Editar</button></div>`;
                     });
-
                     document.getElementById('st-cost').innerText = `R$ ${cost.toFixed(2)}`;
                     document.getElementById('st-rev').innerText = `R$ ${rev.toFixed(2)}`;
                     document.getElementById('st-profit').innerText = `R$ ${(rev-cost).toFixed(2)}`;
@@ -931,14 +814,17 @@
             }
         };
 
-        // --- INIT CALL (COM RETORNO MP INTELIGENTE) ---
+        // --- INIT CALL ---
         (async function init() {
             try {
                 if(SUPABASE_URL.includes("COLE_SUA")) throw new Error("Chaves não configuradas.");
+                
+                // INICIALIZA EMAILJS
+                if(window.emailjs) emailjs.init(EMAILJS_PUBLIC_KEY);
+
                 const u = localStorage.getItem('2a_user'); if(u) state.user=JSON.parse(u);
                 const a = localStorage.getItem('2a_active_addr'); if(a) state.address=JSON.parse(a);
                 
-                // VERIFICA SE O CLIENTE VOLTOU DO PAGAMENTO
                 const urlParams = new URLSearchParams(window.location.search);
                 const status = urlParams.get('status') || urlParams.get('collection_status'); 
                 const paymentId = urlParams.get('payment_id');
@@ -947,40 +833,23 @@
                     const sc = localStorage.getItem('2a_cart');
                     if(sc) { 
                         state.cart = JSON.parse(sc); 
-                        // Atualiza o pedido para Pago, baixa estoque e limpa carrinho
-                        await app.registerOrder(Date.now().toString(), `Mercado Pago (ID: ${paymentId || 'Auto'})`); 
+                        const orderData = await app.registerOrder(Date.now().toString(), `Mercado Pago (ID: ${paymentId || 'Auto'})`); 
                         await app.updateStockDatabase();
+                        await app.sendEmails(orderData); // Envia e-mail de confirmação pós-pagamento
                         localStorage.removeItem('2a_cart');
-                        
                         window.history.replaceState({}, document.title, window.location.pathname);
                         alert("Pagamento Confirmado! Seu pedido já está sendo separado.");
                     }
                 }
-
-                await app.load();
-                admin.initCheckboxes();
-                app.updateUI();
+                await app.load(); admin.initCheckboxes(); app.updateUI();
                 document.getElementById('status-bar').style.display='none';
             } catch(e) { console.error(e); const sb = document.getElementById('status-bar'); if(sb) { sb.className='err'; sb.innerText = e.message; }
             } finally { document.getElementById('loading-screen').style.display='none'; }
         })();
 
-        // GLOBAL ESC/BACK HANDLER
-        window.addEventListener('popstate', (e) => {
-            const modals = document.querySelectorAll('.overlay.active');
-            if(modals.length > 0) {
-                modals.forEach(m => m.classList.remove('active'));
-            }
-        });
-        document.addEventListener('keydown', (e) => {
-            if(e.key === "Escape") {
-                const modals = document.querySelectorAll('.overlay.active');
-                if(modals.length > 0) {
-                    modals.forEach(m => m.classList.remove('active'));
-                    history.back(); // Remove o state do histórico
-                }
-            }
-        });
+        // ESC HANDLER
+        window.addEventListener('popstate', (e) => { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); });
+        document.addEventListener('keydown', (e) => { if(e.key === "Escape") { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); history.back(); } });
     </script>
 </body>
 </html>
