@@ -276,14 +276,19 @@
 
     <script>
         /* --- CONFIGURAÇÃO (COLE SUAS CHAVES AQUI) --- */
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
         const firebaseConfig = {
-            apiKey: "AIzaSyB1Z3Vy5-wVfJ7yelQ7b_GakJWjhmD338o",
-            authDomain: "loja2a.firebaseapp.com",
-            projectId: "loja2a",
-            storageBucket: "loja2a.firebasestorage.app",
-            messagingSenderId: "864712234172",
-            appId: "1:864712234172:web:670edd2de6d85fb118acb9"
+  apiKey: "AIzaSyB1Z3Vy5-wVfJ7yelQ7b_GakJWjhmD338o",
+  authDomain: "loja2a.firebaseapp.com",
+  projectId: "loja2a",
+  storageBucket: "loja2a.firebasestorage.app",
+  messagingSenderId: "864712234172",
+  appId: "1:864712234172:web:670edd2de6d85fb118acb9",
+  measurementId: "G-26EMJRJ3EY"
         };
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
         const CLOUD_URL = "https://criarpagamentoss-967029810770.southamerica-east1.run.app"; 
 
         // Inicialização
