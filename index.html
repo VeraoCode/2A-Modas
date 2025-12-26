@@ -857,18 +857,30 @@
                 if(SUPABASE_URL.includes("COLE_SUA")) throw new Error("Chaves não configuradas.");
                 const u = localStorage.getItem('2a_user'); if(u) state.user=JSON.parse(u);
                 const a = localStorage.getItem('2a_active_addr'); if(a) state.address=JSON.parse(a);
+                
+                // --- NOVA LÓGICA DE CAPTURA DO RETORNO MP ---
                 const urlParams = new URLSearchParams(window.location.search);
-                if(urlParams.get('status') === 'approved') {
+                const status = urlParams.get('status') || urlParams.get('collection_status'); // Pega um ou outro
+                const paymentId = urlParams.get('payment_id');
+
+                // Se o status for approved OU se tiver um payment_id (indica que houve transação)
+                if (status === 'approved' || (status === null && paymentId)) {
                     const sc = localStorage.getItem('2a_cart');
                     if(sc) { 
                         state.cart = JSON.parse(sc); 
-                        // CONFIRMA O PEDIDO E BAIXA ESTOQUE NO RETORNO DO MP
-                        await app.registerOrder('Mercado Pago (Confirmado)'); 
+                        // Registra informando o ID do pagamento para conferência
+                        await app.registerOrder(`Mercado Pago (ID: ${paymentId || 'Auto'})`); 
                         await app.updateStockDatabase();
                         localStorage.removeItem('2a_cart');
-                        alert("Pagamento Aprovado! Pedido realizado com sucesso.");
+                        
+                        // Limpa a URL para não registrar de novo se der F5
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        
+                        alert("Pagamento Confirmado! Seu pedido já está sendo separado.");
                     }
                 }
+                // ---------------------------------------------
+
                 await app.load();
                 admin.initCheckboxes();
                 app.updateUI();
