@@ -437,23 +437,30 @@
 
             save: async (e) => {
                 e.preventDefault();
-                const btn = document.getElementById('btn-save'); btn.innerText="Salvando..."; btn.disabled=true;
+                const btn = document.getElementById('btn-save'); 
+                btn.innerText="Processando..."; 
+                btn.disabled=true;
                 
                 try {
+                    // 1. Validar Opções
                     const selectedOptions = admin.getCheckedOptions();
-                    if(selectedOptions.length === 0) throw new Error("Selecione pelo menos uma opção.");
+                    if(selectedOptions.length === 0) throw new Error("Selecione pelo menos uma opção de cor ou volume.");
 
+                    // 2. Upload da Imagem
                     const file = document.getElementById('f-file').files[0];
                     let imgUrl = "";
                     
                     if(file) {
+                        btn.innerText="Enviando Imagem..."; // Feedback visual
                         const ref = storage.ref(`produtos/${Date.now()}_${file.name}`);
                         await ref.put(file);
                         imgUrl = await ref.getDownloadURL();
+                        console.log("Imagem salva com sucesso:", imgUrl);
                     } else if(!document.getElementById('edit-id').value) {
                         imgUrl = "https://via.placeholder.com/300";
                     }
 
+                    // 3. Preparar Dados
                     const data = {
                         name: document.getElementById('f-name').value,
                         price: parseFloat(document.getElementById('f-price').value),
@@ -465,13 +472,29 @@
                     };
                     if(imgUrl) data.image = imgUrl;
 
+                    // 4. Salvar no Banco
+                    btn.innerText="Salvando Dados..."; // Feedback visual
                     const id = document.getElementById('edit-id').value;
-                    if(id) await db.collection("products").doc(id).update(data);
-                    else await db.collection("products").add(data);
                     
-                    alert("Salvo com sucesso!"); admin.clear();
-                } catch(err) { console.error(err); alert("Erro: " + err.message); }
-                finally { btn.innerText="Salvar Produto"; btn.disabled=false; }
+                    if(id) {
+                        await db.collection("products").doc(id).update(data);
+                    } else {
+                        await db.collection("products").add(data);
+                    }
+                    
+                    console.log("Dados salvos no Firestore!");
+                    alert("PRODUTO SALVO COM SUCESSO!"); 
+                    admin.clear();
+
+                } catch(err) { 
+                    console.error("ERRO DETALHADO:", err); 
+                    // Mostra o erro real na tela para você saber o que é
+                    alert("FALHA AO SALVAR: " + err.message + "\n(Verifique se a aba Regras do Firestore está como 'allow write: if true')"); 
+                }
+                finally { 
+                    btn.innerText="Salvar Produto"; 
+                    btn.disabled=false; 
+                }
             },
 
             clear: () => {
@@ -502,3 +525,4 @@
     </script>
 </body>
 </html>
+
