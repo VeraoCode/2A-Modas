@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2A Modas e Perfumes</title>
+    <title>2A Modas e Perfumes | Loja Oficial</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- DESIGN SYSTEM --- */
         :root {
             --primary: #c48b78; 
             --accent: #2c3e50;
@@ -31,30 +30,17 @@
         #status-bar { position:fixed; top:0; left:0; width:100%; height:30px; background:#222; color:white; font-size:0.75rem; display:flex; align-items:center; justify-content:center; z-index:9999; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
         .ok { background:#27ae60 !important; } .err { background:#c0392b !important; }
 
-        /* HEADER & CART BUTTON (Flutuante sem faixa branca) */
-        .header-floating {
-            position: fixed; top: 40px; right: 5%; z-index: 1000;
-        }
-        .cart-btn { 
-            position:relative; width:55px; height:55px; border-radius:50%; border:none; 
-            background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
-            color: var(--accent); font-size: 1.3rem; display: flex; align-items: center; justify-content: center;
-            transition: 0.3s;
-        }
+        /* HEADER FLUTUANTE */
+        .header-floating { position: fixed; top: 40px; right: 5%; z-index: 1000; }
+        .cart-btn { position:relative; width:60px; height:60px; border-radius:50%; border:none; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.15); color: var(--accent); font-size: 1.4rem; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .cart-btn:hover { background: var(--primary); color: white; transform: scale(1.1); }
-        .cart-badge { 
-            position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; 
-            width:24px; height:24px; border-radius:50%; font-size:0.75rem; 
-            display:flex; align-items:center; justify-content:center; border:2px solid white; font-weight: bold;
-        }
+        .cart-badge { position:absolute; top:0; right:0; background:var(--accent); color:white; width:24px; height:24px; border-radius:50%; font-size:0.75rem; display:flex; align-items:center; justify-content:center; border:2px solid white; font-weight: bold; }
 
         /* HERO */
         .hero { padding: 120px 20px 80px; text-align:center; background: radial-gradient(circle at top, #fff5f2 0%, transparent 100%); }
         .hero img { width:180px; height:180px; border-radius:50%; object-fit:cover; border:5px solid white; box-shadow:var(--shadow); margin-bottom:20px; }
         .hero h1 { font-size:3.5rem; margin-bottom:10px; color:var(--accent); }
-        .hero p { color:#666; max-width:500px; margin:0 auto 30px; font-size:1.1rem; }
-        .btn-cta { padding:15px 40px; background:var(--accent); color:white; border-radius:50px; border:none; font-weight:600; font-size:1rem; letter-spacing:0.5px; box-shadow:0 10px 20px rgba(44,62,80,0.2); }
-        .btn-cta:hover { background:var(--primary); transform:translateY(-3px); }
+        .btn-cta { padding:15px 40px; background:var(--accent); color:white; border-radius:50px; border:none; font-weight:600; font-size:1rem; box-shadow:0 10px 20px rgba(44,62,80,0.2); }
 
         /* PRODUTOS */
         .container { max-width:1200px; margin:0 auto; padding:40px 20px; }
@@ -63,64 +49,59 @@
         .filter-btn.active, .filter-btn:hover { background:var(--accent); color:white; border-color:var(--accent); transform:translateY(-2px); box-shadow:0 5px 15px rgba(0,0,0,0.1); }
 
         .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:30px; }
-        .card { background:white; border-radius:var(--radius); overflow:hidden; border:1px solid #f0f0f0; transition:0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position:relative; }
+        .card { background:white; border-radius:var(--radius); overflow:hidden; border:1px solid #f0f0f0; transition:0.4s; position:relative; cursor:pointer; }
         .card:hover { transform:translateY(-10px); box-shadow:var(--shadow); border-color:var(--primary); }
         .card img { width:100%; height:350px; object-fit:cover; background:#f9f9f9; }
         .card-info { padding:20px; text-align:center; }
-        .tag-stock { position:absolute; top:15px; left:15px; background:rgba(255,255,255,0.9); padding:5px 12px; border-radius:20px; font-size:0.75rem; font-weight:bold; color:var(--accent); box-shadow:0 2px 10px rgba(0,0,0,0.1); }
+        .tag-stock { position:absolute; top:15px; left:15px; background:rgba(255,255,255,0.95); padding:5px 12px; border-radius:20px; font-size:0.75rem; font-weight:bold; color:var(--accent); box-shadow:0 2px 10px rgba(0,0,0,0.1); }
         .tag-soldout { position:absolute; top:15px; right:15px; background:#e74c3c; color:white; padding:5px 12px; border-radius:20px; font-size:0.75rem; font-weight:bold; }
 
-        /* MODAL */
+        /* MODALS */
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(8px); padding:20px; }
         .overlay.active { display:flex; animation: popIn 0.3s ease; }
         @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
         
         .box { background:white; width:100%; max-width:900px; border-radius:20px; overflow:hidden; max-height:90vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow:var(--shadow); }
+        .modal-content { padding:40px; position:relative; }
         
         .var-btn { padding:10px; border:1px solid #eee; border-radius:8px; background:white; margin:5px; cursor:pointer; font-size:0.9rem; transition:0.2s; }
         .var-btn:hover { border-color:var(--primary); }
         .var-btn.selected { background:var(--accent); color:white; border-color:var(--accent); }
         .var-btn.disabled { opacity:0.5; cursor:not-allowed; background:#f5f5f5; color:#999; }
 
-        /* SIDEBAR CARRINHO (FORMULÁRIO INTEGRADO) */
+        /* SIDEBAR CARRINHO */
         .sidebar { position:fixed; top:0; right:-500px; width:450px; height:100%; background:white; z-index:3000; padding:30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s; display:flex; flex-direction:column; }
         .sidebar.open { right:0; }
         
         .cart-items-container { flex: 1; overflow-y: auto; margin-bottom: 20px; border-bottom: 1px solid #eee; }
-        
         .cart-item { display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid #f5f5f5; }
         .qty-controls { display:flex; align-items:center; gap:8px; background:#f5f5f5; padding:5px; border-radius:8px; margin-top:5px; }
         .qty-btn { width:25px; height:25px; border:none; background:white; border-radius:4px; display:flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; }
         
-        /* FORMULÁRIO DO CARRINHO */
-        .cart-form { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #eee; }
-        .cart-form h4 { margin-bottom: 10px; font-size: 0.9rem; color: var(--primary); }
-        .cart-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; }
-        
-        .btn-mp { background:#009EE3; color:white; width:100%; padding:14px; border-radius:12px; border:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9rem; margin-top:10px; }
-        .btn-whats { background:#25D366; color:white; width:100%; padding:14px; border-radius:12px; border:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9rem; }
+        /* BOTÕES CARRINHO */
+        .btn-addr-trigger { width:100%; padding:15px; border:2px dashed var(--accent); background:none; border-radius:12px; color:var(--accent); font-weight:bold; cursor:pointer; margin-bottom:15px; transition:0.3s; }
+        .btn-addr-trigger:hover { background:var(--bg); border-color:var(--primary); color:var(--primary); }
+        .btn-addr-trigger.filled { border-style:solid; border-color:#27ae60; background:#eafff0; color:#27ae60; }
+
+        .btn-mp { background:#009EE3; color:white; width:100%; padding:16px; border-radius:12px; border:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9rem; margin-top:10px; }
+        .btn-whats { background:#25D366; color:white; width:100%; padding:16px; border-radius:12px; border:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9rem; }
 
         /* ADMIN */
         .admin-nav { padding:20px; background:white; border-bottom:1px solid #eee; display:flex; gap:15px; position:sticky; top:0; z-index:10; }
         .admin-tab { padding:10px 20px; border-radius:30px; border:1px solid #eee; background:transparent; font-weight:600; color:#666; }
         .admin-tab.active { background:var(--accent); color:white; border-color:var(--accent); }
-        
         .checkbox-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #eee; }
-        .check-label { display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer; user-select:none; }
-        .check-label input { accent-color:var(--accent); width:16px; height:16px; }
-        
-        .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; animation:slideDown 0.3s ease; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
+        .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; animation:slideDown 0.3s ease; }
         .var-inputs.show { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
         @keyframes slideDown { from{opacity:0; transform:translateY(-10px)} to{opacity:1; transform:translateY(0)} }
+        .input { width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; margin-bottom:10px; }
 
-        .input { width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; }
-
-        @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} .header-floating{top:20px; right:20px;} }
+        @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} }
     </style>
 </head>
 <body>
 
-    <div id="status-bar" class="err">Conectando...</div>
+    <div id="status-bar" class="err">Carregando...</div>
 
     <div class="header-floating">
         <button class="cart-btn" onclick="app.toggleCart()">
@@ -150,26 +131,40 @@
     <div id="product-modal" class="overlay">
         <div class="box">
             <img id="m-img" style="width:100%; height:100%; object-fit:cover; background:#f0f0f0;">
-            <div style="padding:40px; position:relative;">
+            <div class="modal-content">
                 <button onclick="document.getElementById('product-modal').classList.remove('active')" style="position:absolute; top:20px; right:20px; border:none; background:none; font-size:1.5rem; color:#999;">&times;</button>
-                <small id="m-cat" style="color:var(--primary); font-weight:700; text-transform:uppercase; letter-spacing:1px;">Categoria</small>
-                <h2 id="m-title" style="margin:10px 0; font-size:2rem; line-height:1.1;">Nome</h2>
-                <h3 id="m-price" style="color:var(--accent); font-size:1.8rem; margin-bottom:15px;">R$ 0,00</h3>
-                <p id="m-desc" style="color:#666; line-height:1.6; margin-bottom:30px;">Descrição...</p>
-                
+                <small id="m-cat" style="color:var(--primary); font-weight:700; text-transform:uppercase;">Categoria</small>
+                <h2 id="m-title" style="margin:10px 0;">Nome</h2>
+                <h3 id="m-price" style="color:var(--accent); margin-bottom:15px;">R$ 0,00</h3>
+                <p id="m-desc" style="color:#666; margin-bottom:30px;">Descrição...</p>
                 <label style="font-weight:bold; display:block; margin-bottom:10px;">Opções:</label>
                 <div id="m-vars" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:30px;"></div>
-                
                 <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
-                    <span style="font-weight:bold;">Quantidade:</span>
+                    <span style="font-weight:bold;">Qtd:</span>
                     <div style="border:1px solid #ddd; border-radius:8px; display:flex;">
                         <button onclick="app.updQty(-1)" style="padding:10px 15px; border:none; background:white;">-</button>
                         <span id="m-qty" style="padding:10px 15px; font-weight:bold;">1</span>
                         <button onclick="app.updQty(1)" style="padding:10px 15px; border:none; background:white;">+</button>
                     </div>
                 </div>
-                <button id="btn-add-cart" onclick="app.addCart()" style="width:100%; background:var(--accent); color:white; padding:18px; border-radius:12px; border:none; font-weight:bold; font-size:1rem; box-shadow:0 5px 15px rgba(0,0,0,0.1);">Adicionar à Sacola</button>
+                <button id="btn-add-cart" onclick="app.addCart()" style="width:100%; background:var(--accent); color:white; padding:18px; border-radius:12px; border:none; font-weight:bold;">Adicionar à Sacola</button>
             </div>
+        </div>
+    </div>
+
+    <div id="address-modal" class="overlay">
+        <div class="box" style="max-width:500px; display:block; padding:30px;">
+            <h3 style="margin-bottom:20px; text-align:center;">Local de Entrega</h3>
+            <p style="text-align:center; color:#666; font-size:0.9rem; margin-bottom:20px;">Preencha para calcular a entrega ou finalizar o pedido.</p>
+            
+            <input type="text" id="addr-name" class="input" placeholder="Nome Completo *" required>
+            <input type="text" id="addr-phone" class="input" placeholder="Telefone / WhatsApp *" required>
+            <input type="text" id="addr-street" class="input" placeholder="Rua e Número *" required>
+            <input type="text" id="addr-bairro" class="input" placeholder="Bairro *" required>
+            <input type="text" id="addr-ref" class="input" placeholder="Ponto de Referência">
+            
+            <button onclick="app.saveAddress()" style="width:100%; background:var(--accent); color:white; padding:15px; border-radius:8px; border:none; font-weight:bold; margin-top:10px;">Salvar Local</button>
+            <button onclick="document.getElementById('address-modal').classList.remove('active')" style="width:100%; background:none; border:none; color:#666; margin-top:10px;">Cancelar</button>
         </div>
     </div>
 
@@ -183,26 +178,22 @@
             <ul id="cart-list" style="list-style:none;"></ul>
         </div>
         
-        <div style="border-top:1px solid #eee; padding-top:15px;">
-            <div class="cart-form">
-                <h4>📍 Dados de Entrega (Obrigatório)</h4>
-                <input type="text" id="c-name" class="cart-input" placeholder="Nome Completo">
-                <input type="text" id="c-phone" class="cart-input" placeholder="Telefone / WhatsApp">
-                <input type="text" id="c-street" class="cart-input" placeholder="Rua e Número">
-                <input type="text" id="c-bairro" class="cart-input" placeholder="Bairro">
-                <input type="text" id="c-ref" class="cart-input" placeholder="Ponto de Referência">
-            </div>
+        <div style="border-top:1px solid #eee; padding-top:20px;">
+            
+            <button id="btn-address-trigger" onclick="document.getElementById('address-modal').classList.add('active')" class="btn-addr-trigger">
+                <i class="fas fa-map-marker-alt"></i> Cadastrar local de entrega
+            </button>
 
-            <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:10px; font-size:1.1rem;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:15px; font-size:1.1rem;">
                 <span>Total</span> <span id="cart-total">R$ 0.00</span>
             </div>
             
             <button onclick="app.checkoutWs()" class="btn-whats">
-                <i class="fab fa-whatsapp" style="font-size:1.2rem;"></i> Falar via WhatsApp
+                <i class="fab fa-whatsapp"></i> Falar via WhatsApp
             </button>
             
             <button onclick="app.checkoutMp()" class="btn-mp">
-                <img src="https://logopng.com.br/logos/mercado-pago-85.png" style="height:20px; filter:brightness(0) invert(1);"> Pagamento Via Pix/Cartão de Crédito e Débito
+                <img src="https://logopng.com.br/logos/mercado-pago-85.png" style="height:20px; filter:brightness(0) invert(1);"> Via Pix/Cartão
             </button>
         </div>
     </div>
@@ -244,16 +235,11 @@
                             <div class="stat-val" id="stat-prof" style="font-size:1.8rem; font-weight:bold; color:var(--accent); margin-top:5px;">R$ 0.00</div>
                         </div>
                     </div>
-                    
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px;">
-                        <div style="background:white; padding:25px; border-radius:12px; border:1px solid #eee;">
-                            <h4>Estoque por Categoria</h4>
-                            <div style="max-width:300px; margin:0 auto;"><canvas id="chartStock"></canvas></div>
-                        </div>
-                        <div style="background:white; padding:25px; border-radius:12px; border:1px solid #eee;">
-                            <h4>Alertas de Estoque Baixo</h4>
-                            <div id="low-stock-list" style="margin-top:15px;"></div>
-                        </div>
+                    <div style="background:white; padding:25px; border-radius:12px; border:1px solid #eee;">
+                        <h4>Estoque por Categoria</h4>
+                        <div style="max-width:400px; margin:0 auto;"><canvas id="chartStock"></canvas></div>
+                        <h4 style="margin-top:20px;">Estoque Detalhado</h4>
+                        <div id="stock-list" style="margin-top:15px;"></div>
                     </div>
                 </div>
 
@@ -302,7 +288,7 @@
                             <label style="font-weight:bold; font-size:0.85rem; display:block; margin-bottom:5px; margin-top:20px;">Descrição</label>
                             <textarea id="f-desc" class="input" rows="3"></textarea>
                             
-                            <button onclick="admin.save()" id="btn-save" style="width:100%; background:var(--success); color:white; padding:15px; border-radius:8px; border:none; font-weight:bold; margin-top:20px; font-size:1rem;">Salvar Produto</button>
+                            <button onclick="admin.save()" id="btn-save" style="width:100%; background:var(--success, #27ae60); color:white; padding:15px; border-radius:8px; border:none; font-weight:bold; margin-top:20px;">Salvar Produto</button>
                             <button onclick="admin.clear()" style="width:100%; margin-top:10px; background:white; border:1px solid #ddd; padding:10px; border-radius:8px;">Limpar / Cancelar</button>
                         </div>
 
@@ -329,14 +315,29 @@
         const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const state = { products: [], cart: [], current: null, var: null, qty: 1 };
-        let chartInst = null;
-
+        const state = { products: [], cart: [], current: null, var: null, qty: 1, address: null };
         const PRESET_COLORS = ['Preto', 'Branco', 'Vermelho', 'Azul', 'Rosa', 'Verde', 'Nude', 'Estampado'];
         const PRESET_VOLUMES = ['25ml', '50ml', '75ml', '100ml', '200ml'];
 
         // --- INIT ---
         (async function init() {
+            // RETORNO AUTOMÁTICO DO MERCADO PAGO
+            const urlParams = new URLSearchParams(window.location.search);
+            if(urlParams.get('status') === 'approved') {
+                const savedCart = localStorage.getItem('2a_cart');
+                const savedAddr = localStorage.getItem('2a_addr');
+                if(savedCart && savedAddr) {
+                    state.cart = JSON.parse(savedCart);
+                    state.address = JSON.parse(savedAddr);
+                    
+                    // Limpa URL
+                    window.history.replaceState({}, document.title, "/");
+                    
+                    // Abre WhatsApp com o pedido pago
+                    app.sendPaidOrder();
+                }
+            }
+
             const status = document.getElementById('status-bar');
             try {
                 const { error } = await sb.from('products').select('count', { count: 'exact', head: true });
@@ -344,6 +345,13 @@
                 status.className='ok'; status.innerText="SISTEMA ONLINE"; setTimeout(()=>status.style.top='-30px', 3000);
                 app.load();
                 admin.initCheckboxes();
+                
+                // Carrega endereço salvo
+                const localAddr = localStorage.getItem('2a_addr');
+                if(localAddr) {
+                    state.address = JSON.parse(localAddr);
+                    app.updateAddressUI();
+                }
             } catch(e) {
                 status.className='err'; status.innerText="ERRO DE CONEXÃO: " + e.message;
             }
@@ -363,11 +371,8 @@
                 list.forEach(p => {
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                     const minP = vars && vars.length ? Math.min(...vars.map(v => parseFloat(v.price))) : 0;
-                    
                     const totalStock = vars.reduce((acc, v) => acc + parseInt(v.stock), 0);
-                    const tag = totalStock <= 0 
-                        ? '<span class="tag-soldout">ESGOTADO</span>' 
-                        : `<span class="tag-stock">Restam ${totalStock}</span>`;
+                    const tag = totalStock <= 0 ? '<span class="tag-soldout">ESGOTADO</span>' : `<span class="tag-stock">Restam ${totalStock}</span>`;
 
                     div.innerHTML += `
                         <div class="card" onclick="app.modal('${p.id}')">
@@ -392,7 +397,6 @@
             modal: (id) => {
                 const p = state.products.find(x => String(x.id) === String(id));
                 if(!p) return;
-
                 state.current = p; state.qty = 1; state.var = null;
                 const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
 
@@ -411,7 +415,6 @@
                     const hasStock = parseInt(v.stock) > 0;
                     btn.className = hasStock ? 'var-btn' : 'var-btn disabled';
                     btn.innerHTML = `${v.name} <br> <b>R$ ${parseFloat(v.price).toFixed(2)}</b>`;
-                    
                     if(hasStock) {
                         btn.onclick = () => {
                             state.var = v;
@@ -431,7 +434,6 @@
             addCart: () => {
                 if(!state.var) return;
                 const currentInCart = state.cart.filter(i => i.name === state.current.name && i.variant === state.var.name).reduce((acc, i) => acc + i.qty, 0);
-                
                 if(currentInCart + state.qty > state.var.stock) return alert(`Estoque insuficiente! Apenas ${state.var.stock} disponíveis.`);
 
                 state.cart.push({
@@ -453,7 +455,7 @@
                     <li class="cart-item">
                         <div>
                             <div style="font-weight:bold;">${i.name}</div>
-                            <small style="color:#666">${i.variant} - R$ ${i.price.toFixed(2)} unit.</small>
+                            <small style="color:#666">${i.variant} - R$ ${i.price.toFixed(2)}</small>
                             <div class="qty-controls">
                                 <button class="qty-btn" onclick="app.cartQty(${idx}, -1)">-</button>
                                 <span style="font-size:0.9rem;">${i.qty}</span>
@@ -486,38 +488,80 @@
             cartRemove: (idx) => { state.cart.splice(idx, 1); app.renderCart(); },
             toggleCart: () => document.querySelector('.sidebar').classList.toggle('open'),
 
+            // --- ENDEREÇO E PAGAMENTO ---
+            saveAddress: () => {
+                const name = document.getElementById('addr-name').value;
+                const phone = document.getElementById('addr-phone').value;
+                const street = document.getElementById('addr-street').value;
+                const bairro = document.getElementById('addr-bairro').value;
+                const ref = document.getElementById('addr-ref').value;
+
+                if(!name || !phone || !street || !bairro) return alert("Preencha os campos obrigatórios (*)");
+
+                state.address = { name, phone, street, bairro, ref };
+                localStorage.setItem('2a_addr', JSON.stringify(state.address));
+                
+                document.getElementById('address-modal').classList.remove('active');
+                app.updateAddressUI();
+            },
+
+            updateAddressUI: () => {
+                const btn = document.getElementById('btn-address-trigger');
+                if(state.address) {
+                    btn.classList.add('filled');
+                    btn.innerHTML = `<i class="fas fa-check-circle"></i> Local Definido: ${state.address.bairro}`;
+                }
+            },
+
             checkoutWs: () => {
                 if(!state.cart.length) return alert("Carrinho vazio");
-                
-                const name = document.getElementById('c-name').value;
-                const street = document.getElementById('c-street').value;
-                const phone = document.getElementById('c-phone').value;
-                
-                if(!name || !street || !phone) return alert("Por favor, preencha os dados de entrega (Nome, Telefone e Endereço).");
+                if(!state.address) {
+                    document.getElementById('address-modal').classList.add('active');
+                    return alert("Cadastre o local de entrega antes.");
+                }
 
-                let msg = `*NOVO PEDIDO (Site 2A Modas)*\n\n*CLIENTE:* ${name}\n*CONTATO:* ${phone}\n*ENDEREÇO:* ${street}, ${document.getElementById('c-bairro').value}, Ref: ${document.getElementById('c-ref').value}\n\n*ITENS:*\n`;
+                let msg = `*NOVO PEDIDO (Site 2A Modas)*\n\n*CLIENTE:* ${state.address.name}\n*CONTATO:* ${state.address.phone}\n*ENTREGA:* ${state.address.street}, ${state.address.bairro}\n(Ref: ${state.address.ref})\n\n*ITENS:*\n`;
                 let total = 0;
-                
                 state.cart.forEach(i => {
                     msg += `▪ ${i.name} (${i.variant})\n   Qtd: ${i.qty} | Sub: R$ ${(i.price*i.qty).toFixed(2)}\n\n`;
                     total += i.price * i.qty;
                 });
                 msg += `*TOTAL FINAL: R$ ${total.toFixed(2)}*`;
-                
                 window.open(`https://wa.me/5567998951120?text=${encodeURIComponent(msg)}`);
             },
 
             checkoutMp: async () => {
                 if(!state.cart.length) return alert("Carrinho vazio");
+                if(!state.address) {
+                    document.getElementById('address-modal').classList.add('active');
+                    return alert("Cadastre o local de entrega primeiro.");
+                }
                 const btn = document.querySelector('.btn-mp'); const original = btn.innerHTML;
                 btn.innerHTML = "<i class='fas fa-circle-notch fa-spin'></i> Processando..."; btn.disabled = true;
+                
                 try {
+                    localStorage.setItem('2a_cart', JSON.stringify(state.cart));
                     const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
-                    const res = await fetch(GOOGLE_CLOUD_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({items})});
+                    const res = await fetch(GOOGLE_CLOUD_URL, {
+                        method:'POST', headers:{'Content-Type':'application/json'}, 
+                        body:JSON.stringify({items, address: state.address})
+                    });
                     const data = await res.json();
                     if(data.init_point) window.location.href = data.init_point; else throw new Error("Link não gerado");
                 } catch(e) { alert("Erro pagamento. Use o WhatsApp."); } 
                 finally { btn.innerHTML = original; btn.disabled = false; }
+            },
+
+            sendPaidOrder: () => {
+                let msg = `*✅ PAGAMENTO APROVADO (Mercado Pago)*\n\n*CLIENTE:* ${state.address.name}\n*CONTATO:* ${state.address.phone}\n*ENTREGA:* ${state.address.street}, ${state.address.bairro}\n\n*ITENS PAGOS:*\n`;
+                let total = 0;
+                state.cart.forEach(i => {
+                    msg += `▪ ${i.name} (${i.variant}) x${i.qty}\n`;
+                    total += i.price * i.qty;
+                });
+                msg += `\n*TOTAL PAGO: R$ ${total.toFixed(2)}*`;
+                localStorage.removeItem('2a_cart');
+                window.location.href = `https://wa.me/5567998951120?text=${encodeURIComponent(msg)}`;
             }
         };
 
@@ -532,7 +576,7 @@
 
             toggleVarInput: (checkbox) => {
                 const container = document.getElementById('active-vars-area');
-                const id = `input-group-${checkbox.value.replace(/\s+/g, '')}`;
+                const id = `input-group-${checkbox.value.replace(/[^a-zA-Z0-9]/g, '')}`;
                 if(checkbox.checked) {
                     const div = document.createElement('div');
                     div.id = id; div.className = 'var-inputs show';
@@ -614,7 +658,7 @@
                     checkboxes.forEach(cb => {
                         if(cb.value === v.name) {
                             cb.checked = true; admin.toggleVarInput(cb);
-                            const div = document.getElementById(`input-group-${v.name.replace(/\s+/g, '')}`);
+                            const div = document.getElementById(`input-group-${v.name.replace(/[^a-zA-Z0-9]/g, '')}`);
                             if(div) { div.querySelector('.v-price').value = v.price; div.querySelector('.v-stock').value = v.stock; }
                         }
                     });
@@ -624,7 +668,7 @@
 
             del: async (id) => {
                 if(confirm("Excluir produto?")) {
-                    // GARANTE QUE O ID SEJA NÚMERO (BIGINT) SE FOR O CASO
+                    // Correção do erro bigint: garante que o ID seja tratado corretamente
                     const { error } = await sb.from('products').delete().eq('id', id);
                     if(error) alert("Erro ao excluir: " + error.message);
                     else { app.load(); admin.renderList(); }
@@ -643,7 +687,7 @@
                 state.products.forEach(p => {
                     div.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
                         <div style="display:flex; align-items:center; gap:10px;"><img src="${p.image_url}" style="width:40px; height:40px; border-radius:5px; object-fit:cover;"> <strong>${p.name}</strong></div>
-                        <div><button onclick="admin.edit('${p.id}')" style="color:#2980b9; background:none; border:none; margin-right:10px;"><i class="fas fa-edit"></i></button><button onclick="admin.del(${p.id})" style="color:#e74c3c; background:none; border:none;"><i class="fas fa-trash"></i></button></div>
+                        <div><button onclick="admin.edit('${p.id}')" style="color:#2980b9; background:none; border:none; margin-right:10px;"><i class="fas fa-edit"></i></button><button onclick="admin.del('${p.id}')" style="color:#e74c3c; background:none; border:none;"><i class="fas fa-trash"></i></button></div>
                     </div>`;
                 });
             },
