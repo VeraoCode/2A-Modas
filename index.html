@@ -25,17 +25,18 @@
         h1,h2,h3 { font-family:'Montserrat',sans-serif; }
         button { cursor:pointer; transition:0.3s; }
 
-        /* --- HEADER & HERO --- */
+        /* HEADER */
         header { position:fixed; top:0; width:100%; background:rgba(255,255,255,0.95); padding:15px 5%; display:flex; justify-content:flex-end; z-index:1000; backdrop-filter:blur(5px); border-bottom:1px solid #eee; }
         .cart-btn { background:white; border:1px solid #ddd; width:45px; height:45px; border-radius:50%; font-size:1.2rem; position:relative; }
         .cart-badge { position:absolute; top:-5px; right:-5px; background:var(--primary); color:white; width:20px; height:20px; border-radius:50%; font-size:0.7rem; display:flex; align-items:center; justify-content:center; }
 
+        /* HERO */
         .hero { padding:120px 20px 60px; text-align:center; background:radial-gradient(circle at top, #fff5f2 0%, #fff 100%); }
         .brand-img { width:180px; height:180px; border-radius:50%; object-fit:cover; border:5px solid white; box-shadow:0 10px 30px rgba(0,0,0,0.1); margin-bottom:20px; animation:float 6s infinite; }
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
         .btn-cta { background:var(--text-main); color:white; border:none; padding:12px 30px; border-radius:30px; margin-top:20px; }
 
-        /* --- PRODUTOS --- */
+        /* PRODUTOS */
         .container { max-width:1200px; margin:0 auto; padding:40px 20px; }
         .nav-filters { display:flex; justify-content:center; gap:10px; margin-bottom:40px; flex-wrap:wrap; }
         .filter-btn { border:1px solid #ddd; background:transparent; padding:8px 20px; border-radius:20px; color:#666; }
@@ -46,16 +47,15 @@
         .product-card:hover { transform:translateY(-5px); box-shadow:0 10px 30px rgba(0,0,0,0.08); }
         .card-img { height:320px; width:100%; object-fit:cover; background:#f9f9f9; }
         .card-info { padding:15px; text-align:center; }
-        
         .stock-tag { position:absolute; top:10px; left:10px; background:rgba(255,255,255,0.9); padding:5px; font-size:0.7rem; font-weight:bold; border-radius:4px; }
         
-        /* --- MODAL --- */
+        /* MODAL */
         .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
         .modal-overlay.active { display:flex; }
         .modal-box { background:white; width:100%; max-width:900px; display:grid; grid-template-columns:1fr 1fr; border-radius:15px; overflow:hidden; max-height:90vh; overflow-y:auto; }
         .modal-content { padding:40px; position:relative; }
         
-        /* --- ADMIN & LOGIN --- */
+        /* ADMIN */
         #admin-panel { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#f4f6f9; z-index:3000; overflow-y:auto; padding:20px; }
         #admin-panel.active { display:block; }
         .admin-box { max-width:800px; margin:0 auto; background:white; padding:30px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.05); }
@@ -64,34 +64,24 @@
         .file-upload-label { display:block; padding:20px; border:2px dashed #ddd; text-align:center; cursor:pointer; border-radius:8px; margin-bottom:15px; color:#666; transition:0.3s; }
         .file-upload-label:hover { border-color:var(--primary); background:#fff5f2; color:var(--primary); }
 
-        /* --- BOTÕES DO CARRINHO --- */
-        .hidden { display:none !important; }
-        
-        /* Botão Mercado Pago Ajustado */
-        .btn-mp { 
-            background:#009EE3; color:white; width:100%; padding:15px; 
-            border:none; border-radius:8px; display:flex; 
-            align-items:center; justify-content:center; gap:10px; 
-            margin-top:10px; font-weight: 600;
-        }
-        .btn-mp:hover { background: #007eb5; }
-        .mp-icon-img { height: 24px; width: auto; display: block; filter: brightness(0) invert(1); } /* Ícone branco */
+        /* CHECKBOXES CUSTOMIZADOS ADMIN */
+        .checkbox-group { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:15px; background:#f9f9f9; padding:15px; border-radius:8px; }
+        .checkbox-item { display:flex; align-items:center; gap:5px; background:white; padding:5px 10px; border:1px solid #ddd; border-radius:20px; font-size:0.85rem; cursor:pointer; }
+        .checkbox-item input { cursor:pointer; }
+        .hidden { display:none; }
 
-        .btn-whats { 
-            background:#25D366; color:white; width:100%; padding:15px; 
-            border:none; border-radius:8px; display:flex; 
-            align-items:center; justify-content:center; gap:10px; 
-            font-weight: 600;
-        }
-        .btn-whats:hover { background: #1ebc57; }
+        /* BUTTONS */
+        .btn-mp { background:#009EE3; color:white; width:100%; padding:15px; border:none; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; margin-top:10px; font-weight: 600; }
+        .btn-mp:hover { background: #007eb5; }
+        .mp-icon-img { height: 26px; width: auto; display: block; filter: brightness(0) invert(1); } /* Logo Branco */
         
-        /* Cart Sidebar */
+        .btn-whats { background:#25D366; color:white; width:100%; padding:15px; border:none; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; font-weight: 600; }
+        
+        /* SIDEBAR */
         .cart-sidebar { position:fixed; top:0; right:-400px; width:350px; height:100%; background:white; z-index:2001; padding:20px; transition:0.3s; box-shadow:-5px 0 20px rgba(0,0,0,0.1); display:flex; flex-direction:column; }
         .cart-sidebar.open { right:0; }
 
         @media(max-width:768px){ .modal-box{grid-template-columns:1fr;} .cart-sidebar{width:100%;} }
-        
-        /* Loading Spinner */
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display:inline-block; margin-right:10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -136,16 +126,13 @@
                 <h2 id="m-title" style="margin:10px 0;">Produto</h2>
                 <div id="m-price" style="font-size:1.5rem; color:var(--primary); font-weight:bold; margin-bottom:20px;">R$ 0,00</div>
                 <p id="m-desc" style="color:#666; margin-bottom:20px; line-height:1.6;">Desc</p>
-                
                 <div id="m-opts-area" style="margin-bottom:20px;"></div>
-
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
                     <strong>Qtd:</strong>
                     <button onclick="app.updQty(-1)" style="padding:5px 10px;">-</button>
                     <span id="m-qty">1</span>
                     <button onclick="app.updQty(1)" style="padding:5px 10px;">+</button>
                 </div>
-
                 <button id="btn-add" onclick="app.addCart()" style="width:100%; background:var(--text-main); color:white; padding:15px; border:none; border-radius:8px;">Adicionar à Sacola</button>
             </div>
         </div>
@@ -161,26 +148,12 @@
             <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:10px;">
                 <span>Total</span> <span id="cart-total">R$ 0.00</span>
             </div>
-            
-            <button class="btn-whats" onclick="app.checkoutWs()">
-                <i class="fab fa-whatsapp"></i> Pedir no WhatsApp
-            </button>
+            <button class="btn-whats" onclick="app.checkoutWs()"><i class="fab fa-whatsapp"></i> Pedir no WhatsApp</button>
             
             <button class="btn-mp" onclick="app.checkoutMp()">
-                <img src="https://logopng.com.br/logos/mercado-pago-85.png" alt="MP" class="mp-icon-img">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Mercado_Pago_Logo.svg/1024px-Mercado_Pago_Logo.svg.png?20230522171120" alt="MP" class="mp-icon-img" style="filter: brightness(0) invert(1);">
                 Pagar com Mercado Pago
             </button>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="login-modal">
-        <div style="background:white; padding:40px; border-radius:15px; text-align:center;">
-            <h3>Acesso Restrito</h3>
-            <input type="email" id="adm-email" placeholder="E-mail" class="form-input" style="margin-top:15px;">
-            <input type="password" id="adm-pass" placeholder="Senha" class="form-input">
-            <button onclick="admin.login()" style="background:var(--primary); color:white; padding:10px 30px; border:none; border-radius:5px;">Entrar</button>
-            <br><br>
-            <button onclick="document.getElementById('login-modal').classList.remove('active')" style="background:none; border:none; color:#999;">Cancelar</button>
         </div>
     </div>
 
@@ -188,24 +161,23 @@
         <div class="admin-box">
             <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
                 <h2>Gerenciar Produtos</h2>
-                <button onclick="admin.logout()" style="background:red; color:white; border:none; padding:5px 15px; border-radius:5px;">Sair</button>
+                <button onclick="admin.close()" style="background:#666; color:white; border:none; padding:5px 15px; border-radius:5px;">Fechar</button>
             </div>
 
             <form onsubmit="admin.save(event)">
                 <input type="hidden" id="edit-id">
-                
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                     <input type="text" id="f-name" class="form-input" placeholder="Nome do Produto" required>
                     <input type="number" id="f-price" class="form-input" placeholder="Preço" step="0.01" required>
                 </div>
-
+                
                 <label class="file-upload-label" id="upload-label">
                     <i class="fas fa-cloud-upload-alt" style="font-size:2rem; margin-bottom:10px;"></i><br>
                     <span id="file-text">Clique para selecionar uma foto</span>
                     <input type="file" id="f-file" accept="image/*" style="display:none;" onchange="admin.previewFile()">
                 </label>
                 <img id="f-preview" style="width:100px; height:100px; object-fit:cover; display:none; margin-bottom:15px; border-radius:8px;">
-
+                
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                     <select id="f-cat" class="form-input">
                         <option value="feminino">Feminino</option>
@@ -215,19 +187,36 @@
                     <input type="number" id="f-stock" class="form-input" placeholder="Estoque" required>
                 </div>
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-                    <select id="f-type" class="form-input">
-                        <option value="color">Cores</option>
-                        <option value="volume">Volume (ml)</option>
-                    </select>
-                    <input type="text" id="f-opts" class="form-input" placeholder="Opções (ex: Azul, Preto)" required>
+                <label style="font-weight:bold; font-size:0.9rem;">Tipo de Variação:</label>
+                <select id="f-type" class="form-input" onchange="admin.toggleType()">
+                    <option value="color">Cores (Roupas)</option>
+                    <option value="volume">Volumetria (Perfumes/ML)</option>
+                </select>
+
+                <div id="opts-color" class="checkbox-group">
+                    <label class="checkbox-item"><input type="checkbox" value="Azul"> Azul</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Preto"> Preto</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Branco"> Branco</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Vermelho"> Vermelho</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Rosa"> Rosa</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Verde"> Verde</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Bege"> Bege</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Estampado"> Estampado</label>
+                    <label class="checkbox-item"><input type="checkbox" value="Único"> Único</label>
                 </div>
 
+                <div id="opts-volume" class="checkbox-group hidden">
+                    <label class="checkbox-item"><input type="checkbox" value="30ml"> 30ml</label>
+                    <label class="checkbox-item"><input type="checkbox" value="50ml"> 50ml</label>
+                    <label class="checkbox-item"><input type="checkbox" value="75ml"> 75ml</label>
+                    <label class="checkbox-item"><input type="checkbox" value="90ml"> 90ml</label>
+                    <label class="checkbox-item"><input type="checkbox" value="100ml"> 100ml</label>
+                    <label class="checkbox-item"><input type="checkbox" value="200ml"> 200ml</label>
+                </div>
+                
                 <textarea id="f-desc" class="form-input" rows="3" placeholder="Descrição"></textarea>
-
-                <button type="submit" id="btn-save" style="width:100%; background:green; color:white; padding:15px; border:none; border-radius:8px; font-weight:bold;">
-                    Salvar Produto
-                </button>
+                
+                <button type="submit" id="btn-save" style="width:100%; background:green; color:white; padding:15px; border:none; border-radius:8px; font-weight:bold;">Salvar Produto</button>
                 <button type="button" onclick="admin.clear()" style="width:100%; background:#eee; padding:10px; border:none; margin-top:10px; border-radius:8px;">Limpar</button>
             </form>
 
@@ -240,14 +229,17 @@
 
     <footer style="text-align:center; padding:40px; color:#aaa; font-size:0.8rem;">
         &copy; 2025 2A Modas.<br><br>
-        <button onclick="document.getElementById('login-modal').classList.add('active')" style="background:none; border:none; color:#ddd;">Admin</button>
+        <button onclick="admin.open()" style="background:var(--text-main); color:white; border:none; padding:8px 20px; border-radius:5px;">Área Admin</button>
     </footer>
 
     <script>
-        // --- 1. COLE SUAS CHAVES REAIS AQUI ---
-        // Se você não colar isso, o site VAI TRAVAR.
+        /* =========================================================
+           PASSO CRUCIAL: Substitua os campos abaixo pelas
+           chaves REAIS do seu projeto Firebase.
+           Sem isso, os dados NÃO FICARÃO SALVOS!
+           ========================================================= */
         const firebaseConfig = {
-            apiKey: "AIzaSyB1Z3Vy5-wVfJ7yelQ7b_GakJWjhmD338o",
+           apiKey: "AIzaSyB1Z3Vy5-wVfJ7yelQ7b_GakJWjhmD338o",
   authDomain: "loja2a.firebaseapp.com",
   projectId: "loja2a",
   storageBucket: "loja2a.firebasestorage.app",
@@ -255,68 +247,49 @@
   appId: "1:864712234172:web:670edd2de6d85fb118acb9",
   measurementId: "G-26EMJRJ3EY"
         };
-
-        // URL da Cloud Function (Seu backend de pagamento)
         const CLOUD_URL = "https://criarpagamentoss-967029810770.southamerica-east1.run.app"; 
 
-        // Inicialização Segura do Firebase
+        // Inicialização Segura
         let db, storage;
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
             storage = firebase.storage();
         } catch (error) {
-            console.error("Erro critico Firebase:", error);
-            alert("Erro na configuração do Firebase. Verifique o Console (F12).");
+            console.error("Erro Firebase:", error);
+            alert("Atenção: As chaves do Firebase não foram configuradas. Os produtos não serão salvos.");
         }
 
         const state = { products: [], cart: [], current: null, var: null, qty: 1 };
 
-        // --- APP PRINCIPAL ---
         const app = {
             init: async () => {
+                if (!db) return;
                 const loader = document.getElementById('loading-products');
-                
-                // Verifica se o Firebase iniciou
-                if (!db) {
-                    loader.innerHTML = "<p style='color:red'>Erro de Configuração (Sem chaves)</p>";
-                    return;
-                }
-
-                loader.style.display = 'block';
-
-                // Tenta conectar no banco
                 db.collection("products").onSnapshot((querySnapshot) => {
                     state.products = [];
                     querySnapshot.forEach((doc) => {
                         state.products.push({ id: doc.id, ...doc.data() });
                     });
                     app.render(state.products);
-                    
-                    // Se estiver logado como admin, atualiza a lista dele também
                     if(document.getElementById('admin-panel').classList.contains('active')){
                         admin.renderList();
                     }
-                    
-                    loader.style.display = 'none'; // Destrava a tela
+                    loader.style.display = 'none';
                 }, (error) => {
-                    console.error("Erro ao ler produtos:", error);
-                    loader.innerHTML = "<p>Sem produtos ou erro de permissão.</p>";
-                    // Destrava a tela mesmo com erro para permitir login admin
-                    loader.style.display = 'none'; 
-                    alert("Erro ao carregar produtos: " + error.code + ". Verifique as Regras do Firestore.");
+                    console.error(error);
+                    loader.innerHTML = "<p>Erro ao carregar. Verifique as chaves e regras do Firebase.</p>";
                 });
             },
 
             render: (list) => {
                 const div = document.getElementById('products-list'); div.innerHTML = "";
-                if(list.length === 0) div.innerHTML = "<p style='text-align:center; width:100%; color:#999;'>Nenhum produto cadastrado ainda.</p>";
-                
+                if(list.length === 0) div.innerHTML = "<p style='width:100%; text-align:center; color:#999'>Nenhum produto cadastrado.</p>";
                 list.forEach(p => {
-                    const stockTag = p.stock < 1 ? '<div class="stock-tag" style="background:red; color:white;">Esgotado</div>' : '';
+                    const tag = p.stock < 1 ? '<div class="stock-tag" style="background:red; color:white;">Esgotado</div>' : '';
                     div.innerHTML += `
                         <div class="product-card" onclick="app.modal('${p.id}')">
-                            ${stockTag}
+                            ${tag}
                             <img src="${p.image}" class="card-img">
                             <div class="card-info">
                                 <small style="text-transform:uppercase; color:#999;">${p.category}</small>
@@ -336,21 +309,19 @@
             modal: (id) => {
                 const p = state.products.find(x => x.id === id);
                 state.current = p; state.qty = 1; state.var = null;
-                
                 document.getElementById('m-img').src = p.image;
                 document.getElementById('m-title').innerText = p.name;
                 document.getElementById('m-price').innerText = `R$ ${parseFloat(p.price).toFixed(2)}`;
                 document.getElementById('m-desc').innerText = p.desc;
                 document.getElementById('m-cat').innerText = p.category;
                 document.getElementById('m-qty').innerText = 1;
-
+                
                 const optsDiv = document.getElementById('m-opts-area'); optsDiv.innerHTML = "<strong>Opções:</strong><br>";
                 if(p.options) {
                     p.options.forEach(opt => {
                         optsDiv.innerHTML += `<button onclick="app.selVar('${opt}', this)" style="margin:5px 5px 0 0; padding:8px; border:1px solid #ddd; background:white; border-radius:5px;">${opt}</button>`;
                     });
                 }
-
                 document.getElementById('product-modal').classList.add('active');
             },
 
@@ -360,121 +331,103 @@
                 for(let b of btns) b.style.background = 'white';
                 el.style.background = '#ddd';
             },
-
-            updQty: (n) => {
-                state.qty += n; if(state.qty < 1) state.qty = 1;
-                document.getElementById('m-qty').innerText = state.qty;
-            },
+            updQty: (n) => { state.qty += n; if(state.qty<1) state.qty=1; document.getElementById('m-qty').innerText = state.qty; },
 
             addCart: () => {
                 if(!state.var) return alert("Selecione uma opção");
                 state.cart.push({ ...state.current, qty: state.qty, variant: state.var });
-                app.renderCart();
-                document.getElementById('product-modal').classList.remove('active');
-                app.toggleCart();
+                app.renderCart(); document.getElementById('product-modal').classList.remove('active'); app.toggleCart();
             },
 
             renderCart: () => {
-                const ul = document.getElementById('cart-list'); ul.innerHTML = "";
-                let total = 0;
-                state.cart.forEach((item, idx) => {
-                    const sub = item.price * item.qty; total += sub;
-                    ul.innerHTML += `
-                    <li style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
-                        <div>
-                            <strong>${item.name}</strong><br>
-                            <small>${item.variant} x${item.qty}</small>
-                        </div>
-                        <div style="text-align:right">
-                            R$ ${sub.toFixed(2)}<br>
-                            <small onclick="state.cart.splice(${idx},1); app.renderCart()" style="color:red; cursor:pointer;">remover</small>
-                        </div>
+                const ul = document.getElementById('cart-list'); ul.innerHTML = ""; let t = 0;
+                state.cart.forEach((i, idx) => {
+                    t += i.price * i.qty;
+                    ul.innerHTML += `<li style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                        <div><strong>${i.name}</strong><br><small>${i.variant} x${i.qty}</small></div>
+                        <div style="text-align:right">R$ ${(i.price*i.qty).toFixed(2)}<br><small onclick="state.cart.splice(${idx},1);app.renderCart()" style="color:red; cursor:pointer;">remover</small></div>
                     </li>`;
                 });
-                document.getElementById('cart-total').innerText = `R$ ${total.toFixed(2)}`;
+                document.getElementById('cart-total').innerText = `R$ ${t.toFixed(2)}`;
                 document.getElementById('cart-count').innerText = state.cart.length;
             },
-
             toggleCart: () => document.querySelector('.cart-sidebar').classList.toggle('open'),
 
             checkoutWs: () => {
-                if(!state.cart.length) return alert("Carrinho vazio");
-                let msg = "Olá! Pedido 2A Modas:\n\n"; let t=0;
-                state.cart.forEach(i => { msg += `${i.name} (${i.variant}) x${i.qty}\n`; t += i.price * i.qty; });
-                msg += `\nTotal: R$ ${t.toFixed(2)}`;
+                if(!state.cart.length) return alert("Vazio");
+                let msg = "Olá! Pedido 2A Modas:\n"; let t=0;
+                state.cart.forEach(i=>{ msg+=`${i.name} (${i.variant}) x${i.qty}\n`; t+=i.price*i.qty; });
+                msg+=`\nTotal: R$ ${t.toFixed(2)}`;
                 window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(msg)}`);
             },
-
             checkoutMp: async () => {
-                if(!state.cart.length) return alert("Carrinho vazio");
-                const btn = document.querySelector('.btn-mp');
-                const originalText = btn.innerHTML;
-                btn.innerText = "Processando..."; btn.disabled = true;
-                
+                if(!state.cart.length) return alert("Vazio");
+                const btn = document.querySelector('.btn-mp'); 
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML="Processando..."; btn.disabled=true;
                 try {
-                    const items = state.cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, variant: i.variant }));
-                    const res = await fetch(CLOUD_URL, {
-                        method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ items })
-                    });
+                    const items = state.cart.map(i=>({name:i.name, price:i.price, qty:i.qty, variant:i.variant}));
+                    const res = await fetch(CLOUD_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({items})});
                     const data = await res.json();
-                    if(data.init_point) window.location.href = data.init_point;
-                    else alert("Erro ao gerar link");
-                } catch(e) {
-                    console.error(e); alert("Erro conexão ou URL inválida");
-                } finally {
-                    btn.innerHTML = originalText; btn.disabled = false;
-                }
+                    if(data.init_point) window.location.href=data.init_point; else alert("Erro link");
+                } catch(e){ console.error(e); alert("Erro conexão"); }
+                finally { btn.innerHTML = originalHtml; btn.disabled=false; }
             }
         };
 
-        // --- ADMINISTRAÇÃO ---
         const admin = {
-            login: () => {
-                const e = document.getElementById('adm-email').value;
-                const p = document.getElementById('adm-pass').value;
-                if(e === "admin@2amodas.com" && p === "admin123") {
-                    document.getElementById('login-modal').classList.remove('active');
-                    document.getElementById('admin-panel').classList.add('active');
-                    admin.renderList();
-                } else alert("Dados incorretos");
+            open: () => {
+                document.getElementById('admin-panel').classList.add('active');
+                admin.renderList();
             },
-            logout: () => document.getElementById('admin-panel').classList.remove('active'),
+            close: () => document.getElementById('admin-panel').classList.remove('active'),
+
+            toggleType: () => {
+                const type = document.getElementById('f-type').value;
+                if(type === 'color') {
+                    document.getElementById('opts-color').classList.remove('hidden');
+                    document.getElementById('opts-volume').classList.add('hidden');
+                } else {
+                    document.getElementById('opts-color').classList.add('hidden');
+                    document.getElementById('opts-volume').classList.remove('hidden');
+                }
+            },
+
+            getCheckedOptions: () => {
+                const type = document.getElementById('f-type').value;
+                const containerId = type === 'color' ? 'opts-color' : 'opts-volume';
+                const checkboxes = document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`);
+                return Array.from(checkboxes).map(cb => cb.value);
+            },
 
             previewFile: () => {
-                const file = document.getElementById('f-file').files[0];
-                if (file) {
-                    document.getElementById('file-text').innerText = file.name;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = document.getElementById('f-preview');
-                        img.src = e.target.result;
-                        img.style.display = 'block';
-                    }
-                    reader.readAsDataURL(file);
+                const f = document.getElementById('f-file').files[0];
+                if(f) {
+                    document.getElementById('file-text').innerText = f.name;
+                    const r = new FileReader();
+                    r.onload = e => { document.getElementById('f-preview').src = e.target.result; document.getElementById('f-preview').style.display='block'; };
+                    r.readAsDataURL(f);
                 }
             },
 
             save: async (e) => {
                 e.preventDefault();
+                const btn = document.getElementById('btn-save'); btn.innerText="Salvando..."; btn.disabled=true;
                 
-                if(!db || !storage) return alert("Erro: Firebase não configurado corretamente.");
-
-                const btn = document.getElementById('btn-save');
-                btn.innerText = "Enviando..."; btn.disabled = true;
-
                 try {
-                    const file = document.getElementById('f-file').files[0];
-                    let imageUrl = "";
+                    // Pegar opções marcadas
+                    const selectedOptions = admin.getCheckedOptions();
+                    if(selectedOptions.length === 0) throw new Error("Selecione pelo menos uma opção de cor ou volume.");
 
-                    // Upload
-                    if (file) {
+                    const file = document.getElementById('f-file').files[0];
+                    let imgUrl = "";
+                    
+                    if(file) {
                         const ref = storage.ref(`produtos/${Date.now()}_${file.name}`);
                         await ref.put(file);
-                        imageUrl = await ref.getDownloadURL();
-                    } else {
-                         // Se for novo produto sem imagem
-                        if(!document.getElementById('edit-id').value) imageUrl = "https://via.placeholder.com/300";
+                        imgUrl = await ref.getDownloadURL();
+                    } else if(!document.getElementById('edit-id').value) {
+                        imgUrl = "https://via.placeholder.com/300";
                     }
 
                     const data = {
@@ -483,62 +436,46 @@
                         category: document.getElementById('f-cat').value,
                         stock: parseInt(document.getElementById('f-stock').value),
                         type: document.getElementById('f-type').value,
-                        options: document.getElementById('f-opts').value.split(',').map(s=>s.trim()),
+                        options: selectedOptions, // Usa as checkboxes
                         desc: document.getElementById('f-desc').value
                     };
-                    
-                    if(imageUrl) data.image = imageUrl;
+                    if(imgUrl) data.image = imgUrl;
 
                     const id = document.getElementById('edit-id').value;
-                    if(id) {
-                        await db.collection("products").doc(id).update(data);
-                    } else {
-                        await db.collection("products").add(data);
-                    }
-
-                    alert("Salvo!");
-                    admin.clear();
-
-                } catch (error) {
-                    console.error("Erro:", error);
-                    alert("Erro ao salvar: " + error.message);
-                } finally {
-                    btn.innerText = "Salvar Produto"; btn.disabled = false;
-                }
+                    if(id) await db.collection("products").doc(id).update(data);
+                    else await db.collection("products").add(data);
+                    
+                    alert("Salvo com sucesso!"); admin.clear();
+                } catch(err) { console.error(err); alert("Erro: " + err.message); }
+                finally { btn.innerText="Salvar Produto"; btn.disabled=false; }
             },
 
             clear: () => {
                 document.querySelector('form').reset();
-                document.getElementById('edit-id').value = "";
-                document.getElementById('f-preview').style.display = 'none';
-                document.getElementById('file-text').innerText = "Clique para selecionar uma foto";
+                document.getElementById('edit-id').value="";
+                document.getElementById('f-preview').style.display='none';
+                document.getElementById('file-text').innerText="Clique para selecionar uma foto";
+                // Desmarcar tudo
+                document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                admin.toggleType(); // Resetar visual
             },
-
+            
             renderList: () => {
-                if(!db) return;
-                const list = document.getElementById('admin-list'); list.innerHTML = "";
+                const l = document.getElementById('admin-list'); l.innerHTML="";
                 state.products.forEach(p => {
-                    list.innerHTML += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
-                        <div style="display:flex; align-items:center;">
-                            <img src="${p.image}" style="width:40px; height:40px; object-fit:cover; border-radius:5px; margin-right:10px;">
-                            <strong>${p.name}</strong>
-                        </div>
-                        <div>
-                            <button onclick="admin.del('${p.id}')" style="color:red; background:none; border:none;">Excluir</button>
-                        </div>
+                    l.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
+                        <div style="display:flex; align-items:center;"><img src="${p.image}" style="width:40px; height:40px; object-fit:cover; border-radius:5px; margin-right:10px;"><strong>${p.name}</strong></div>
+                        <button onclick="admin.del('${p.id}')" style="color:red; background:none; border:none;">Excluir</button>
                     </div>`;
                 });
             },
-
-            del: async (id) => {
-                if(confirm("Tem certeza?")) {
-                    await db.collection("products").doc(id).delete();
-                }
-            }
+            del: async (id) => { if(confirm("Excluir?")) await db.collection("products").doc(id).delete(); }
         };
 
+        // Iniciar
         app.init();
+        // Configurar toggle inicial
+        admin.toggleType();
     </script>
 </body>
 </html>
