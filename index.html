@@ -64,10 +64,26 @@
         .file-upload-label { display:block; padding:20px; border:2px dashed #ddd; text-align:center; cursor:pointer; border-radius:8px; margin-bottom:15px; color:#666; transition:0.3s; }
         .file-upload-label:hover { border-color:var(--primary); background:#fff5f2; color:var(--primary); }
 
-        /* --- UTILS --- */
+        /* --- BOTÕES DO CARRINHO --- */
         .hidden { display:none !important; }
-        .btn-mp { background:#009EE3; color:white; width:100%; padding:15px; border:none; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; margin-top:10px; }
-        .btn-whats { background:#25D366; color:white; width:100%; padding:15px; border:none; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; }
+        
+        /* Botão Mercado Pago Ajustado */
+        .btn-mp { 
+            background:#009EE3; color:white; width:100%; padding:15px; 
+            border:none; border-radius:8px; display:flex; 
+            align-items:center; justify-content:center; gap:10px; 
+            margin-top:10px; font-weight: 600;
+        }
+        .btn-mp:hover { background: #007eb5; }
+        .mp-icon-img { height: 24px; width: auto; display: block; filter: brightness(0) invert(1); } /* Ícone branco */
+
+        .btn-whats { 
+            background:#25D366; color:white; width:100%; padding:15px; 
+            border:none; border-radius:8px; display:flex; 
+            align-items:center; justify-content:center; gap:10px; 
+            font-weight: 600;
+        }
+        .btn-whats:hover { background: #1ebc57; }
         
         /* Cart Sidebar */
         .cart-sidebar { position:fixed; top:0; right:-400px; width:350px; height:100%; background:white; z-index:2001; padding:20px; transition:0.3s; box-shadow:-5px 0 20px rgba(0,0,0,0.1); display:flex; flex-direction:column; }
@@ -145,9 +161,14 @@
             <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:10px;">
                 <span>Total</span> <span id="cart-total">R$ 0.00</span>
             </div>
-            <button class="btn-whats" onclick="app.checkoutWs()"><i class="fab fa-whatsapp"></i> Pedir no WhatsApp</button>
+            
+            <button class="btn-whats" onclick="app.checkoutWs()">
+                <i class="fab fa-whatsapp"></i> Pedir no WhatsApp
+            </button>
+            
             <button class="btn-mp" onclick="app.checkoutMp()">
-                <i class="fas fa-credit-card"></i> Pagamento Seguro (Pix/Card)
+                <img src="https://logopng.com.br/logos/mercado-pago-85.png" alt="MP" class="mp-icon-img">
+                Pagar com Mercado Pago
             </button>
         </div>
     </div>
@@ -223,7 +244,9 @@
     </footer>
 
     <script>
-     // Import the functions you need from the SDKs you need
+        // --- 1. CONFIGURAÇÃO FIREBASE (COLE SUAS CHAVES AQUI) ---
+        const firebaseConfig = {
+           // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -260,17 +283,15 @@ const analytics = getAnalytics(app);
         // --- APP PRINCIPAL ---
         const app = {
             init: async () => {
-                // Carregar produtos do Firebase
                 document.getElementById('loading-products').style.display = 'block';
                 try {
-                    // "Ouvir" mudanças no banco em tempo real
                     db.collection("products").onSnapshot((querySnapshot) => {
                         state.products = [];
                         querySnapshot.forEach((doc) => {
                             state.products.push({ id: doc.id, ...doc.data() });
                         });
                         app.render(state.products);
-                        admin.renderList(); // Atualiza lista admin também
+                        admin.renderList();
                         document.getElementById('loading-products').style.display = 'none';
                     });
                 } catch (e) {
@@ -377,7 +398,8 @@ const analytics = getAnalytics(app);
             checkoutMp: async () => {
                 if(!state.cart.length) return alert("Carrinho vazio");
                 const btn = document.querySelector('.btn-mp');
-                btn.innerHTML = "Processando..."; btn.disabled = true;
+                const originalText = btn.innerHTML;
+                btn.innerText = "Processando..."; btn.disabled = true;
                 
                 try {
                     const items = state.cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, variant: i.variant }));
@@ -391,7 +413,7 @@ const analytics = getAnalytics(app);
                 } catch(e) {
                     console.error(e); alert("Erro conexão");
                 } finally {
-                    btn.innerHTML = '<i class="fas fa-credit-card"></i> Pagamento Seguro (Pix/Card)'; btn.disabled = false;
+                    btn.innerHTML = originalText; btn.disabled = false;
                 }
             }
         };
@@ -425,60 +447,46 @@ const analytics = getAnalytics(app);
             save: async (e) => {
                 e.preventDefault();
                 const btn = document.getElementById('btn-save');
-                btn.innerText = "Salvando... (Aguarde o Upload)";
-                btn.disabled = true;
+                btn.innerText = "Enviando..."; btn.disabled = true;
 
                 try {
                     const file = document.getElementById('f-file').files[0];
                     let imageUrl = "";
 
-                    // 1. Upload da Imagem para o Storage (se houver arquivo novo)
                     if (file) {
                         const ref = storage.ref(`produtos/${Date.now()}_${file.name}`);
                         await ref.put(file);
                         imageUrl = await ref.getDownloadURL();
                     } else {
-                        // Se for edição e não trocou imagem, precisaríamos manter a antiga (lógica simplificada aqui)
-                        // Para simplificar: exige imagem nova ou usa placeholder se for novo
-                        if(!document.getElementById('edit-id').value) {
-                             imageUrl = "https://via.placeholder.com/300"; // Placeholder se não subir
-                        } else {
-                             // Buscar URL antiga (avançado, vamos assumir upload obrigatório por enquanto)
-                             // Em um sistema real, leríamos o doc atual antes.
-                        }
+                        if(!document.getElementById('edit-id').value) imageUrl = "https://via.placeholder.com/300";
                     }
 
-                    // 2. Salvar Dados no Firestore
                     const data = {
                         name: document.getElementById('f-name').value,
                         price: parseFloat(document.getElementById('f-price').value),
                         category: document.getElementById('f-cat').value,
                         stock: parseInt(document.getElementById('f-stock').value),
-                        image: imageUrl || "https://via.placeholder.com/300", // Fallback
                         type: document.getElementById('f-type').value,
                         options: document.getElementById('f-opts').value.split(',').map(s=>s.trim()),
                         desc: document.getElementById('f-desc').value
                     };
+                    if(imageUrl) data.image = imageUrl;
 
                     const id = document.getElementById('edit-id').value;
                     if(id) {
-                        // Se for edição e não subiu imagem nova, não sobrescreva a imagem antiga
-                        // Nota: Para simplificar este código, a edição exigirá re-upload ou manterá a logica acima
-                        if(!file) delete data.image; // Não atualiza imagem se não enviou nova
                         await db.collection("products").doc(id).update(data);
                     } else {
                         await db.collection("products").add(data);
                     }
 
-                    alert("Produto Salvo com Sucesso!");
+                    alert("Salvo!");
                     admin.clear();
 
                 } catch (error) {
-                    console.error("Erro ao salvar:", error);
+                    console.error("Erro:", error);
                     alert("Erro ao salvar: " + error.message);
                 } finally {
-                    btn.innerText = "Salvar Produto";
-                    btn.disabled = false;
+                    btn.innerText = "Salvar Produto"; btn.disabled = false;
                 }
             },
 
@@ -512,9 +520,7 @@ const analytics = getAnalytics(app);
             }
         };
 
-        // Iniciar App
         app.init();
-
     </script>
 </body>
 </html>
