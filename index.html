@@ -39,20 +39,22 @@
         .btn-cta:hover { transform: translateY(-5px); background: var(--primary); }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* PRODUTOS */
+        /* PRODUTOS (LADO A LADO) */
         .container { max-width:1200px; margin:0 auto; padding:40px 20px; flex: 1; }
         .filters { display:flex; justify-content:center; gap:12px; margin-bottom:50px; flex-wrap:wrap; }
         .filter-btn { padding: 10px 28px; border-radius: 30px; border: 1px solid #e0e0e0; background: white; color: #555; font-weight: 600; }
         .filter-btn:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-3px); }
         .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); transform: scale(1.05); }
 
-        .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:30px; }
+        /* AJUSTE PARA LADO A LADO NO MOBILE */
+        .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:20px; }
+        
         .card { background:white; border-radius:var(--radius); overflow:hidden; border:1px solid #f0f0f0; transition:0.4s; position:relative; cursor:pointer; }
-        .card:hover { transform:translateY(-10px); box-shadow:var(--shadow); border-color:var(--primary); }
-        .card img { width:100%; height:350px; object-fit:cover; background:#f9f9f9; }
-        .card-info { padding:20px; text-align:center; }
-        .tag-promo { position:absolute; top:15px; right:15px; background:#e91e63; color:white; padding:5px 12px; border-radius:20px; font-size:0.7rem; font-weight:bold; z-index: 2; }
-        .tag-delivery { font-size: 0.75rem; color: #27ae60; display: block; margin-top: 5px; font-weight: 600; }
+        .card:hover { transform:translateY(-5px); box-shadow:var(--shadow); border-color:var(--primary); }
+        .card img { width:100%; height:250px; object-fit:cover; background:#f9f9f9; }
+        .card-info { padding:15px; text-align:center; }
+        .tag-promo { position:absolute; top:10px; right:10px; background:#e91e63; color:white; padding:4px 10px; border-radius:20px; font-size:0.6rem; font-weight:bold; z-index: 2; }
+        .tag-delivery { font-size: 0.7rem; color: #27ae60; display: block; margin-top: 5px; font-weight: 600; }
 
         /* MODALS */
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
@@ -88,10 +90,15 @@
         .btn-addr-trigger.filled { border-style:solid; border-color:#27ae60; background:#eafff0; color:#27ae60; }
         .color-dot { width: 15px; height: 15px; border-radius: 50%; display: inline-block; border: 1px solid #ddd; margin-right:5px; }
         
-        /* CLIENT DASHBOARD */
-        .client-order { border:1px solid #eee; padding:15px; border-radius:10px; margin-bottom:10px; background:#fdfdfd; }
-        .status-badge { padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; color:white; }
-        .st-pendente { background:#f39c12; } .st-enviado { background:#3498db; } .st-entregue { background:#27ae60; }
+        /* CLIENT DASHBOARD & PROGRESSO ENTREGA */
+        .client-order { border:1px solid #eee; padding:20px; border-radius:12px; margin-bottom:15px; background:#fff; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+        .track-container { margin-top: 20px; position: relative; padding-top: 20px; padding-bottom: 20px; }
+        .track-line { height: 4px; background: #eee; border-radius: 2px; position: relative; }
+        .track-fill { height: 100%; background: #27ae60; border-radius: 2px; transition: width 1s ease; width: 0%; }
+        .truck-icon { position: absolute; top: 0; transform: translateX(-50%); font-size: 1.5rem; color: #2c3e50; transition: left 1s ease; left: 0%; background: white; padding: 0 5px; }
+        .track-steps { display: flex; justify-content: space-between; font-size: 0.7rem; color: #aaa; margin-top: 10px; font-weight: bold; text-transform: uppercase; }
+        .track-steps span.active { color: #27ae60; }
+
         .order-card { background: white; border: 1px solid #eee; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
         .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; font-weight: bold; color: var(--accent); }
 
@@ -104,8 +111,8 @@
 
         /* FOOTER */
         footer { background: #222; color: #888; text-align: center; padding: 40px 20px; margin-top: auto; }
-        footer a { color: #ddd; text-decoration: none; font-size: 0.8rem; font-weight: bold; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; transition: 0.3s; }
-        footer a:hover { background: #444; color: white; }
+        footer button { color: #ddd; text-decoration: none; font-size: 0.8rem; font-weight: bold; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; transition: 0.3s; cursor: pointer; }
+        footer button:hover { background: #444; color: white; }
 
         @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} }
     </style>
@@ -144,7 +151,7 @@
     <footer>
         <p>&copy; 2025 2A Modas e Perfumes.</p>
         <br>
-        <button onclick="admin.checkAdmin()" style="background:none; border:none; color:#666; font-size:0.8rem; text-decoration:underline;">Área Administrativa</button>
+        <button onclick="admin.checkAdmin()">Área Administrativa</button>
     </footer>
 
     <div id="promo-modal" class="overlay">
@@ -176,7 +183,7 @@
                         <button onclick="app.updQty(1)" style="padding:10px 15px; border:none; background:white;">+</button>
                     </div>
                 </div>
-                <button onclick="app.addCart()" style="width:100%; background:var(--accent); color:white; padding:18px; border-radius:12px; border:none; font-weight:bold;">Adicionar à Sacola</button>
+                <button id="btn-add-cart" onclick="app.addCart()" style="width:100%; background:var(--accent); color:white; padding:18px; border-radius:12px; border:none; font-weight:bold;">Adicionar à Sacola</button>
             </div>
         </div>
     </div>
@@ -286,10 +293,6 @@
                             <div style="color:#e74c3c; font-weight:bold;">CUSTO ESTOQUE</div>
                             <div class="stat-val" id="st-cost" style="font-size:1.5rem; font-weight:bold;">R$ 0.00</div>
                         </div>
-                        <div style="background:white; padding:20px; border-radius:12px; text-align:center;">
-                            <div style="color:#2980b9; font-weight:bold;">VENDA TOTAL</div>
-                            <div class="stat-val" id="st-rev" style="font-size:1.5rem; font-weight:bold;">R$ 0.00</div>
-                        </div>
                     </div>
                     <div style="background:white; padding:20px; border-radius:12px;">
                         <h4>Controle de Estoque</h4>
@@ -311,14 +314,17 @@
                         <input type="text" id="f-name" class="input" placeholder="Nome">
                         <div style="display:flex; gap:10px;">
                             <select id="f-cat" class="input"><option value="feminino">Feminino</option><option value="infantil">Infantil</option><option value="perfumes">Perfumes</option></select>
-                            <input type="number" id="f-cost" class="input" placeholder="Custo">
+                            <input type="number" id="f-cost" class="input" placeholder="Custo Global (Opcional)">
                         </div>
                         <label><input type="checkbox" id="f-promo"> Promoção?</label>
                         <input type="file" id="f-file" class="input" style="margin-top:10px;">
                         <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
+                        
+                        <label style="font-weight:bold;">Definir Variações (Custo/Preço por item):</label>
                         <div class="checkbox-grid" id="color-checks"></div>
                         <div class="checkbox-grid" id="volume-checks"></div>
                         <div id="active-vars-area"></div>
+                        
                         <textarea id="f-desc" class="input" rows="3" placeholder="Descrição" style="margin-top:10px;"></textarea>
                         <button onclick="admin.save()" id="btn-save" style="width:100%; background:var(--primary); color:white; padding:15px; border-radius:8px; border:none; margin-top:15px;">Salvar</button>
                         <button onclick="admin.clear()" style="width:100%; padding:10px; background:none; border:none; color:#666;">Limpar</button>
@@ -549,16 +555,50 @@
             },
             logout: () => { localStorage.removeItem('2a_user'); location.reload(); },
             loadClientOrders: async () => {
-                if(!state.user) return;
+                // BLINDAGEM: Se não tiver usuário ou email, não faz nada (não trava)
+                if(!state.user || !state.user.email) {
+                    document.getElementById('client-orders-list').innerHTML = "Faça login para ver seus pedidos.";
+                    return;
+                }
+                
                 const { data } = await sb.from('orders').select('*').eq('customer_email', state.user.email);
                 const div = document.getElementById('client-orders-list'); div.innerHTML = "";
-                if(!data || data.length === 0) { div.innerHTML = "Sem pedidos."; return; }
+                
+                if(!data || data.length === 0) { 
+                    div.innerHTML = "Você ainda não fez pedidos."; 
+                    return; 
+                }
+                
                 data.forEach(o => {
-                    const stClass = o.status === 'Entregue' ? 'st-entregue' : (o.status === 'Enviado' ? 'st-enviado' : 'st-pendente');
+                    let progress = 10;
+                    if(o.status === 'Enviado') progress = 50;
+                    if(o.status === 'Entregue') progress = 100;
+
                     const items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
                     const itemsTxt = items.map(i => `${i.qty}x ${i.name}`).join(', ');
-                    div.innerHTML += `<div class="client-order"><div style="display:flex;justify-content:space-between;margin-bottom:5px;"><strong>Data: ${o.date}</strong><span class="status-badge ${stClass}">${o.status}</span></div><small>${itemsTxt}</small><br><strong>Total: R$ ${o.total.toFixed(2)}</strong></div>`;
+                    
+                    div.innerHTML += `
+                    <div class="client-order">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                            <strong>Data: ${o.date}</strong>
+                            <span>R$ ${o.total.toFixed(2)}</span>
+                        </div>
+                        <small>${itemsTxt}</small>
+                        
+                        <div class="track-container">
+                            <div class="truck-icon" style="left:${progress}%"><i class="fas fa-truck"></i></div>
+                            <div class="track-line"><div class="track-fill" style="width:${progress}%"></div></div>
+                            <div class="track-steps">
+                                <span class="${o.status==='Pendente'?'active':''}">Pendente</span>
+                                <span class="${o.status==='Enviado'?'active':''}">Enviado</span>
+                                <span class="${o.status==='Entregue'?'active':''}">Entregue</span>
+                            </div>
+                        </div>
+                    </div>`;
                 });
+            },
+            openClientDashboard: () => {
+                auth.checkProfile(); // Reutiliza a lógica centralizada
             }
         };
 
@@ -579,7 +619,7 @@
                 const id = `grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`;
                 const area = document.getElementById('active-vars-area');
                 if(cb.checked) {
-                    area.innerHTML += `<div id="${id}" class="var-inputs show"><strong style="grid-column:span 2">${cb.value}</strong><input type="hidden" class="v-name" value="${cb.value}"><input type="number" class="input v-price" placeholder="Preço"><input type="number" class="input v-stock" placeholder="Estoque"></div>`;
+                    area.innerHTML += `<div id="${id}" class="var-inputs show"><strong style="grid-column:span 2">${cb.value}</strong><input type="hidden" class="v-name" value="${cb.value}"><input type="number" class="input v-cost" placeholder="Custo (R$)"><input type="number" class="input v-price" placeholder="Venda (R$)"><input type="number" class="input v-stock" placeholder="Estoque"></div>`;
                 } else { document.getElementById(id)?.remove(); }
             },
             checkAdmin: () => {
@@ -600,8 +640,9 @@
                 try {
                     const vars = [];
                     document.querySelectorAll('.var-inputs').forEach(d => {
+                        const cost = d.querySelector('.v-cost').value || 0;
                         const p = d.querySelector('.v-price').value, s = d.querySelector('.v-stock').value;
-                        if(p && s) vars.push({ name: d.querySelector('.v-name').value, price: p, stock: s });
+                        if(p && s) vars.push({ name: d.querySelector('.v-name').value, cost: cost, price: p, stock: s });
                     });
                     const file = document.getElementById('f-file').files[0];
                     let imgUrl = null;
@@ -680,13 +721,14 @@
                     if(vars) {
                         vars.forEach(v => {
                             let q = parseInt(v.stock)||0;
-                            cost += (parseFloat(p.cost_price||0) * q);
+                            // Tenta pegar custo da variação, senão custo global
+                            let vCost = parseFloat(v.cost) || parseFloat(p.cost_price) || 0;
+                            cost += (vCost * q);
                             rev += (parseFloat(v.price||0) * q);
-                            pRev += (parseFloat(v.price||0) * q);
                             stock += q;
                         });
                     }
-                    miniList += `<div class="mini-prod"><img src="${p.image_url}"> <div><strong>${p.name}</strong><br><small>Estoque: ${stock} | Venda Potencial: R$ ${pRev.toFixed(2)}</small></div></div>`;
+                    miniList += `<div class="mini-prod"><img src="${p.image_url}"> <div><strong>${p.name}</strong><br><small>Estoque: ${stock}</small></div></div>`;
                 });
                 document.getElementById('st-cost').innerText = `R$ ${cost.toFixed(2)}`;
                 document.getElementById('st-rev').innerText = `R$ ${rev.toFixed(2)}`;
