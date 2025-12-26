@@ -162,7 +162,7 @@
                         <button onclick="app.updQty(1)" style="padding:10px 15px; border:none; background:white;">+</button>
                     </div>
                 </div>
-                <button onclick="app.addCart()" style="width:100%; background:var(--accent); color:white; padding:18px; border-radius:12px; border:none; font-weight:bold;">Adicionar à Sacola</button>
+                <button id="btn-add-cart" onclick="app.addCart()" style="width:100%; background:var(--accent); color:white; padding:18px; border-radius:12px; border:none; font-weight:bold;">Adicionar à Sacola</button>
             </div>
         </div>
     </div>
@@ -276,6 +276,10 @@
                         <div style="background:white; padding:20px; border-radius:12px; text-align:center;">
                             <div style="color:#e74c3c; font-weight:bold;">CUSTO ESTOQUE</div>
                             <div class="stat-val" id="st-cost" style="font-size:1.5rem; font-weight:bold;">R$ 0.00</div>
+                        </div>
+                        <div style="background:white; padding:20px; border-radius:12px; text-align:center;">
+                            <div style="color:#2980b9; font-weight:bold;">VENDA TOTAL</div>
+                            <div class="stat-val" id="st-rev" style="font-size:1.5rem; font-weight:bold;">R$ 0.00</div>
                         </div>
                     </div>
                     <div style="background:white; padding:20px; border-radius:12px;">
