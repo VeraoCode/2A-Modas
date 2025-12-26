@@ -7,7 +7,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -18,12 +18,13 @@
         * { margin:0; padding:0; box-sizing:border-box; outline:none; font-family:'Plus Jakarta Sans', sans-serif; }
         body { background: var(--bg); color: var(--accent); overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh; }
         
-        /* FONTE UNIFORME NO TÍTULO */
-        h1 { font-family:'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -1px; }
-        h2, h3 { font-family:'Plus Jakarta Sans', sans-serif; }
+        /* TIPOGRAFIA UNIFORME */
+        h1, .brand-font { font-family:'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -0.5px; }
+        h2, h3 { font-family:'Plus Jakarta Sans', sans-serif; font-weight: 700; }
+        
         button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
 
-        /* LOADING */
+        /* LOADING & STATUS */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #status-bar { position:fixed; top:0; left:0; width:100%; height:auto; min-height:30px; background:#222; color:white; font-size:0.8rem; display:flex; align-items:center; justify-content:center; z-index:99999; font-weight:600; padding:5px; text-align:center; }
         .ok { background:#27ae60 !important; } .err { background:#c0392b !important; }
@@ -34,22 +35,22 @@
         .icon-btn:hover { background:var(--primary); color:white; transform:scale(1.1); }
         .badge { position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; width:22px; height:22px; border-radius:50%; font-size:0.75rem; display:flex; align-items:center; justify-content:center; font-weight:bold; border:2px solid white; }
         
-        /* BOTÃO LOGIN TEXTO */
-        .login-btn-header { padding: 12px 25px; background: white; border: none; border-radius: 30px; font-weight: bold; color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+        /* LOGIN BTN */
+        .login-btn-header { padding: 10px 20px; background: white; border: none; border-radius: 30px; font-weight: 700; color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
         .login-btn-header:hover { background: var(--primary); color: white; transform: translateY(-2px); }
 
         /* HERO */
         .hero { padding: 100px 20px 80px; text-align:center; background: radial-gradient(circle at top, #fff5f2 0%, transparent 100%); display: flex; flex-direction: column; align-items: center; }
         .hero img { width:180px; height:180px; border-radius:50%; object-fit:cover; border:5px solid white; box-shadow:var(--shadow); margin-bottom:20px; }
         .hero h1 { font-size:3.5rem; margin-bottom:10px; color:var(--accent); }
-        .btn-cta { padding: 16px 50px; background: var(--accent); color: white; border-radius: 50px; border: none; font-weight: 600; font-size: 1.1rem; box-shadow: 0 10px 25px rgba(44,62,80,0.25); margin-top: 45px; animation: pulse 2s infinite; }
+        .btn-cta { padding: 16px 50px; background: var(--accent); color: white; border-radius: 50px; border: none; font-weight: 700; font-size: 1.1rem; box-shadow: 0 10px 25px rgba(44,62,80,0.25); margin-top: 45px; animation: pulse 2s infinite; }
         .btn-cta:hover { transform: translateY(-5px); background: var(--primary); }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         /* PRODUTOS */
         .container { max-width:1200px; margin:0 auto; padding:40px 20px; flex: 1; }
         .filters { display:flex; justify-content:center; gap:12px; margin-bottom:50px; flex-wrap:wrap; }
-        .filter-btn { padding: 10px 28px; border-radius: 30px; border: 1px solid #e0e0e0; background: white; color: #555; font-weight: 600; position:relative; overflow:hidden; }
+        .filter-btn { padding: 10px 28px; border-radius: 30px; border: 1px solid #e0e0e0; background: white; color: #555; font-weight: 600; }
         .filter-btn:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-3px); }
         .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); transform: scale(1.05); }
 
@@ -61,7 +62,7 @@
         .tag-promo { position:absolute; top:10px; right:10px; background:#e91e63; color:white; padding:4px 10px; border-radius:20px; font-size:0.6rem; font-weight:bold; z-index: 2; }
         .tag-delivery { font-size: 0.7rem; color: #27ae60; display: block; margin-top: 5px; font-weight: 600; }
 
-        /* MODALS */
+        /* MODALS (SOBRESSAIR + BLUR) */
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
         .overlay.active { display:flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
@@ -85,16 +86,7 @@
         .mini-prod { display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid #eee; }
         .mini-prod img { width:50px; height:50px; border-radius:8px; object-fit:cover; }
         
-        /* CLIENT DASHBOARD */
-        .client-order { border:1px solid #eee; padding:20px; border-radius:12px; margin-bottom:15px; background:#fff; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
-        .track-container { margin-top: 20px; position: relative; padding-top: 20px; padding-bottom: 20px; }
-        .track-line { height: 4px; background: #eee; border-radius: 2px; position: relative; }
-        .track-fill { height: 100%; background: #27ae60; border-radius: 2px; transition: width 1s ease; width: 0%; }
-        .truck-icon { position: absolute; top: 0; transform: translateX(-50%); font-size: 1.5rem; color: #2c3e50; transition: left 1s ease; left: 0%; background: white; padding: 0 5px; }
-        .track-steps { display: flex; justify-content: space-between; font-size: 0.7rem; color: #aaa; margin-top: 10px; font-weight: bold; text-transform: uppercase; }
-        .track-steps span.active { color: #27ae60; }
-
-        /* UI */
+        /* UI ELEMENTS */
         .var-btn { padding:10px; border:1px solid #eee; border-radius:8px; background:white; margin:5px; cursor:pointer; }
         .var-btn.selected { background:var(--accent); color:white; }
         .var-btn.disabled { opacity:0.5; cursor:not-allowed; }
@@ -104,6 +96,15 @@
         .btn-addr-trigger.filled { border-style:solid; border-color:#27ae60; background:#eafff0; color:#27ae60; }
         .color-dot { width: 15px; height: 15px; border-radius: 50%; display: inline-block; border: 1px solid #ddd; margin-right:5px; }
         
+        /* CLIENT DASHBOARD */
+        .client-order { border:1px solid #eee; padding:20px; border-radius:12px; margin-bottom:15px; background:#fff; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+        .track-container { margin-top: 20px; position: relative; padding-top: 20px; padding-bottom: 20px; }
+        .track-line { height: 4px; background: #eee; border-radius: 2px; position: relative; }
+        .track-fill { height: 100%; background: #27ae60; border-radius: 2px; transition: width 1s ease; width: 0%; }
+        .truck-icon { position: absolute; top: 0; transform: translateX(-50%); font-size: 1.5rem; color: #2c3e50; transition: left 1s ease; left: 0%; background: white; padding: 0 5px; }
+        .track-steps { display: flex; justify-content: space-between; font-size: 0.7rem; color: #aaa; margin-top: 10px; font-weight: bold; text-transform: uppercase; }
+        .track-steps span.active { color: #27ae60; }
+
         .order-card { background: white; border: 1px solid #eee; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
         .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; font-weight: bold; color: var(--accent); }
 
@@ -142,7 +143,7 @@
 
     <div class="hero">
         <img src="logo.jpg" onerror="this.src='https://via.placeholder.com/200?text=2A'">
-        <h1>2A Modas e Perfumes</h1>
+        <h1 class="brand-font">2A Modas e Perfumes</h1>
         <p>Elegância que transforma. Descubra sua essência.</p>
         <button class="btn-cta btn-pulse" onclick="app.openPromoModal()">✨ Ver Promoções</button>
     </div>
@@ -158,7 +159,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2025 2A Modas e Perfumes.</p>
+        <p class="brand-font">&copy; 2025 2A Modas e Perfumes.</p>
         <br>
         <button onclick="admin.checkAdmin()">Área Administrativa</button>
     </footer>
@@ -360,14 +361,14 @@
     <script>
         const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
-        const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app';  
+        const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const state = { products: [], cart: [], current: null, var: null, qty: 1, user: null, address: null };
         const PRESETS_VOL = ['25ml','50ml','75ml','100ml','200ml','P','M','G','GG','Unico'];
         const COLOR_MAP = { 'Preto': '#000000', 'Branco': '#ffffff', 'Vermelho': '#e74c3c', 'Azul': '#3498db', 'Rosa': '#e91e63', 'Verde': '#2ecc71', 'Nude': '#e3c0a5', 'Estampado': 'linear-gradient(45deg, red, blue)', 'Bege': '#f5f5dc', 'Amarelo': '#f1c40f', 'Cinza': '#95a5a6' };
         
-        const safeVal = (v) => v || ""; 
+        const safeVal = (v) => (v === null || v === undefined || v === "null") ? "" : v;
 
         // --- APP ---
         const app = {
@@ -509,7 +510,7 @@
                 const authArea = document.getElementById('cart-auth-area');
                 if(authArea) {
                     if(state.user) authArea.innerHTML = `<small style="color:#27ae60"><i class="fas fa-check-circle"></i> Olá, ${state.user.name}</small>`;
-                    else authArea.innerHTML = `<button onclick="app.showModal('auth-modal')" style="width:100%; padding:10px; background:#f0f0f0; border:none; border-radius:8px; color:#555; font-weight:bold;"><i class="fas fa-user-circle"></i> Login / Cadastro</button>`;
+                    else authArea.innerHTML = `<button onclick="app.showModal('auth-modal')" style="width:100%; padding:10px; background:#f0f0f0; border:none; border-radius:8px; color:#555; font-weight:bold;"><i class="fas fa-user-circle"></i> Fazer Login / Cadastro</button>`;
                 }
             },
 
@@ -654,8 +655,7 @@
                         </div>
                     </div>`;
                 });
-            },
-            openClientDashboard: () => { auth.checkProfile(); }
+            }
         };
 
         // --- ADMIN ---
@@ -731,31 +731,7 @@
                 document.getElementById('f-cost').value = safeVal(p.cost_price);
                 document.getElementById('f-desc').value = safeVal(p.description);
                 document.getElementById('f-promo').checked = p.is_promo;
-                
-                admin.clear(true);
-                document.getElementById('edit-id').value = p.id;
-
-                const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-                if(vars) {
-                    const checks = document.querySelectorAll('input[type="checkbox"]');
-                    vars.forEach(v => {
-                        checks.forEach(cb => {
-                            if(cb.value === v.name) {
-                                cb.checked = true;
-                                admin.toggleInput(cb);
-                                setTimeout(() => {
-                                    const div = document.getElementById(`grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`);
-                                    if(div) {
-                                        div.querySelector('.v-cost').value = v.cost || p.cost_price || 0;
-                                        div.querySelector('.v-price').value = v.price;
-                                        div.querySelector('.v-stock').value = v.stock;
-                                    }
-                                }, 50);
-                            }
-                        });
-                    });
-                }
-                alert("Edição carregada.");
+                alert("Edição carregada. Por favor, recadastre as variações.");
             },
             del: async (id) => { if(confirm("Excluir?")) { await sb.from('products').delete().eq('id', id); await app.load(); admin.renderList(); } },
             clear: (soft=false) => { 
