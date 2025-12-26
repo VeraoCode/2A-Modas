@@ -8,33 +8,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
-
     <style>
-        /* --- DESIGN SYSTEM --- */
-        :root {
-            --primary: #c48b78; 
-            --secondary: #2c3e50;
-            --bg: #fcfcfc;
-            --white: #ffffff;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --radius: 12px;
-        }
+        /* (Mantendo o mesmo estilo visual bonito anterior) */
+        :root { --primary: #c48b78; --text: #2c3e50; --bg: #fcfcfc; --radius: 12px; }
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; outline:none; }
-        body { background: var(--bg); color: var(--secondary); padding-top: 40px; }
+        body { background: var(--bg); color: var(--text); padding-top: 40px; }
         h1,h2,h3 { font-family:'Montserrat',sans-serif; }
         button { cursor:pointer; transition:0.3s; }
         input, select, textarea { font-family:'Inter',sans-serif; }
 
         /* STATUS BAR */
         #status-bar { position:fixed; top:0; left:0; width:100%; height:35px; background:#333; color:white; font-size:0.8rem; display:flex; align-items:center; justify-content:center; z-index:99999; font-weight:bold; }
-        .status-ok { background: var(--success) !important; }
-        .status-error { background: var(--danger) !important; }
+        .status-ok { background: #27ae60 !important; }
+        .status-error { background: #e74c3c !important; }
 
-        /* HEADER & HERO */
+        /* LAYOUT */
         header { position:fixed; top:35px; width:100%; background:rgba(255,255,255,0.95); padding:15px 5%; display:flex; justify-content:flex-end; z-index:1000; border-bottom:1px solid #eee; backdrop-filter:blur(5px); }
         .cart-btn { background:white; border:1px solid #ddd; width:45px; height:45px; border-radius:50%; font-size:1.2rem; position:relative; }
         .cart-badge { position:absolute; top:-5px; right:-5px; background:var(--primary); color:white; width:20px; height:20px; border-radius:50%; font-size:0.7rem; display:flex; align-items:center; justify-content:center; }
@@ -42,66 +30,41 @@
         .hero { padding:140px 20px 60px; text-align:center; background:radial-gradient(circle at top, #fff5f2 0%, #fff 100%); }
         .brand-img { width:180px; height:180px; border-radius:50%; object-fit:cover; border:5px solid white; box-shadow:0 10px 30px rgba(0,0,0,0.1); margin-bottom:20px; animation:float 6s infinite; }
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-        .btn-cta { background:var(--secondary); color:white; border:none; padding:12px 30px; border-radius:30px; margin-top:20px; font-weight:600; }
+        .btn-cta { background:var(--text); color:white; border:none; padding:12px 30px; border-radius:30px; margin-top:20px; font-weight:600; }
 
-        /* VITRINE */
         .container { max-width:1200px; margin:0 auto; padding:40px 20px; }
-        .nav-filters { display:flex; justify-content:center; gap:10px; margin-bottom:40px; flex-wrap:wrap; }
-        .filter-btn { border:1px solid #ddd; background:transparent; padding:8px 20px; border-radius:20px; color:#666; }
-        .filter-btn.active { background:var(--secondary); color:white; border-color:var(--secondary); }
-
         .products-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:30px; }
         .product-card { background:white; border-radius:var(--radius); overflow:hidden; border:1px solid #eee; transition:0.3s; position:relative; }
         .product-card:hover { transform:translateY(-5px); box-shadow:0 10px 30px rgba(0,0,0,0.08); }
         .card-img { height:300px; width:100%; object-fit:cover; background:#f9f9f9; }
         .card-info { padding:15px; text-align:center; }
-        .p-price { font-size:1.2rem; font-weight:bold; color:var(--primary); margin-top:5px; }
-        
-        /* MODAL */
-        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
-        .modal-overlay.active { display:flex; }
-        .modal-box { background:white; width:100%; max-width:900px; display:grid; grid-template-columns:1fr 1fr; border-radius:15px; overflow:hidden; max-height:90vh; overflow-y:auto; }
-        .modal-content { padding:40px; position:relative; }
+        .stock-tag { position:absolute; top:10px; left:10px; background:rgba(255,255,255,0.9); padding:5px; font-size:0.7rem; font-weight:bold; border-radius:4px; }
 
-        /* ADMIN PANEL & LOGIN */
-        .login-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); z-index:3000; display:none; align-items:center; justify-content:center; }
-        .login-box { background:white; padding:40px; border-radius:15px; box-shadow:0 10px 40px rgba(0,0,0,0.1); width:100%; max-width:400px; text-align:center; border:1px solid #eee; }
-        
-        #admin-panel { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#f4f6f9; z-index:3000; overflow-y:auto; padding-top:40px; }
-        #admin-panel.active { display:block; }
-        .admin-nav { max-width:900px; margin:0 auto; display:flex; gap:10px; margin-bottom:20px; padding:0 20px; }
-        .admin-tab { padding:10px 20px; background:#ddd; border:none; border-radius:8px 8px 0 0; font-weight:bold; color:#666; }
-        .admin-tab.active { background:white; color:var(--primary); }
-        .admin-content { max-width:900px; margin:0 auto 50px; background:white; padding:30px; border-radius:15px; display:none; box-shadow:0 5px 15px rgba(0,0,0,0.05); }
-        .admin-content.active { display:block; }
+        /* MODALS */
+        .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
+        .overlay.active { display:flex; }
+        .box { background:white; width:100%; max-width:900px; border-radius:15px; overflow:hidden; max-height:90vh; overflow-y:auto; padding:30px; position:relative; }
+        .modal-grid { display:grid; grid-template-columns:1fr 1fr; gap:30px; }
 
-        /* ADMIN FORMS */
+        /* ADMIN */
         .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px; }
-        .form-input { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; }
-        .form-label { font-size:0.85rem; font-weight:bold; color:#555; display:block; margin-bottom:5px; }
+        .input-field { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px; }
+        .var-row { display:flex; gap:10px; margin-bottom:10px; align-items:center; }
         
-        /* VARIAÇÕES DINÂMICAS */
-        .variant-row { display:grid; grid-template-columns: 2fr 1fr 1fr 0.5fr; gap:10px; margin-bottom:10px; align-items:center; }
-        .variant-list { background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid #eee; }
-        
-        /* BOTOES */
-        .btn-mp { background:#009EE3; color:white; width:100%; padding:15px; border:none; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; margin-top:10px; font-weight:600; }
-        .btn-save { background:var(--success); color:white; width:100%; padding:15px; border:none; border-radius:8px; font-weight:bold; margin-top:20px; }
-        .btn-add-var { background:var(--secondary); color:white; padding:5px 10px; border:none; border-radius:5px; font-size:0.8rem; }
-        
-        /* SIDEBAR */
-        .cart-sidebar { position:fixed; top:35px; right:-400px; width:350px; height:100%; background:white; z-index:2001; padding:20px; transition:0.3s; box-shadow:-5px 0 20px rgba(0,0,0,0.1); display:flex; flex-direction:column; padding-bottom:50px; }
-        .cart-sidebar.open { right:0; }
+        .sidebar { position:fixed; top:35px; right:-400px; width:350px; height:100%; background:white; z-index:2001; padding:20px; transition:0.3s; box-shadow:-5px 0 20px rgba(0,0,0,0.1); display:flex; flex-direction:column; padding-bottom:50px; }
+        .sidebar.open { right:0; }
 
-        @media(max-width:768px){ .modal-box{grid-template-columns:1fr;} .cart-sidebar{width:100%;} .form-grid{grid-template-columns:1fr;} }
+        .btn-mp { background:#009EE3; color:white; width:100%; padding:15px; border:none; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; font-weight:600; margin-top:10px; }
+        
+        @media(max-width:768px){ .modal-grid{grid-template-columns:1fr;} .sidebar{width:100%;} .form-grid{grid-template-columns:1fr;} }
     </style>
 </head>
 <body>
 
-    <div id="status-bar" class="status-error">SISTEMA OFF-LINE - Configure as chaves do Firebase</div>
+    <div id="status-bar" class="status-error">Carregando Sistema...</div>
 
     <header>
-        <button class="cart-btn" onclick="app.toggleCart()">
+        <button class="cart-btn" onclick="window.app.toggleCart()">
             <i class="fas fa-shopping-bag"></i>
             <span class="cart-badge" id="cart-count">0</span>
         </button>
@@ -110,464 +73,351 @@
     <div class="hero">
         <img src="logo.jpg" class="brand-img" onerror="this.src='https://via.placeholder.com/200'">
         <h1>2A Modas e Perfumes</h1>
-        <p>Curadoria exclusiva de estilo e essência.</p>
+        <p>Estilo e essência em um só lugar.</p>
         <button class="btn-cta" onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})">Ver Coleção</button>
     </div>
 
     <div class="container" id="vitrine">
-        <nav class="nav-filters">
-            <button class="filter-btn active" onclick="app.filter('all', this)">Todos</button>
-            <button class="filter-btn" onclick="app.filter('feminino', this)">Feminino</button>
-            <button class="filter-btn" onclick="app.filter('infantil', this)">Infantil</button>
-            <button class="filter-btn" onclick="app.filter('perfumes', this)">Perfumes</button>
-        </nav>
-        <div id="loading-txt" style="text-align:center; padding:20px;">Carregando produtos...</div>
-        <div class="products-grid" id="products-list"></div>
+        <div style="text-align:center; margin-bottom:30px;">
+            <button onclick="window.app.filter('all')" class="btn-cta" style="padding:8px 20px; font-size:0.9rem;">Todos</button>
+            <button onclick="window.app.filter('feminino')" class="btn-cta" style="padding:8px 20px; font-size:0.9rem; background:transparent; color:#333; border:1px solid #ddd;">Feminino</button>
+            <button onclick="window.app.filter('perfumes')" class="btn-cta" style="padding:8px 20px; font-size:0.9rem; background:transparent; color:#333; border:1px solid #ddd;">Perfumes</button>
+        </div>
+        <div id="products-list" class="products-grid"></div>
     </div>
 
-    <div class="modal-overlay" id="product-modal">
-        <div class="modal-box">
-            <img id="m-img" style="width:100%; height:100%; object-fit:cover; min-height:300px;">
-            <div class="modal-content">
-                <button onclick="document.getElementById('product-modal').classList.remove('active')" style="position:absolute; top:20px; right:20px; border:none; background:none; font-size:1.5rem;">&times;</button>
-                <small id="m-cat" style="text-transform:uppercase; color:#999;">Cat</small>
-                <h2 id="m-title" style="margin:10px 0;">Produto</h2>
-                <div id="m-price" style="font-size:1.8rem; color:var(--primary); font-weight:bold; margin-bottom:20px;">R$ 0,00</div>
-                <p id="m-desc" style="color:#666; margin-bottom:20px; line-height:1.6;">Desc</p>
-
-                <div style="margin-bottom:20px;">
-                    <label style="font-weight:bold; display:block; margin-bottom:5px;">Escolha a Opção:</label>
-                    <div id="m-vars-area" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+    <div id="product-modal" class="overlay">
+        <div class="box">
+            <button onclick="document.getElementById('product-modal').classList.remove('active')" style="position:absolute; top:15px; right:15px; border:none; background:none; font-size:1.5rem;">&times;</button>
+            <div class="modal-grid">
+                <img id="m-img" style="width:100%; height:300px; object-fit:cover; border-radius:10px;">
+                <div>
+                    <h2 id="m-title">Produto</h2>
+                    <h3 id="m-price" style="color:var(--primary); margin:10px 0;">R$ 0,00</h3>
+                    <p id="m-desc" style="color:#666; margin-bottom:20px;">Desc</p>
+                    
+                    <label style="font-weight:bold;">Selecione:</label>
+                    <div id="m-vars" style="display:flex; flex-wrap:wrap; gap:10px; margin:10px 0;"></div>
+                    
+                    <div style="display:flex; align-items:center; gap:10px; margin-top:20px;">
+                        <button onclick="window.app.updQty(-1)" style="padding:5px 10px;">-</button>
+                        <span id="m-qty">1</span>
+                        <button onclick="window.app.updQty(1)" style="padding:5px 10px;">+</button>
+                    </div>
+                    <button onclick="window.app.addCart()" style="width:100%; background:var(--text); color:white; padding:15px; border-radius:8px; border:none; margin-top:20px;">Adicionar à Sacola</button>
                 </div>
-
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
-                    <strong>Qtd:</strong>
-                    <button onclick="app.updQty(-1)" style="padding:5px 12px; border:1px solid #ddd; background:white;">-</button>
-                    <span id="m-qty" style="font-weight:bold; width:30px; text-align:center;">1</span>
-                    <button onclick="app.updQty(1)" style="padding:5px 12px; border:1px solid #ddd; background:white;">+</button>
-                </div>
-                <button onclick="app.addCart()" style="width:100%; background:var(--secondary); color:white; padding:15px; border:none; border-radius:8px; font-weight:bold;">Adicionar à Sacola</button>
             </div>
         </div>
     </div>
 
-    <div class="cart-sidebar">
+    <div id="login-modal" class="overlay">
+        <div class="box" style="max-width:400px; text-align:center;">
+            <h2>Admin Login</h2><br>
+            <input type="email" id="adm-email" placeholder="Email" class="input-field">
+            <input type="password" id="adm-pass" placeholder="Senha" class="input-field">
+            <button onclick="window.admin.login()" class="btn-cta" style="width:100%;">Entrar</button>
+            <button onclick="document.getElementById('login-modal').classList.remove('active')" style="margin-top:10px; background:none; border:none; color:#888;">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="admin-modal" class="overlay" style="z-index:2001; background:#f4f6f9;">
+        <div class="box" style="max-width:1000px; height:100%; max-height:100%; border-radius:0;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <h2>Painel Administrativo</h2>
+                <button onclick="document.getElementById('admin-modal').classList.remove('active')" style="background:#e74c3c; color:white; border:none; padding:5px 15px; border-radius:5px;">Sair</button>
+            </div>
+
+            <div class="modal-grid">
+                <div>
+                    <h3>Novo Produto</h3>
+                    <input type="hidden" id="edit-id">
+                    <input type="text" id="f-name" placeholder="Nome" class="input-field">
+                    <div class="form-grid">
+                        <select id="f-cat" class="input-field">
+                            <option value="feminino">Feminino</option>
+                            <option value="infantil">Infantil</option>
+                            <option value="perfumes">Perfumes</option>
+                        </select>
+                        <input type="file" id="f-file" class="input-field">
+                    </div>
+                    
+                    <h4>Variações (Preço/Estoque)</h4>
+                    <div id="f-vars-list" style="margin-bottom:10px;"></div>
+                    <button onclick="window.admin.addVarRow()" style="background:#eee; padding:5px 10px; border:none; border-radius:5px; font-size:0.8rem;">+ Adicionar Opção</button>
+                    
+                    <textarea id="f-desc" placeholder="Descrição" class="input-field" style="margin-top:15px;"></textarea>
+                    
+                    <button onclick="window.admin.save()" id="btn-save" class="btn-cta" style="width:100%; background:#27ae60;">Salvar Produto</button>
+                    <button onclick="window.admin.clear()" style="width:100%; margin-top:10px; padding:10px; background:#eee; border:none;">Limpar</button>
+                </div>
+
+                <div style="border-left:1px solid #eee; padding-left:20px; overflow-y:auto; max-height:80vh;">
+                    <h3>Cadastrados</h3>
+                    <div id="admin-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
         <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-            <h3>Sua Sacola</h3>
-            <button onclick="app.toggleCart()" style="border:none; background:none; font-size:1.5rem;">&times;</button>
+            <h3>Sacola</h3>
+            <button onclick="window.app.toggleCart()" style="border:none; background:none; font-size:1.5rem;">&times;</button>
         </div>
         <ul id="cart-list" style="flex:1; overflow-y:auto; list-style:none;"></ul>
         <div style="border-top:1px solid #eee; padding-top:20px;">
             <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:10px;">
                 <span>Total</span> <span id="cart-total">R$ 0.00</span>
             </div>
-            <button onclick="app.checkoutWs()" style="background:#25D366; color:white; width:100%; padding:15px; border:none; border-radius:8px; font-weight:bold; display:flex; justify-content:center; gap:10px;"><i class="fab fa-whatsapp"></i> Pedir no WhatsApp</button>
-            <button class="btn-mp" onclick="app.checkoutMp()">
-                <img src="https://http2.mlstatic.com/frontend-assets/ui-navigation/5.18.9/mercadopago/logo__small.png" style="height:24px; filter:brightness(0) invert(1);"> Pagar com Mercado Pago
+            <button onclick="window.app.checkoutMp()" class="btn-mp">
+                <img src="https://http2.mlstatic.com/frontend-assets/ui-navigation/5.18.9/mercadopago/logo__small.png" style="height:24px; filter:brightness(0) invert(1);"> Pagar
             </button>
         </div>
     </div>
 
-    <div class="login-overlay" id="login-screen">
-        <div class="login-box">
-            <h2 style="margin-bottom:20px;">Acesso Administrativo</h2>
-            <input type="email" id="login-email" class="form-input" placeholder="E-mail" style="margin-bottom:15px;">
-            <input type="password" id="login-pass" class="form-input" placeholder="Senha" style="margin-bottom:20px;">
-            <button onclick="admin.auth()" style="width:100%; background:var(--primary); color:white; padding:12px; border:none; border-radius:8px; font-weight:bold;">Entrar</button>
-            <button onclick="admin.closeLogin()" style="margin-top:15px; background:none; border:none; color:#888;">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="admin-panel">
-        <div style="display:flex; justify-content:space-between; max-width:900px; margin:0 auto 20px; padding:0 20px;">
-            <h2 style="color:var(--secondary);">Gestão da Loja</h2>
-            <button onclick="admin.logout()" style="background:#e74c3c; color:white; padding:5px 15px; border-radius:5px; border:none;">Sair</button>
-        </div>
-
-        <div class="admin-nav">
-            <button class="admin-tab active" onclick="admin.tab('products')">Cadastro de Produtos</button>
-            <button class="admin-tab" onclick="admin.tab('stock')">Estoque & Vendas</button>
-        </div>
-
-        <div id="tab-products" class="admin-content active">
-            <form onsubmit="admin.save(event)">
-                <input type="hidden" id="edit-id">
-                
-                <h3 style="margin-bottom:15px;">Dados Básicos</h3>
-                <div class="form-grid">
-                    <div>
-                        <label class="form-label">Nome do Produto</label>
-                        <input type="text" id="f-name" class="form-input" required>
-                    </div>
-                    <div>
-                        <label class="form-label">Categoria</label>
-                        <select id="f-cat" class="form-input">
-                            <option value="feminino">Feminino</option>
-                            <option value="infantil">Infantil</option>
-                            <option value="perfumes">Perfumes</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-grid">
-                    <div>
-                        <label class="form-label">Imagem (Upload)</label>
-                        <input type="file" id="f-file" class="form-input" accept="image/*">
-                    </div>
-                    <div>
-                         <label class="form-label">Descrição</label>
-                         <input type="text" id="f-desc" class="form-input" placeholder="Breve descrição">
-                    </div>
-                </div>
-
-                <div style="background:#f0f8ff; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #cceeff;">
-                    <h4 style="margin-bottom:10px; color:#005580;">Calculadora de Venda (Base)</h4>
-                    <div class="form-grid">
-                        <div>
-                            <label class="form-label">Custo (R$)</label>
-                            <input type="number" id="calc-cost" class="form-input" step="0.01" oninput="admin.calcPrice()">
-                        </div>
-                        <div>
-                            <label class="form-label">Margem Lucro (%)</label>
-                            <input type="number" id="calc-margin" class="form-input" value="50" oninput="admin.calcPrice()">
-                        </div>
-                    </div>
-                    <div style="text-align:right; font-weight:bold; color:#005580;">
-                        Preço Sugerido: R$ <span id="calc-result">0.00</span>
-                    </div>
-                </div>
-
-                <h3 style="margin-bottom:10px;">Variações (Cor/Volume, Preço e Estoque)</h3>
-                <div class="variant-list" id="variant-container">
-                    </div>
-                <button type="button" class="btn-add-var" onclick="admin.addVariantRow()">+ Adicionar Variação</button>
-
-                <button type="submit" id="btn-save" class="btn-save">Salvar Produto</button>
-                <button type="button" onclick="admin.clear()" style="width:100%; margin-top:10px; padding:10px; background:#eee; border:none; border-radius:8px;">Limpar</button>
-            </form>
-
-            <div style="margin-top:40px;">
-                <h3>Produtos Cadastrados</h3>
-                <div id="admin-list" style="margin-top:15px;"></div>
-            </div>
-        </div>
-
-        <div id="tab-stock" class="admin-content">
-            <h3>Controle de Estoque Rápido</h3>
-            <p style="color:#666; font-size:0.9rem; margin-bottom:20px;">Visualize rapidamente o estoque total de cada produto.</p>
-            
-            <table style="width:100%; border-collapse:collapse;">
-                <thead>
-                    <tr style="background:#f4f4f4; text-align:left;">
-                        <th style="padding:10px;">Produto</th>
-                        <th style="padding:10px;">Variações (Estoque)</th>
-                        <th style="padding:10px;">Preço Base</th>
-                    </tr>
-                </thead>
-                <tbody id="stock-list-body"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <footer style="text-align:center; padding:40px; color:#aaa; font-size:0.8rem;">
-        &copy; 2025 2A Modas.<br><br>
-        <button onclick="admin.openLogin()" style="background:var(--secondary); color:white; border:none; padding:8px 20px; border-radius:5px;">Área Admin</button>
+    <footer style="text-align:center; padding:40px;">
+        <button onclick="document.getElementById('login-modal').classList.add('active')" style="background:none; border:none; color:#ccc;">Admin</button>
     </footer>
 
-    <script>
-        /* --- CONFIGURAÇÃO (COLE SUAS CHAVES AQUI) --- */
+    <script type="module">
+        // Importando do Google (Modular v10)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        // --- COLE SUAS CHAVES AQUI ---
         const firebaseConfig = {
             apiKey: "AIzaSyB1Z3Vy5-wVfJ7yelQ7b_GakJWjhmD338o",
             authDomain: "loja2a.firebaseapp.com",
             projectId: "loja2a",
             storageBucket: "loja2a.firebasestorage.app",
             messagingSenderId: "864712234172",
-            appId: "1:864712234172:web:670edd2de6d85fb118acb9",
-            measurementId: "G-26EMJRJ3EY"
+            appId: "1:864712234172:web:670edd2de6d85fb118acb9"
         };
         const CLOUD_URL = "https://criarpagamentoss-967029810770.southamerica-east1.run.app"; 
 
         // Inicialização
         let db, storage;
-        function updateStatus(type, msg) {
-            const el = document.getElementById('status-bar');
-            el.innerText = msg;
-            el.className = type === 'ok' ? 'status-ok' : 'status-error';
-            if(type === 'ok') setTimeout(()=>el.style.display='none', 3000);
-        }
-
         try {
-            if(firebaseConfig.apiKey.includes("COLE_SUA")) throw new Error("CHAVES FIREBASE NÃO CONFIGURADAS!");
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-            storage = firebase.storage();
-            updateStatus('ok', 'SISTEMA ONLINE - Conectado');
-        } catch (e) {
-            console.error(e); updateStatus('error', 'ERRO: ' + e.message);
+            if(firebaseConfig.apiKey.includes("COLE_SUA")) throw new Error("CHAVES NÃO CONFIGURADAS!");
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            storage = getStorage(app);
+            document.getElementById('status-bar').innerText = "SISTEMA ONLINE";
+            document.getElementById('status-bar').className = "status-ok";
+            setTimeout(() => document.getElementById('status-bar').style.display='none', 3000);
+        } catch(e) {
+            console.error(e);
+            document.getElementById('status-bar').innerText = "ERRO: " + e.message;
         }
 
-        const state = { products: [], cart: [], current: null, var: null, qty: 1 };
+        // --- LÓGICA GERAL (Window Binding) ---
+        window.state = { products: [], cart: [], item: null, var: null, qty: 1 };
 
-        // --- APP ---
-        const app = {
-            init: () => {
-                if(!db) return;
-                db.collection("products").onSnapshot(snap => {
-                    state.products = [];
-                    snap.forEach(doc => state.products.push({id: doc.id, ...doc.data()}));
-                    app.render(state.products);
-                    admin.renderList();
-                    admin.renderStock();
-                    document.getElementById('loading-txt').style.display='none';
-                });
+        window.app = {
+            toggleCart: () => document.querySelector('.sidebar').classList.toggle('open'),
+            
+            updQty: (n) => {
+                window.state.qty += n;
+                if(window.state.qty < 1) window.state.qty = 1;
+                document.getElementById('m-qty').innerText = window.state.qty;
             },
 
-            render: (list) => {
-                const div = document.getElementById('products-list'); div.innerHTML = "";
-                list.forEach(p => {
-                    // Pega o menor preço das variações para exibir "A partir de"
-                    let minPrice = p.variations && p.variations.length > 0 
-                        ? Math.min(...p.variations.map(v => parseFloat(v.price))) 
-                        : 0;
-                    
-                    div.innerHTML += `
-                        <div class="product-card" onclick="app.modal('${p.id}')">
-                            <img src="${p.image}" class="card-img">
-                            <div class="card-info">
-                                <small style="text-transform:uppercase; color:#999;">${p.category}</small>
-                                <div style="font-weight:600; margin:5px 0;">${p.name}</div>
-                                <div class="p-price">A partir de R$ ${minPrice.toFixed(2)}</div>
-                            </div>
-                        </div>`;
-                });
-            },
-
-            filter: (cat, btn) => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                app.render(cat === 'all' ? state.products : state.products.filter(p => p.category === cat));
+            filter: (cat) => {
+                const list = cat === 'all' ? window.state.products : window.state.products.filter(p => p.category === cat);
+                renderProducts(list);
             },
 
             modal: (id) => {
-                const p = state.products.find(x => x.id === id);
-                state.current = p; state.qty = 1; state.var = null;
+                const p = window.state.products.find(x => x.id === id);
+                window.state.item = p; window.state.qty = 1; window.state.var = null;
                 
                 document.getElementById('m-img').src = p.image;
                 document.getElementById('m-title').innerText = p.name;
-                document.getElementById('m-desc').innerText = p.desc;
                 document.getElementById('m-price').innerText = "Selecione...";
-                
-                const varsDiv = document.getElementById('m-vars-area'); varsDiv.innerHTML = "";
-                if(p.variations) {
-                    p.variations.forEach((v, idx) => {
-                        const stockMsg = v.stock > 0 ? '' : ' (Esgotado)';
-                        const disabled = v.stock > 0 ? '' : 'disabled style="opacity:0.5"';
-                        varsDiv.innerHTML += `<button ${disabled} onclick="app.selVar(${idx}, this)" style="padding:10px; border:1px solid #ddd; background:white; border-radius:5px; cursor:pointer;">
-                            ${v.name} - R$ ${parseFloat(v.price).toFixed(2)}${stockMsg}
-                        </button>`;
-                    });
-                }
+                document.getElementById('m-desc').innerText = p.desc;
+                document.getElementById('m-qty').innerText = 1;
+
+                const vars = document.getElementById('m-vars'); vars.innerHTML = "";
+                p.variations.forEach((v, idx) => {
+                    const btn = document.createElement('button');
+                    btn.innerHTML = `${v.name} (R$ ${v.price})`;
+                    btn.style.padding = "8px"; btn.style.border = "1px solid #ddd"; btn.style.background = "white"; btn.style.borderRadius="5px";
+                    btn.onclick = () => {
+                        window.state.var = v;
+                        document.getElementById('m-price').innerText = `R$ ${parseFloat(v.price).toFixed(2)}`;
+                        Array.from(vars.children).forEach(b => b.style.background = 'white');
+                        btn.style.background = '#eee';
+                    };
+                    vars.appendChild(btn);
+                });
                 document.getElementById('product-modal').classList.add('active');
             },
 
-            selVar: (idx, el) => {
-                const v = state.current.variations[idx];
-                state.var = v;
-                document.getElementById('m-price').innerText = `R$ ${parseFloat(v.price).toFixed(2)}`;
-                
-                // Visual
-                const btns = document.getElementById('m-vars-area').children;
-                for(let b of btns) b.style.background = 'white';
-                el.style.background = '#ddd';
-            },
-
-            updQty: (n) => { state.qty += n; if(state.qty<1) state.qty=1; document.getElementById('m-qty').innerText=state.qty; },
-
             addCart: () => {
-                if(!state.var) return alert("Selecione uma variação.");
-                if(state.var.stock < state.qty) return alert("Estoque insuficiente.");
-                
-                state.cart.push({
-                    id: state.current.id,
-                    name: state.current.name,
-                    variantName: state.var.name,
-                    price: parseFloat(state.var.price),
-                    qty: state.qty
+                if(!window.state.var) return alert("Selecione uma opção.");
+                window.state.cart.push({
+                    name: window.state.item.name,
+                    variant: window.state.var.name,
+                    price: parseFloat(window.state.var.price),
+                    qty: window.state.qty
                 });
-                app.renderCart(); document.getElementById('product-modal').classList.remove('active'); app.toggleCart();
+                renderCart();
+                document.getElementById('product-modal').classList.remove('active');
+                window.app.toggleCart();
             },
 
-            renderCart: () => {
-                const ul = document.getElementById('cart-list'); ul.innerHTML = ""; let t = 0;
-                state.cart.forEach((i, idx) => {
-                    t += i.price * i.qty;
-                    ul.innerHTML += `<li style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
-                        <div><strong>${i.name}</strong><br><small>${i.variantName} x${i.qty}</small></div>
-                        <div style="text-align:right">R$ ${(i.price*i.qty).toFixed(2)}<br><small onclick="state.cart.splice(${idx},1);app.renderCart()" style="color:red; cursor:pointer;">remover</small></div>
-                    </li>`;
-                });
-                document.getElementById('cart-total').innerText = `R$ ${t.toFixed(2)}`;
-                document.getElementById('cart-count').innerText = state.cart.length;
-            },
-            toggleCart: () => document.querySelector('.cart-sidebar').classList.toggle('open'),
-
-            checkoutWs: () => {
-                if(!state.cart.length) return alert("Vazio");
-                let msg = "Olá! Pedido 2A Modas:\n"; let t=0;
-                state.cart.forEach(i=>{ msg+=`${i.name} (${i.variantName}) x${i.qty}\n`; t+=i.price*i.qty; });
-                msg+=`\nTotal: R$ ${t.toFixed(2)}`;
-                window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(msg)}`);
-            },
             checkoutMp: async () => {
-                if(!state.cart.length) return alert("Vazio");
-                const btn = document.querySelector('.btn-mp'); btn.innerText="Processando..."; btn.disabled=true;
+                if(!window.state.cart.length) return alert("Vazio");
+                const btn = document.querySelector('.btn-mp'); 
+                const originalText = btn.innerHTML;
+                btn.innerText = "Processando..."; btn.disabled = true;
                 try {
-                    const items = state.cart.map(i=>({name:i.name, price:i.price, qty:i.qty, variant:i.variantName}));
+                    const items = window.state.cart.map(i => ({name: i.name, variant: i.variant, price: i.price, qty: i.qty}));
                     const res = await fetch(CLOUD_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({items})});
                     const data = await res.json();
-                    if(data.init_point) window.location.href=data.init_point; else alert("Erro link");
-                } catch(e){ console.error(e); alert("Erro conexão"); }
-                finally { btn.innerText="Pagar com Mercado Pago"; btn.disabled=false; }
+                    if(data.init_point) window.location.href = data.init_point;
+                    else alert("Erro ao gerar link");
+                } catch(e) { alert("Erro conexão"); }
+                finally { btn.innerHTML = originalText; btn.disabled = false; }
             }
         };
 
-        // --- ADMIN ---
-        const admin = {
-            openLogin: () => document.getElementById('login-screen').style.display = 'flex',
-            closeLogin: () => document.getElementById('login-screen').style.display = 'none',
-            
-            auth: () => {
-                const e = document.getElementById('login-email').value;
-                const p = document.getElementById('login-pass').value;
+        // --- LÓGICA ADMIN (Window Binding) ---
+        window.admin = {
+            login: () => {
+                const e = document.getElementById('adm-email').value;
+                const p = document.getElementById('adm-pass').value;
                 if(e === "admin@2a.com" && p === "admin123") {
-                    admin.closeLogin();
-                    document.getElementById('admin-panel').classList.add('active');
-                } else alert("Dados incorretos");
-            },
-            logout: () => document.getElementById('admin-panel').classList.remove('active'),
-            
-            tab: (t) => {
-                document.querySelectorAll('.admin-content').forEach(d => d.classList.remove('active'));
-                document.getElementById('tab-'+t).classList.add('active');
-                document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
-                event.target.classList.add('active');
+                    document.getElementById('login-modal').classList.remove('active');
+                    document.getElementById('admin-modal').classList.add('active');
+                    loadAdminList();
+                } else alert("Dados inválidos");
             },
 
-            // Calculadora
-            calcPrice: () => {
-                const cost = parseFloat(document.getElementById('calc-cost').value) || 0;
-                const margin = parseFloat(document.getElementById('calc-margin').value) || 0;
-                const sell = cost + (cost * (margin/100));
-                document.getElementById('calc-result').innerText = sell.toFixed(2);
-            },
-
-            // Variantes Dinâmicas
-            addVariantRow: (data = {name:'', price:'', stock:''}) => {
-                const div = document.getElementById('variant-container');
+            addVarRow: () => {
+                const div = document.getElementById('f-vars-list');
                 const row = document.createElement('div');
-                row.className = 'variant-row';
+                row.className = 'var-row';
                 row.innerHTML = `
-                    <input type="text" class="form-input var-name" placeholder="Nome (Ex: P, G, 50ml)" value="${data.name}">
-                    <input type="number" class="form-input var-price" placeholder="Preço" step="0.01" value="${data.price}">
-                    <input type="number" class="form-input var-stock" placeholder="Estoque" value="${data.stock}">
-                    <button type="button" onclick="this.parentElement.remove()" style="color:red; border:none; background:none;">X</button>
+                    <input type="text" placeholder="Opção (Ex: P, 50ml)" class="input-field var-name" style="margin:0;">
+                    <input type="number" placeholder="Preço" class="input-field var-price" style="margin:0;">
+                    <input type="number" placeholder="Estoque" class="input-field var-stock" style="margin:0;">
+                    <button onclick="this.parentElement.remove()" style="color:red; border:none; background:none;">X</button>
                 `;
                 div.appendChild(row);
             },
 
-            save: async (e) => {
-                e.preventDefault();
-                const btn = document.getElementById('btn-save'); btn.innerText="Salvando..."; btn.disabled=true;
-                
+            save: async () => {
+                const btn = document.getElementById('btn-save'); btn.innerText = "Salvando..."; btn.disabled = true;
                 try {
-                    // 1. Coletar Variações
-                    const varRows = document.querySelectorAll('.variant-row');
-                    let variations = [];
-                    varRows.forEach(row => {
-                        variations.push({
+                    if(!db) throw new Error("Banco de dados não conectado");
+
+                    // 1. Variações
+                    const vars = [];
+                    document.querySelectorAll('.var-row').forEach(row => {
+                        vars.push({
                             name: row.querySelector('.var-name').value,
-                            price: parseFloat(row.querySelector('.var-price').value) || 0,
-                            stock: parseInt(row.querySelector('.var-stock').value) || 0
+                            price: row.querySelector('.var-price').value,
+                            stock: row.querySelector('.var-stock').value
                         });
                     });
+                    if(!vars.length) throw new Error("Adicione variações");
 
-                    if(variations.length === 0) throw new Error("Adicione pelo menos uma variação (Ex: Único).");
-
-                    // 2. Upload Imagem
+                    // 2. Upload
                     const file = document.getElementById('f-file').files[0];
-                    let imgUrl = "";
+                    let imgUrl = "https://via.placeholder.com/300";
                     if(file) {
-                        const ref = storage.ref(`produtos/${Date.now()}_${file.name}`);
-                        await ref.put(file);
-                        imgUrl = await ref.getDownloadURL();
-                    } else if(!document.getElementById('edit-id').value) {
-                        imgUrl = "https://via.placeholder.com/300";
+                        const storageRef = ref(storage, `produtos/${Date.now()}_${file.name}`);
+                        await uploadBytes(storageRef, file);
+                        imgUrl = await getDownloadURL(storageRef);
                     }
 
-                    // 3. Objeto Final
                     const data = {
                         name: document.getElementById('f-name').value,
                         category: document.getElementById('f-cat').value,
                         desc: document.getElementById('f-desc').value,
-                        variations: variations,
-                        costPrice: parseFloat(document.getElementById('calc-cost').value) || 0 // Salva custo para referência
+                        image: imgUrl,
+                        variations: vars
                     };
-                    if(imgUrl) data.image = imgUrl;
 
-                    // 4. Salvar
-                    const id = document.getElementById('edit-id').value;
-                    if(id) await db.collection("products").doc(id).update(data);
-                    else await db.collection("products").add(data);
+                    await addDoc(collection(db, "products"), data);
+                    alert("Salvo!"); window.admin.clear();
 
-                    alert("Salvo!"); admin.clear();
-                } catch(err) { console.error(err); alert("Erro: " + err.message); }
-                finally { btn.innerText="Salvar Produto"; btn.disabled=false; }
+                } catch(e) {
+                    console.error(e);
+                    alert("Erro ao salvar: " + e.message + "\n(Verifique as Regras do Firestore)");
+                } finally {
+                    btn.innerText = "Salvar Produto"; btn.disabled = false;
+                }
             },
 
             clear: () => {
-                document.querySelector('form').reset();
-                document.getElementById('edit-id').value="";
-                document.getElementById('variant-container').innerHTML="";
-                admin.addVariantRow(); // Adiciona uma linha vazia por padrão
+                document.getElementById('f-name').value = "";
+                document.getElementById('f-desc').value = "";
+                document.getElementById('f-file').value = "";
+                document.getElementById('f-vars-list').innerHTML = "";
+                window.admin.addVarRow();
             },
 
-            renderList: () => {
-                const l = document.getElementById('admin-list'); l.innerHTML="";
-                state.products.forEach(p => {
-                    l.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <img src="${p.image}" style="width:40px; height:40px; object-fit:cover;">
-                            <strong>${p.name}</strong>
-                        </div>
-                        <button onclick="admin.del('${p.id}')" style="color:red; border:none; background:none;">Excluir</button>
-                    </div>`;
-                });
-            },
-
-            renderStock: () => {
-                const b = document.getElementById('stock-list-body'); b.innerHTML="";
-                state.products.forEach(p => {
-                    let varsHtml = "";
-                    if(p.variations) {
-                        p.variations.forEach(v => {
-                            let color = v.stock < 5 ? 'red' : 'green';
-                            varsHtml += `<span style="display:block; font-size:0.85rem;">${v.name}: <b style="color:${color}">${v.stock} un</b></span>`;
-                        });
-                    }
-                    b.innerHTML += `<tr style="border-bottom:1px solid #eee;">
-                        <td style="padding:10px;">${p.name}</td>
-                        <td style="padding:10px;">${varsHtml}</td>
-                        <td style="padding:10px;">Custo: R$ ${p.costPrice || 0}</td>
-                    </tr>`;
-                });
-            },
-
-            del: async (id) => { if(confirm("Excluir?")) await db.collection("products").doc(id).delete(); }
+            del: async (id) => {
+                if(confirm("Excluir?")) await deleteDoc(doc(db, "products", id));
+            }
         };
 
-        // Iniciar
-        app.init();
-        admin.addVariantRow(); // Inicia com uma linha de variação
+        // --- FUNÇÕES AUXILIARES ---
+        function renderProducts(list) {
+            const div = document.getElementById('products-list'); div.innerHTML = "";
+            list.forEach(p => {
+                const minPrice = p.variations ? Math.min(...p.variations.map(v => v.price)) : 0;
+                div.innerHTML += `
+                    <div class="product-card" onclick="window.app.modal('${p.id}')">
+                        <img src="${p.image}" class="card-img">
+                        <div class="card-info">
+                            <small>${p.category}</small>
+                            <h4>${p.name}</h4>
+                            <div style="color:var(--primary); font-weight:bold;">A partir de R$ ${minPrice.toFixed(2)}</div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function renderCart() {
+            const ul = document.getElementById('cart-list'); ul.innerHTML = ""; let t = 0;
+            window.state.cart.forEach((i, idx) => {
+                t += i.price * i.qty;
+                ul.innerHTML += `<li style="padding:10px; border-bottom:1px solid #eee;">
+                    <strong>${i.name}</strong> (${i.variant})<br>
+                    R$ ${i.price} x ${i.qty}
+                    <button onclick="window.state.cart.splice(${idx},1); renderCart()" style="color:red; border:none; background:none; float:right;">Remover</button>
+                </li>`;
+            });
+            document.getElementById('cart-total').innerText = `R$ ${t.toFixed(2)}`;
+            document.getElementById('cart-count').innerText = window.state.cart.length;
+        }
+
+        function loadAdminList() {
+            onSnapshot(collection(db, "products"), (snap) => {
+                const div = document.getElementById('admin-list'); div.innerHTML = "";
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    div.innerHTML += `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+                        <span>${d.name}</span>
+                        <button onclick="window.admin.del('${doc.id}')" style="color:red; border:none; background:none;">Excluir</button>
+                    </div>`;
+                });
+            });
+        }
+
+        // INICIALIZAÇÃO
+        if(db) {
+            onSnapshot(collection(db, "products"), (snap) => {
+                window.state.products = [];
+                snap.forEach(doc => window.state.products.push({id: doc.id, ...doc.data()}));
+                renderProducts(window.state.products);
+            });
+        }
+        window.admin.addVarRow(); // Iniciar com uma linha
     </script>
 </body>
 </html>
