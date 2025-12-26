@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2A Modas e Perfumes | Loja Oficial</title>
+    <title>2A Modas e Perfumes</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,9 +16,8 @@
             --accent: #2c3e50;
             --bg: #f8f9fa;
             --white: #ffffff;
-            --glass: rgba(255, 255, 255, 0.95);
-            --shadow: 0 10px 40px rgba(0,0,0,0.08);
             --radius: 12px;
+            --shadow: 0 10px 40px rgba(0,0,0,0.08);
         }
 
         * { margin:0; padding:0; box-sizing:border-box; outline:none; font-family:'Plus Jakarta Sans', sans-serif; }
@@ -42,7 +41,7 @@
         .hero h1 { font-size:3.5rem; margin-bottom:10px; color:var(--accent); }
         .btn-cta { padding:15px 40px; background:var(--accent); color:white; border-radius:50px; border:none; font-weight:600; font-size:1rem; box-shadow:0 10px 20px rgba(44,62,80,0.2); }
 
-        /* PRODUTOS */
+        /* VITRINE */
         .container { max-width:1200px; margin:0 auto; padding:40px 20px; }
         .filters { display:flex; justify-content:center; gap:10px; margin-bottom:50px; flex-wrap:wrap; }
         .filter-btn { padding:10px 25px; border-radius:30px; border:1px solid #eee; background:white; color:#666; font-weight:600; }
@@ -64,10 +63,12 @@
         .box { background:white; width:100%; max-width:900px; border-radius:20px; overflow:hidden; max-height:90vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow:var(--shadow); }
         .modal-content { padding:40px; position:relative; }
         
-        .var-btn { padding:10px; border:1px solid #eee; border-radius:8px; background:white; margin:5px; cursor:pointer; font-size:0.9rem; transition:0.2s; }
+        /* VARIAÇÕES COM CORES VISUAIS */
+        .var-btn { padding:10px; border:1px solid #eee; border-radius:8px; background:white; margin:5px; cursor:pointer; font-size:0.9rem; transition:0.2s; display:inline-flex; align-items:center; gap:8px; }
         .var-btn:hover { border-color:var(--primary); }
         .var-btn.selected { background:var(--accent); color:white; border-color:var(--accent); }
         .var-btn.disabled { opacity:0.5; cursor:not-allowed; background:#f5f5f5; color:#999; }
+        .color-dot { width:18px; height:18px; border-radius:50%; border:1px solid rgba(0,0,0,0.1); display:inline-block; }
 
         /* SIDEBAR CARRINHO */
         .sidebar { position:fixed; top:0; right:-500px; width:450px; height:100%; background:white; z-index:3000; padding:30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s; display:flex; flex-direction:column; }
@@ -79,29 +80,46 @@
         .qty-btn { width:25px; height:25px; border:none; background:white; border-radius:4px; display:flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; }
         
         /* BOTÕES CARRINHO */
-        .btn-addr-trigger { width:100%; padding:15px; border:2px dashed var(--accent); background:none; border-radius:12px; color:var(--accent); font-weight:bold; cursor:pointer; margin-bottom:15px; transition:0.3s; }
+        .btn-addr-trigger { width:100%; padding:15px; border:2px dashed var(--accent); background:none; border-radius:12px; color:var(--accent); font-weight:bold; cursor:pointer; margin-bottom:15px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; }
         .btn-addr-trigger:hover { background:var(--bg); border-color:var(--primary); color:var(--primary); }
         .btn-addr-trigger.filled { border-style:solid; border-color:#27ae60; background:#eafff0; color:#27ae60; }
 
         .btn-mp { background:#009EE3; color:white; width:100%; padding:16px; border-radius:12px; border:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9rem; margin-top:10px; }
         .btn-whats { background:#25D366; color:white; width:100%; padding:16px; border-radius:12px; border:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9rem; }
 
+        /* MODAL ENDEREÇO (ALINHADO A ESQUERDA) */
+        #address-modal { justify-content: flex-start; padding-left: 5%; } /* Alinha a esquerda */
+        #address-modal .box { width: 100%; max-width: 450px; display: block; padding: 25px; border-radius: 12px; height: auto; max-height: 90vh; }
+        .addr-card { border:1px solid #eee; padding:15px; border-radius:8px; margin-bottom:10px; cursor:pointer; transition:0.2s; position:relative; }
+        .addr-card:hover { border-color:var(--primary); background:#f9f9f9; }
+        .addr-card.active { border-color:var(--accent); background:#eef2f5; border-width:2px; }
+        .addr-card .del-addr { position:absolute; top:10px; right:10px; color:#e74c3c; cursor:pointer; }
+
         /* ADMIN */
         .admin-nav { padding:20px; background:white; border-bottom:1px solid #eee; display:flex; gap:15px; position:sticky; top:0; z-index:10; }
         .admin-tab { padding:10px 20px; border-radius:30px; border:1px solid #eee; background:transparent; font-weight:600; color:#666; }
         .admin-tab.active { background:var(--accent); color:white; border-color:var(--accent); }
-        .checkbox-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #eee; }
+        
+        .checkbox-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:10px; background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #eee; }
+        .check-label { display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer; user-select:none; background:white; padding:5px; border-radius:5px; border:1px solid #eee; }
+        .check-label input { accent-color:var(--accent); width:16px; height:16px; }
+        
         .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; animation:slideDown 0.3s ease; }
         .var-inputs.show { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
         @keyframes slideDown { from{opacity:0; transform:translateY(-10px)} to{opacity:1; transform:translateY(0)} }
         .input { width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; margin-bottom:10px; }
 
-        @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} }
+        @media(max-width:768px){ 
+            .box{grid-template-columns:1fr;} 
+            .sidebar{width:100%;} 
+            .hero{padding-top:80px;} 
+            #address-modal { justify-content: center; padding-left: 20px; } /* Centraliza no mobile */
+        }
     </style>
 </head>
 <body>
 
-    <div id="status-bar" class="err">Carregando...</div>
+    <div id="status-bar" class="err">Conectando...</div>
 
     <div class="header-floating">
         <button class="cart-btn" onclick="app.toggleCart()">
@@ -137,8 +155,10 @@
                 <h2 id="m-title" style="margin:10px 0;">Nome</h2>
                 <h3 id="m-price" style="color:var(--accent); margin-bottom:15px;">R$ 0,00</h3>
                 <p id="m-desc" style="color:#666; margin-bottom:30px;">Descrição...</p>
-                <label style="font-weight:bold; display:block; margin-bottom:10px;">Opções:</label>
+                
+                <label style="font-weight:bold; display:block; margin-bottom:10px;">Opções Disponíveis:</label>
                 <div id="m-vars" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:30px;"></div>
+                
                 <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
                     <span style="font-weight:bold;">Qtd:</span>
                     <div style="border:1px solid #ddd; border-radius:8px; display:flex;">
@@ -153,18 +173,22 @@
     </div>
 
     <div id="address-modal" class="overlay">
-        <div class="box" style="max-width:500px; display:block; padding:30px;">
-            <h3 style="margin-bottom:20px; text-align:center;">Local de Entrega</h3>
-            <p style="text-align:center; color:#666; font-size:0.9rem; margin-bottom:20px;">Preencha para calcular a entrega ou finalizar o pedido.</p>
+        <div class="box">
+            <h3 style="margin-bottom:15px;">Meus Endereços</h3>
             
-            <input type="text" id="addr-name" class="input" placeholder="Nome Completo *" required>
-            <input type="text" id="addr-phone" class="input" placeholder="Telefone / WhatsApp *" required>
-            <input type="text" id="addr-street" class="input" placeholder="Rua e Número *" required>
-            <input type="text" id="addr-bairro" class="input" placeholder="Bairro *" required>
-            <input type="text" id="addr-ref" class="input" placeholder="Ponto de Referência">
+            <div id="saved-addresses-list" style="max-height:200px; overflow-y:auto; margin-bottom:20px;">
+                </div>
+
+            <div style="background:#f9f9f9; padding:15px; border-radius:8px; border:1px solid #eee;">
+                <h4 style="margin-bottom:10px; font-size:0.9rem;">+ Novo Endereço</h4>
+                <input type="text" id="addr-name" class="input" placeholder="Nome Completo *" style="margin-bottom:5px;">
+                <input type="text" id="addr-phone" class="input" placeholder="Telefone / WhatsApp *" style="margin-bottom:5px;">
+                <input type="text" id="addr-street" class="input" placeholder="Rua, Número e Bairro *" style="margin-bottom:5px;">
+                <input type="text" id="addr-ref" class="input" placeholder="Ponto de Referência" style="margin-bottom:5px;">
+                <button onclick="app.addNewAddress()" style="width:100%; background:var(--accent); color:white; padding:10px; border-radius:8px; border:none; font-weight:bold;">Adicionar</button>
+            </div>
             
-            <button onclick="app.saveAddress()" style="width:100%; background:var(--accent); color:white; padding:15px; border-radius:8px; border:none; font-weight:bold; margin-top:10px;">Salvar Local</button>
-            <button onclick="document.getElementById('address-modal').classList.remove('active')" style="width:100%; background:none; border:none; color:#666; margin-top:10px;">Cancelar</button>
+            <button onclick="document.getElementById('address-modal').classList.remove('active')" style="width:100%; background:none; border:none; color:#666; margin-top:10px; padding:10px;">Fechar</button>
         </div>
     </div>
 
@@ -180,7 +204,7 @@
         
         <div style="border-top:1px solid #eee; padding-top:20px;">
             
-            <button id="btn-address-trigger" onclick="document.getElementById('address-modal').classList.add('active')" class="btn-addr-trigger">
+            <button id="btn-address-trigger" onclick="app.openAddressModal()" class="btn-addr-trigger">
                 <i class="fas fa-map-marker-alt"></i> Cadastrar local de entrega
             </button>
 
@@ -193,7 +217,7 @@
             </button>
             
             <button onclick="app.checkoutMp()" class="btn-mp">
-                <img src="https://logopng.com.br/logos/mercado-pago-85.png" style="height:20px; filter:brightness(0) invert(1);"> Via Pix/Cartão
+                Via Pix/Cartão de Crédito e Débito
             </button>
         </div>
     </div>
@@ -235,11 +259,16 @@
                             <div class="stat-val" id="stat-prof" style="font-size:1.8rem; font-weight:bold; color:var(--accent); margin-top:5px;">R$ 0.00</div>
                         </div>
                     </div>
-                    <div style="background:white; padding:25px; border-radius:12px; border:1px solid #eee;">
-                        <h4>Estoque por Categoria</h4>
-                        <div style="max-width:400px; margin:0 auto;"><canvas id="chartStock"></canvas></div>
-                        <h4 style="margin-top:20px;">Estoque Detalhado</h4>
-                        <div id="stock-list" style="margin-top:15px;"></div>
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px;">
+                        <div style="background:white; padding:25px; border-radius:12px; border:1px solid #eee;">
+                            <h4>Estoque por Categoria</h4>
+                            <div style="max-width:300px; margin:0 auto;"><canvas id="chartStock"></canvas></div>
+                        </div>
+                        <div style="background:white; padding:25px; border-radius:12px; border:1px solid #eee;">
+                            <h4>Alertas de Estoque Baixo</h4>
+                            <div id="low-stock-list" style="margin-top:15px;"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -288,7 +317,7 @@
                             <label style="font-weight:bold; font-size:0.85rem; display:block; margin-bottom:5px; margin-top:20px;">Descrição</label>
                             <textarea id="f-desc" class="input" rows="3"></textarea>
                             
-                            <button onclick="admin.save()" id="btn-save" style="width:100%; background:var(--success, #27ae60); color:white; padding:15px; border-radius:8px; border:none; font-weight:bold; margin-top:20px;">Salvar Produto</button>
+                            <button onclick="admin.save()" id="btn-save" style="width:100%; background:var(--success, #27ae60); color:white; padding:15px; border-radius:8px; border:none; font-weight:bold; margin-top:20px; font-size:1rem;">Salvar Produto</button>
                             <button onclick="admin.clear()" style="width:100%; margin-top:10px; background:white; border:1px solid #ddd; padding:10px; border-radius:8px;">Limpar / Cancelar</button>
                         </div>
 
@@ -315,25 +344,27 @@
         const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const state = { products: [], cart: [], current: null, var: null, qty: 1, address: null };
-        const PRESET_COLORS = ['Preto', 'Branco', 'Vermelho', 'Azul', 'Rosa', 'Verde', 'Nude', 'Estampado'];
+        const state = { products: [], cart: [], current: null, var: null, qty: 1, activeAddress: null };
+        
+        // MAPA DE CORES VISUAIS
+        const COLOR_MAP = {
+            'Preto': '#000000', 'Branco': '#ffffff', 'Vermelho': '#e74c3c', 'Azul': '#3498db', 
+            'Rosa': '#e91e63', 'Verde': '#2ecc71', 'Nude': '#e3c0a5', 'Estampado': 'linear-gradient(45deg, red, blue)',
+            'Bege': '#f5f5dc', 'Amarelo': '#f1c40f', 'Cinza': '#95a5a6'
+        };
         const PRESET_VOLUMES = ['25ml', '50ml', '75ml', '100ml', '200ml'];
 
         // --- INIT ---
         (async function init() {
-            // RETORNO AUTOMÁTICO DO MERCADO PAGO
+            // RETORNO AUTOMÁTICO
             const urlParams = new URLSearchParams(window.location.search);
             if(urlParams.get('status') === 'approved') {
                 const savedCart = localStorage.getItem('2a_cart');
-                const savedAddr = localStorage.getItem('2a_addr');
+                const savedAddr = localStorage.getItem('2a_active_addr');
                 if(savedCart && savedAddr) {
                     state.cart = JSON.parse(savedCart);
-                    state.address = JSON.parse(savedAddr);
-                    
-                    // Limpa URL
+                    state.activeAddress = JSON.parse(savedAddr);
                     window.history.replaceState({}, document.title, "/");
-                    
-                    // Abre WhatsApp com o pedido pago
                     app.sendPaidOrder();
                 }
             }
@@ -345,13 +376,7 @@
                 status.className='ok'; status.innerText="SISTEMA ONLINE"; setTimeout(()=>status.style.top='-30px', 3000);
                 app.load();
                 admin.initCheckboxes();
-                
-                // Carrega endereço salvo
-                const localAddr = localStorage.getItem('2a_addr');
-                if(localAddr) {
-                    state.address = JSON.parse(localAddr);
-                    app.updateAddressUI();
-                }
+                app.loadAddresses(); // Carrega lista de endereços
             } catch(e) {
                 status.className='err'; status.innerText="ERRO DE CONEXÃO: " + e.message;
             }
@@ -414,7 +439,16 @@
                     const btn = document.createElement('button');
                     const hasStock = parseInt(v.stock) > 0;
                     btn.className = hasStock ? 'var-btn' : 'var-btn disabled';
-                    btn.innerHTML = `${v.name} <br> <b>R$ ${parseFloat(v.price).toFixed(2)}</b>`;
+                    
+                    // Lógica da Bolinha Colorida
+                    let colorDot = "";
+                    if(COLOR_MAP[v.name]) {
+                        const bg = COLOR_MAP[v.name];
+                        colorDot = `<span class="color-dot" style="background:${bg};"></span>`;
+                    }
+
+                    btn.innerHTML = `${colorDot} ${v.name} - <b>R$ ${parseFloat(v.price).toFixed(2)}</b>`;
+                    
                     if(hasStock) {
                         btn.onclick = () => {
                             state.var = v;
@@ -488,39 +522,99 @@
             cartRemove: (idx) => { state.cart.splice(idx, 1); app.renderCart(); },
             toggleCart: () => document.querySelector('.sidebar').classList.toggle('open'),
 
-            // --- ENDEREÇO E PAGAMENTO ---
-            saveAddress: () => {
+            // --- ENDEREÇOS MÚLTIPLOS ---
+            loadAddresses: () => {
+                const saved = localStorage.getItem('2a_addresses');
+                const list = saved ? JSON.parse(saved) : [];
+                const active = localStorage.getItem('2a_active_addr');
+                if(active) {
+                    state.activeAddress = JSON.parse(active);
+                    app.updateAddressUI();
+                }
+                
+                const container = document.getElementById('saved-addresses-list');
+                container.innerHTML = "";
+                
+                list.forEach((addr, idx) => {
+                    const isActive = state.activeAddress && state.activeAddress.street === addr.street;
+                    container.innerHTML += `
+                    <div class="addr-card ${isActive ? 'active' : ''}" onclick="app.selectAddress(${idx})">
+                        <strong>${addr.name}</strong><br>
+                        <small>${addr.street}, ${addr.bairro}</small>
+                        <i class="fas fa-trash del-addr" onclick="event.stopPropagation(); app.deleteAddress(${idx})"></i>
+                    </div>`;
+                });
+            },
+
+            addNewAddress: () => {
                 const name = document.getElementById('addr-name').value;
                 const phone = document.getElementById('addr-phone').value;
                 const street = document.getElementById('addr-street').value;
-                const bairro = document.getElementById('addr-bairro').value;
                 const ref = document.getElementById('addr-ref').value;
-
-                if(!name || !phone || !street || !bairro) return alert("Preencha os campos obrigatórios (*)");
-
-                state.address = { name, phone, street, bairro, ref };
-                localStorage.setItem('2a_addr', JSON.stringify(state.address));
                 
-                document.getElementById('address-modal').classList.remove('active');
+                if(!name || !street) return alert("Preencha os campos obrigatórios");
+                
+                const saved = localStorage.getItem('2a_addresses');
+                const list = saved ? JSON.parse(saved) : [];
+                
+                const newAddr = { name, phone, street, bairro: street.split(',')[1] || '', ref };
+                list.push(newAddr);
+                
+                localStorage.setItem('2a_addresses', JSON.stringify(list));
+                
+                // Limpa form
+                document.getElementById('addr-name').value = "";
+                document.getElementById('addr-street').value = "";
+                
+                app.loadAddresses();
+            },
+
+            selectAddress: (idx) => {
+                const saved = JSON.parse(localStorage.getItem('2a_addresses'));
+                state.activeAddress = saved[idx];
+                localStorage.setItem('2a_active_addr', JSON.stringify(state.activeAddress));
+                app.loadAddresses(); // Atualiza visual
                 app.updateAddressUI();
+                document.getElementById('address-modal').classList.remove('active');
+            },
+
+            deleteAddress: (idx) => {
+                const saved = JSON.parse(localStorage.getItem('2a_addresses'));
+                saved.splice(idx, 1);
+                localStorage.setItem('2a_addresses', JSON.stringify(saved));
+                if(state.activeAddress && state.activeAddress.street === saved[idx]?.street) {
+                    state.activeAddress = null;
+                    localStorage.removeItem('2a_active_addr');
+                }
+                app.loadAddresses();
+                app.updateAddressUI();
+            },
+
+            openAddressModal: () => {
+                app.loadAddresses();
+                document.getElementById('address-modal').classList.add('active');
             },
 
             updateAddressUI: () => {
                 const btn = document.getElementById('btn-address-trigger');
-                if(state.address) {
+                if(state.activeAddress) {
                     btn.classList.add('filled');
-                    btn.innerHTML = `<i class="fas fa-check-circle"></i> Local Definido: ${state.address.bairro}`;
+                    btn.innerHTML = `<i class="fas fa-check-circle"></i> Entrega: ${state.activeAddress.street}`;
+                } else {
+                    btn.classList.remove('filled');
+                    btn.innerHTML = `<i class="fas fa-map-marker-alt"></i> Cadastrar local de entrega`;
                 }
             },
 
+            // --- CHECKOUTS ---
             checkoutWs: () => {
                 if(!state.cart.length) return alert("Carrinho vazio");
-                if(!state.address) {
-                    document.getElementById('address-modal').classList.add('active');
-                    return alert("Cadastre o local de entrega antes.");
+                if(!state.activeAddress) {
+                    app.openAddressModal();
+                    return alert("Selecione um endereço de entrega.");
                 }
 
-                let msg = `*NOVO PEDIDO (Site 2A Modas)*\n\n*CLIENTE:* ${state.address.name}\n*CONTATO:* ${state.address.phone}\n*ENTREGA:* ${state.address.street}, ${state.address.bairro}\n(Ref: ${state.address.ref})\n\n*ITENS:*\n`;
+                let msg = `*NOVO PEDIDO (Site 2A Modas)*\n\n*CLIENTE:* ${state.activeAddress.name}\n*CONTATO:* ${state.activeAddress.phone}\n*ENTREGA:* ${state.activeAddress.street} - Ref: ${state.activeAddress.ref}\n\n*ITENS:*\n`;
                 let total = 0;
                 state.cart.forEach(i => {
                     msg += `▪ ${i.name} (${i.variant})\n   Qtd: ${i.qty} | Sub: R$ ${(i.price*i.qty).toFixed(2)}\n\n`;
@@ -532,9 +626,9 @@
 
             checkoutMp: async () => {
                 if(!state.cart.length) return alert("Carrinho vazio");
-                if(!state.address) {
-                    document.getElementById('address-modal').classList.add('active');
-                    return alert("Cadastre o local de entrega primeiro.");
+                if(!state.activeAddress) {
+                    app.openAddressModal();
+                    return alert("Selecione um endereço de entrega.");
                 }
                 const btn = document.querySelector('.btn-mp'); const original = btn.innerHTML;
                 btn.innerHTML = "<i class='fas fa-circle-notch fa-spin'></i> Processando..."; btn.disabled = true;
@@ -544,7 +638,7 @@
                     const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
                     const res = await fetch(GOOGLE_CLOUD_URL, {
                         method:'POST', headers:{'Content-Type':'application/json'}, 
-                        body:JSON.stringify({items, address: state.address})
+                        body:JSON.stringify({items, address: state.activeAddress})
                     });
                     const data = await res.json();
                     if(data.init_point) window.location.href = data.init_point; else throw new Error("Link não gerado");
@@ -553,7 +647,8 @@
             },
 
             sendPaidOrder: () => {
-                let msg = `*✅ PAGAMENTO APROVADO (Mercado Pago)*\n\n*CLIENTE:* ${state.address.name}\n*CONTATO:* ${state.address.phone}\n*ENTREGA:* ${state.address.street}, ${state.address.bairro}\n\n*ITENS PAGOS:*\n`;
+                alert("Pagamento Confirmado! Redirecionando para WhatsApp...");
+                let msg = `*✅ PAGAMENTO APROVADO (Mercado Pago)*\n\n*CLIENTE:* ${state.activeAddress.name}\n*ENTREGA:* ${state.activeAddress.street}\n\n*ITENS PAGOS:*\n`;
                 let total = 0;
                 state.cart.forEach(i => {
                     msg += `▪ ${i.name} (${i.variant}) x${i.qty}\n`;
@@ -570,8 +665,20 @@
             initCheckboxes: () => {
                 const cDiv = document.getElementById('color-checks');
                 const vDiv = document.getElementById('volume-checks');
-                PRESET_COLORS.forEach(c => { cDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${c}" onchange="admin.toggleVarInput(this)"> ${c}</label>`; });
-                PRESET_VOLUMES.forEach(v => { vDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${v}" onchange="admin.toggleVarInput(this)"> ${v}</label>`; });
+                
+                // Gera checkboxes de COR com bolinha visual
+                Object.keys(COLOR_MAP).forEach(c => {
+                    const bg = COLOR_MAP[c];
+                    cDiv.innerHTML += `
+                    <label class="check-label">
+                        <input type="checkbox" value="${c}" onchange="admin.toggleVarInput(this)"> 
+                        <span class="color-dot" style="background:${bg}"></span> ${c}
+                    </label>`;
+                });
+                
+                PRESET_VOLUMES.forEach(v => { 
+                    vDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${v}" onchange="admin.toggleVarInput(this)"> ${v}</label>`; 
+                });
             },
 
             toggleVarInput: (checkbox) => {
@@ -668,7 +775,6 @@
 
             del: async (id) => {
                 if(confirm("Excluir produto?")) {
-                    // Correção do erro bigint: garante que o ID seja tratado corretamente
                     const { error } = await sb.from('products').delete().eq('id', id);
                     if(error) alert("Erro ao excluir: " + error.message);
                     else { app.load(); admin.renderList(); }
@@ -685,8 +791,19 @@
             renderList: () => {
                 const div = document.getElementById('admin-list'); div.innerHTML="";
                 state.products.forEach(p => {
-                    div.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
-                        <div style="display:flex; align-items:center; gap:10px;"><img src="${p.image_url}" style="width:40px; height:40px; border-radius:5px; object-fit:cover;"> <strong>${p.name}</strong></div>
+                    // Soma estoque
+                    const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+                    const stock = vars.reduce((acc, v) => acc + parseInt(v.stock), 0);
+                    
+                    div.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img src="${p.image_url}" style="width:40px; height:40px; border-radius:5px; object-fit:cover;"> 
+                            <div>
+                                <strong>${p.name}</strong><br>
+                                <small style="color:${stock<3?'red':'green'}">Estoque Total: ${stock}</small>
+                            </div>
+                        </div>
                         <div><button onclick="admin.edit('${p.id}')" style="color:#2980b9; background:none; border:none; margin-right:10px;"><i class="fas fa-edit"></i></button><button onclick="admin.del('${p.id}')" style="color:#e74c3c; background:none; border:none;"><i class="fas fa-trash"></i></button></div>
                     </div>`;
                 });
