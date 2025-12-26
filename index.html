@@ -35,7 +35,7 @@
         .icon-btn:active { transform:scale(0.95); }
         .badge { position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; width:20px; height:20px; border-radius:50%; font-size:0.7rem; display:flex; align-items:center; justify-content:center; font-weight:bold; border:2px solid white; }
         
-        .login-btn-header { padding: 0 20px; height: 45px; background: white; border: none; border-radius: 30px; font-weight: 700; color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-size: 0.85rem; overflow: hidden; max-width: 200px; white-space: nowrap; text-overflow: ellipsis; }
+        .login-btn-header { padding: 0 20px; height: 45px; background: white; border: none; border-radius: 30px; font-weight: 700; color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-size: 0.85rem; overflow: hidden; max-width: 200px; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; }
         .login-btn-header:hover { transform: translateY(-2px); }
         .login-btn-header i { color: var(--primary); }
 
@@ -450,7 +450,7 @@ const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co';
                 if(list.length === 0) div.innerHTML = '<p style="grid-column:1/-1;text-align:center">Nenhum produto cadastrado.</p>';
                 list.forEach(p => {
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-                    const minP = Math.min(...vars.map(v => v.price));
+                    const minP = (vars && vars.length) ? Math.min(...vars.map(v => parseFloat(v.price))) : 0;
                     const isPromo = p.is_promo ? '<span class="tag-promo">OFERTA</span>' : '';
                     div.innerHTML += `<div class="card" onclick="app.openModal('${p.id}')">${isPromo}<img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/300'"><div class="card-info"><div style="font-size:0.8rem;color:#999;text-transform:uppercase;">${p.category}</div><div style="font-weight:bold;margin:5px 0;">${p.name}</div><div style="color:var(--primary);font-weight:bold;">A partir R$ ${minP.toFixed(2)}</div><span class="tag-delivery">🚚 03 a 05 dias</span></div></div>`;
                 });
@@ -735,7 +735,7 @@ const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co';
                 const pass = document.getElementById('admin-pass-input').value;
                 if(pass === "admin") { 
                     app.closeModal('admin-login-modal'); app.showModal('admin-modal'); 
-                    setTimeout(() => { admin.renderList(); admin.renderOrders(); admin.updateStats(); }, 100);
+                    setTimeout(() => { admin.renderList(); admin.renderOrders(); admin.updateStats(); }, 300);
                 } else alert("Senha incorreta");
             },
             tab: (t) => {
