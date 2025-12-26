@@ -116,7 +116,14 @@
         #status-bar { position:fixed; top:0; left:0; width:100%; height:30px; background:#222; color:white; font-size:0.75rem; display:flex; align-items:center; justify-content:center; z-index:9999; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
         .ok { background:#27ae60 !important; } .err { background:#c0392b !important; }
 
-        @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} }
+        /* TABELA DE PEDIDOS NO ADMIN (ESTILO NOVO) */
+        .order-card { background: white; border: 1px solid #eee; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; font-weight: bold; color: var(--accent); }
+        .order-body { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.9rem; }
+        .order-items { margin-top: 10px; background: #f9f9f9; padding: 10px; border-radius: 8px; }
+        .order-label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; display: block; margin-bottom: 3px; }
+
+        @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} .order-body { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -299,13 +306,8 @@
                 </div>
 
                 <div id="tab-orders" style="display:none;">
-                    <div style="background:white; padding:20px; border-radius:12px;">
-                        <h3>Histórico de Vendas</h3>
-                        <table class="admin-table">
-                            <thead><tr><th>Data</th><th>Cliente</th><th>Total</th><th>Itens</th></tr></thead>
-                            <tbody id="orders-table-body"></tbody>
-                        </table>
-                    </div>
+                    <h3 style="margin-bottom:20px;">Histórico de Compras (Clientes)</h3>
+                    <div id="orders-list"></div>
                 </div>
 
                 <div id="tab-prod" style="display:none;">
@@ -337,10 +339,10 @@
     </div>
 
     <script>
-        // --- CHAVES (COLOQUE AS SUAS AQUI) ---
+        // --- CHAVES ---
         const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
-        const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app 
+        const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const state = { products: [], cart: [], current: null, var: null, qty: 1, user: null, address: null };
@@ -356,26 +358,21 @@
         // --- INIT & EVENTS ---
         (async function init() {
             try {
-                // Se as chaves estiverem vazias, alerta e para
                 if(SUPABASE_URL.includes("COLE_SUA")) {
                     alert("Configure as chaves do Supabase no código!");
                     document.getElementById('loading').style.display='none';
                     return;
                 }
 
-                // Recupera usuario
                 const u = localStorage.getItem('2a_user'); if(u) state.user=JSON.parse(u);
                 const a = localStorage.getItem('2a_active_addr'); if(a) state.address=JSON.parse(a);
 
-                // Recupera pagamento MP
                 const urlParams = new URLSearchParams(window.location.search);
                 if(urlParams.get('status') === 'approved') {
                     const sc = localStorage.getItem('2a_cart');
                     if(sc) {
                         state.cart = JSON.parse(sc);
                         app.sendPaidOrder();
-                        // Notificação de venda via e-mail seria chamada aqui
-                        // app.notifySale('Mercado Pago'); 
                     }
                 }
 
@@ -386,7 +383,6 @@
                 
             } catch(e) { 
                 console.error(e);
-                alert("Erro ao conectar: " + e.message);
             } finally {
                 document.getElementById('loading').style.display='none';
             }
@@ -428,15 +424,15 @@
             openPromoModal: () => {
                 const promos = state.products.filter(p => p.is_promo);
                 if(!promos.length) return alert("Sem promoções ativas.");
-                const cDiv = document.getElementById('promo-list'); cDiv.innerHTML = "";
-                // Duplica para efeito de carrossel infinito
+                const cDiv = document.getElementById('promo-track'); cDiv.innerHTML = "";
+                
+                // Duplica para efeito infinito
                 const items = [...promos, ...promos]; 
                 
-                let trackHtml = '<div class="carousel-track">';
                 items.forEach(p => {
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                     const minP = Math.min(...vars.map(v => v.price));
-                    trackHtml += `
+                    cDiv.innerHTML += `
                     <div class="promo-card" onclick="app.openModal('${p.id}');app.closeModal('promo-modal')">
                         <img src="${p.image_url}">
                         <div>
@@ -445,8 +441,6 @@
                         </div>
                     </div>`;
                 });
-                trackHtml += '</div>';
-                cDiv.innerHTML = trackHtml;
                 app.showModal('promo-modal');
             },
             openModal: (id) => {
@@ -599,7 +593,6 @@
                     const dot = `<span class="color-dot" style="background:${COLOR_MAP[c]}"></span>`;
                     cDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${c}" onchange="admin.toggleInput(this)"> ${dot} ${c}</label>`;
                 });
-                // CORREÇÃO AQUI: Usando PRESETS_VOL (não PRESETS.vols)
                 PRESETS_VOL.forEach(v => vDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${v}" onchange="admin.toggleInput(this)"> ${v}</label>`);
             },
             toggleInput: (cb) => {
@@ -682,13 +675,39 @@
             },
             renderOrders: async () => {
                 const { data } = await sb.from('orders').select('*').order('id', {ascending:false});
-                const tb = document.getElementById('orders-table-body'); if(tb && data) {
-                    tb.innerHTML="";
+                const div = document.getElementById('orders-list'); 
+                if(div && data) {
+                    div.innerHTML="";
                     data.forEach(o => {
                         const iList = typeof o.items==='string'?JSON.parse(o.items):o.items;
-                        const iTxt = iList.map(i=>`${i.name} (${i.qty})`).join(', ');
                         const addr = typeof o.address==='string'?JSON.parse(o.address):o.address;
-                        tb.innerHTML += `<tr><td>${o.date}</td><td>${o.customer_name}<br><small>${addr.phone}</small></td><td>R$ ${o.total.toFixed(2)}</td><td><small>${iTxt}</small></td></tr>`;
+                        
+                        let prodHtml = iList.map(i => `<div>${i.qty}x ${i.name} (${i.variant})</div>`).join('');
+                        
+                        div.innerHTML += `
+                        <div class="order-card">
+                            <div class="order-header">
+                                <span>${o.date}</span>
+                                <span>R$ ${o.total.toFixed(2)}</span>
+                            </div>
+                            <div class="order-body">
+                                <div>
+                                    <span class="order-label">Cliente</span>
+                                    <strong>${o.customer_name}</strong><br>
+                                    <small>${o.customer_email || ''}</small><br>
+                                    <small>${addr.phone}</small>
+                                </div>
+                                <div>
+                                    <span class="order-label">Endereço</span>
+                                    <div>${addr.street}</div>
+                                    <small>${addr.ref || ''}</small>
+                                </div>
+                            </div>
+                            <div class="order-items">
+                                <span class="order-label">Produtos</span>
+                                ${prodHtml}
+                            </div>
+                        </div>`;
                     });
                 }
             },
