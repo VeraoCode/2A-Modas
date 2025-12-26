@@ -70,6 +70,8 @@
         /* SIDEBAR */
         .sidebar { position:fixed; top:0; right:-500px; width:450px; height:100%; background:white; z-index:3000; padding:30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s; display:flex; flex-direction:column; }
         .sidebar.open { right:0; }
+        
+        /* CART ITEM */
         .cart-item { display:grid; grid-template-columns: 70px 1fr auto; gap:15px; align-items:center; padding:20px 0; border-bottom:1px solid #f5f5f5; }
         .cart-thumb { width:70px; height:70px; border-radius:10px; object-fit:cover; background:#f9f9f9; }
         .qty-controls { display:flex; align-items:center; background:#f4f4f4; border-radius:25px; padding:3px; width:fit-content; margin-top:8px; }
@@ -370,12 +372,13 @@
         const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
         const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
+
         
         // --- EMAILJS CONFIG ---
         const EMAILJS_PUBLIC_KEY = 'vEXIgVw6GynR5W1qj'; 
         const EMAILJS_SERVICE_ID = 'service_3x4ghcd';
         const EMAILJS_TEMPLATE_CLIENTE = 'template_rwf0bay';
-        const EMAILJS_TEMPLATE_ADMIN = 'template_rwf0bay'; // Pode ser o mesmo do cliente
+        const EMAILJS_TEMPLATE_ADMIN = 'template_rwf0bay';
 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const state = { products: [], cart: [], current: null, var: null, qty: 1, user: null, address: null };
@@ -491,7 +494,12 @@
                 if(!a.name || !a.street) return alert("Preencha obrigatórios");
                 const list = JSON.parse(localStorage.getItem('2a_addrs') || '[]'); list.push(a);
                 localStorage.setItem('2a_addrs', JSON.stringify(list));
-                if(state.user) sb.from('customers').update({ address: list }).eq('id', state.user.id).then();
+                
+                // --- ATUALIZA NO SUPABASE SE LOGADO ---
+                if(state.user) {
+                    sb.from('customers').update({ address: list }).eq('id', state.user.id).then();
+                }
+
                 state.address = a; localStorage.setItem('2a_active_addr', JSON.stringify(a));
                 app.updateUI(); app.closeModal('address-modal');
             },
@@ -499,7 +507,11 @@
                 const list = JSON.parse(localStorage.getItem('2a_addrs'));
                 list.splice(i, 1);
                 localStorage.setItem('2a_addrs', JSON.stringify(list));
-                if(state.user) sb.from('customers').update({ address: list }).eq('id', state.user.id).then();
+                
+                // --- ATUALIZA NO SUPABASE SE LOGADO ---
+                if(state.user) {
+                    sb.from('customers').update({ address: list }).eq('id', state.user.id).then();
+                }
                 app.openAddressModal();
             },
             editAddress: (i) => {
@@ -552,7 +564,6 @@
                         localStorage.setItem('2a_cart', JSON.stringify(state.cart));
                         const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
                         
-                        // Envia e-mail de "Pedido Recebido"
                         await app.sendEmails(orderData);
 
                         const res = await fetch(GOOGLE_CLOUD_URL, {
@@ -584,12 +595,13 @@
                     admin_email: 'erickveraosilva@gmail.com' 
                 };
 
-                // Envia Cliente
-                emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENTE, templateParams);
-                
-                // Envia Admin (Copia os dados, mas muda o destinatário)
-                const adminParams = {...templateParams, to_email: 'erickveraosilva@gmail.com', to_name: 'Admin 2A'};
-                emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, adminParams);
+                if(window.emailjs) {
+                    // Envia Cliente
+                    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENTE, templateParams);
+                    // Envia Admin
+                    const adminParams = {...templateParams, to_email: 'erickveraosilva@gmail.com', to_name: 'Admin 2A'};
+                    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, adminParams);
+                }
             },
             updateStockDatabase: async () => {
                 for (const item of state.cart) {
@@ -620,7 +632,7 @@
                     status: 'Pendente'
                 };
                 await sb.from('orders').insert([order]);
-                return order; // Retorna objeto para usar no email
+                return order; 
             },
             sendPaidOrder: (paymentType = 'Dinheiro/Outros') => {
                 let addr = state.address;
@@ -656,7 +668,15 @@
                 const {data} = await sb.from('customers').select('*').eq('email',e).eq('password',p).single();
                 if(data) { 
                     state.user=data; localStorage.setItem('2a_user', JSON.stringify(data)); 
-                    if(data.address && Array.isArray(data.address)) localStorage.setItem('2a_addrs', JSON.stringify(data.address));
+                    
+                    // --- CARREGA ENDEREÇOS DO BANCO ---
+                    if(data.address && Array.isArray(data.address)) {
+                        localStorage.setItem('2a_addrs', JSON.stringify(data.address));
+                    } else {
+                        // Se não tiver nada no banco, garante array vazio ou mantém local
+                        if(!localStorage.getItem('2a_addrs')) localStorage.setItem('2a_addrs', '[]');
+                    }
+
                     app.updateUI(); history.back(); 
                 } else alert("Inválido");
             },
@@ -819,7 +839,6 @@
             try {
                 if(SUPABASE_URL.includes("COLE_SUA")) throw new Error("Chaves não configuradas.");
                 
-                // INICIALIZA EMAILJS
                 if(window.emailjs) emailjs.init(EMAILJS_PUBLIC_KEY);
 
                 const u = localStorage.getItem('2a_user'); if(u) state.user=JSON.parse(u);
@@ -835,7 +854,7 @@
                         state.cart = JSON.parse(sc); 
                         const orderData = await app.registerOrder(Date.now().toString(), `Mercado Pago (ID: ${paymentId || 'Auto'})`); 
                         await app.updateStockDatabase();
-                        await app.sendEmails(orderData); // Envia e-mail de confirmação pós-pagamento
+                        await app.sendEmails(orderData); // Envia e-mail
                         localStorage.removeItem('2a_cart');
                         window.history.replaceState({}, document.title, window.location.pathname);
                         alert("Pagamento Confirmado! Seu pedido já está sendo separado.");
