@@ -11,11 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root {
-            --primary: #c48b78; --accent: #2c3e50; --bg: #f8f9fa;
-            --white: #ffffff; --glass: rgba(255, 255, 255, 0.98);
-            --radius: 12px; --shadow: 0 10px 30px rgba(0,0,0,0.08);
-        }
+        :root { --primary: #c48b78; --accent: #2c3e50; --bg: #f8f9fa; --white: #ffffff; --glass: rgba(255, 255, 255, 0.98); --radius: 12px; --shadow: 0 10px 30px rgba(0,0,0,0.08); }
         * { margin:0; padding:0; box-sizing:border-box; outline:none; font-family:'Plus Jakarta Sans', sans-serif; }
         body { background: var(--bg); color: var(--accent); overflow-x: hidden; }
         h1, h2, h3 { font-family:'Playfair Display', serif; }
@@ -27,7 +23,7 @@
         .icon-btn:hover { background:var(--primary); color:white; transform:scale(1.1); }
         .badge { position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; width:22px; height:22px; border-radius:50%; font-size:0.75rem; display:flex; align-items:center; justify-content:center; font-weight:bold; border:2px solid white; }
 
-        /* HERO & CARROSEL */
+        /* HERO */
         .hero { padding: 120px 20px 80px; text-align:center; background: radial-gradient(circle at top, #fff5f2 0%, transparent 100%); }
         .hero img { width:180px; height:180px; border-radius:50%; object-fit:cover; border:5px solid white; box-shadow:var(--shadow); margin-bottom:20px; }
         .hero h1 { font-size:3.5rem; margin-bottom:10px; color:var(--accent); }
@@ -54,36 +50,31 @@
         .box { background:white; width:100%; max-width:900px; border-radius:20px; overflow:hidden; max-height:90vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow:var(--shadow); }
         .box.single-col { display:block; max-width:500px; }
         
-        /* CARROSEL POPUP */
+        /* CARROSEL */
         .carousel-container { display:flex; overflow-x:auto; gap:20px; padding:20px; scroll-snap-type:x mandatory; }
         .carousel-item { flex:0 0 80%; scroll-snap-align:center; background:white; border-radius:15px; padding:15px; box-shadow:0 5px 15px rgba(0,0,0,0.1); cursor:pointer; text-align:center; }
         .carousel-item img { width:100%; height:200px; object-fit:cover; border-radius:10px; margin-bottom:10px; }
 
-        /* SIDEBAR CARRINHO */
+        /* SIDEBAR */
         .sidebar { position:fixed; top:0; right:-500px; width:450px; height:100%; background:white; z-index:3000; padding:30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s; display:flex; flex-direction:column; }
         .sidebar.open { right:0; }
         .cart-item { display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid #f5f5f5; }
         .qty-controls { display:flex; align-items:center; gap:8px; background:#f5f5f5; padding:5px; border-radius:8px; margin-top:5px; }
         .qty-btn { width:25px; height:25px; border:none; background:white; border-radius:4px; font-weight:bold; }
 
-        /* ADMIN & FORMS */
+        /* ADMIN */
         .admin-nav { padding:20px; background:white; border-bottom:1px solid #eee; display:flex; gap:10px; position:sticky; top:0; z-index:10; overflow-x:auto; }
         .admin-tab { padding:10px 20px; border-radius:30px; border:1px solid #eee; background:transparent; font-weight:600; color:#666; white-space:nowrap; }
         .admin-tab.active { background:var(--accent); color:white; border-color:var(--accent); }
-        
         .input { width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; margin-bottom:10px; }
         .checkbox-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #eee; }
         .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; }
         .var-inputs.show { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-        
-        /* TABELA ADMIN */
+        .mini-prod { display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid #eee; }
+        .mini-prod img { width:50px; height:50px; border-radius:8px; object-fit:cover; }
         .admin-table { width:100%; border-collapse:collapse; font-size:0.9rem; }
         .admin-table th { text-align:left; padding:12px; background:#f9f9f9; color:#666; }
         .admin-table td { padding:12px; border-bottom:1px solid #eee; }
-        
-        /* MINI PRODUTO ADMIN */
-        .mini-prod { display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid #eee; }
-        .mini-prod img { width:50px; height:50px; border-radius:8px; object-fit:cover; }
 
         @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} }
     </style>
@@ -121,7 +112,7 @@
     <div id="promo-modal" class="overlay">
         <div class="box single-col" style="background:var(--bg);">
             <div style="padding:20px; display:flex; justify-content:space-between; align-items:center;">
-                <h3>🔥 Destaques & Promoções</h3>
+                <h3>🔥 Destaques</h3>
                 <button onclick="document.getElementById('promo-modal').classList.remove('active')" style="border:none; background:none; font-size:1.5rem;">&times;</button>
             </div>
             <div class="carousel-container" id="promo-list"></div>
@@ -154,7 +145,6 @@
     <div id="auth-modal" class="overlay">
         <div class="box single-col" style="padding:40px; text-align:center;">
             <h2 id="auth-title" style="margin-bottom:20px;">Bem-vindo</h2>
-            
             <div id="form-login">
                 <input type="email" id="l-email" class="input" placeholder="E-mail">
                 <input type="password" id="l-pass" class="input" placeholder="Senha">
@@ -163,7 +153,6 @@
                 <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                 <button onclick="admin.checkAdmin()" style="background:none; border:none; color:#999; font-size:0.8rem;">Acesso Admin</button>
             </div>
-
             <div id="form-register" style="display:none;">
                 <input type="text" id="r-name" class="input" placeholder="Nome Completo">
                 <input type="email" id="r-email" class="input" placeholder="E-mail">
@@ -175,7 +164,6 @@
                 <button onclick="auth.register()" style="width:100%; background:var(--primary); color:white; padding:12px; border-radius:8px; border:none; font-weight:bold;">Criar Conta</button>
                 <p style="margin-top:15px; font-size:0.9rem;">Já tem conta? <a href="#" onclick="auth.toggle('login')">Entrar</a></p>
             </div>
-            
             <button onclick="document.getElementById('auth-modal').classList.remove('active')" style="position:absolute; top:15px; right:15px; border:none; background:none; font-size:1.5rem;">&times;</button>
         </div>
     </div>
@@ -197,7 +185,7 @@
                 <span>Total</span> <span id="cart-total">R$ 0.00</span>
             </div>
             <button onclick="app.checkout('whatsapp')" style="width:100%; padding:14px; border-radius:10px; border:none; font-weight:bold; background:#25D366; color:white; margin-bottom:10px;">Falar via WhatsApp</button>
-            <button onclick="app.checkout('mercadopago')" style="width:100%; padding:14px; border-radius:10px; border:none; font-weight:bold; background:#009EE3; color:white;">Via Pix/Cartão</button>
+            <button class="btn-mp" onclick="app.checkout('mercadopago')" style="width:100%; padding:14px; border-radius:10px; border:none; font-weight:bold; background:#009EE3; color:white;">Via Pix/Cartão</button>
         </div>
     </div>
 
@@ -254,8 +242,8 @@
                                 <select id="f-cat" class="input"><option value="feminino">Feminino</option><option value="infantil">Infantil</option><option value="perfumes">Perfumes</option></select>
                                 <input type="number" id="f-cost" class="input" placeholder="Custo (R$)">
                             </div>
-                            <label><input type="checkbox" id="f-promo"> É Promoção? (Aparecer no Carrossel)</label>
-                            <input type="file" id="f-file" class="input" style="margin-top:10px;">
+                            <label style="display:block; margin:10px 0;"><input type="checkbox" id="f-promo"> É Promoção? (Aparecer no Carrossel)</label>
+                            <input type="file" id="f-file" class="input">
                             <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
                             <label style="font-weight:bold;">Cores & Volumetria:</label>
                             <div class="checkbox-grid" id="color-checks" style="margin-top:5px;"></div>
@@ -277,10 +265,9 @@
     </div>
 
     <script>
-        // --- ⚠️ CHAVES ---
+        // --- ⚠️ CHAVES (COLOQUE AS SUAS AQUI) ---
         const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80
-';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
         const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
 
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -289,31 +276,41 @@
 
         // --- INIT ---
         (async function init() {
-            // Verifica usuário logado
-            const savedUser = localStorage.getItem('2a_user');
-            if(savedUser) state.user = JSON.parse(savedUser);
-
-            // Verifica retorno de pagamento
-            const urlParams = new URLSearchParams(window.location.search);
-            if(urlParams.get('status') === 'approved') {
-                const savedCart = localStorage.getItem('2a_cart');
-                if(savedCart && state.user) {
-                    state.cart = JSON.parse(savedCart);
-                    await app.registerOrder('Mercado Pago'); // Registra no banco
-                    window.history.replaceState({}, document.title, "/");
-                    app.sendPaidOrder(); // Envia whats
-                }
-            }
-
-            // Carrega dados
+            // Limpa o loading no final, sempre
             try {
-                const { data } = await sb.from('products').select('*');
+                // Recupera usuario
+                const savedUser = localStorage.getItem('2a_user');
+                if(savedUser) state.user = JSON.parse(savedUser);
+
+                // Recupera pagamento
+                const urlParams = new URLSearchParams(window.location.search);
+                if(urlParams.get('status') === 'approved') {
+                    const savedCart = localStorage.getItem('2a_cart');
+                    if(savedCart && state.user) {
+                        state.cart = JSON.parse(savedCart);
+                        await app.registerOrder('Mercado Pago');
+                        window.history.replaceState({}, document.title, "/");
+                        app.sendPaidOrder();
+                    }
+                }
+
+                // Carrega produtos
+                const { data, error } = await sb.from('products').select('*');
+                if(error) throw error; // Se a tabela nao existir, cai no catch
+                
                 state.products = data || [];
                 app.render(state.products);
-                document.getElementById('loading').style.display='none';
                 admin.initCheckboxes();
                 auth.updateUI();
-            } catch(e) { console.error(e); }
+
+            } catch(e) {
+                console.error("Erro Init:", e);
+                // Se der erro (ex: tabela nao existe), ainda removemos o loading para não travar
+                // E alertamos o usuário
+                alert("Erro ao conectar com o banco de dados. Verifique se o SQL foi rodado no Supabase.");
+            } finally {
+                document.getElementById('loading').style.display='none';
+            }
         })();
 
         // --- AUTH & USER ---
@@ -333,14 +330,13 @@
             login: async () => {
                 const email = document.getElementById('l-email').value;
                 const pass = document.getElementById('l-pass').value;
-                // Busca no banco
-                const { data, error } = await sb.from('customers').select('*').eq('email', email).eq('password', pass).single();
+                const { data } = await sb.from('customers').select('*').eq('email', email).eq('password', pass).single();
                 if(data) {
                     state.user = data;
                     localStorage.setItem('2a_user', JSON.stringify(data));
                     document.getElementById('auth-modal').classList.remove('active');
                     auth.updateUI();
-                } else alert("E-mail ou senha incorretos.");
+                } else alert("Dados inválidos.");
             },
             register: async () => {
                 const name = document.getElementById('r-name').value;
@@ -351,41 +347,32 @@
                     street: document.getElementById('r-street').value,
                     bairro: document.getElementById('r-bairro').value
                 };
+                if(!name || !email || !pass) return alert("Preencha tudo");
                 
-                if(!name || !email || !pass || !addr.phone) return alert("Preencha todos os campos");
-
                 const id = Date.now().toString();
                 const { error } = await sb.from('customers').insert([{ id, name, email, password: pass, address: addr }]);
-                
-                if(!error) {
-                    alert("Conta criada com sucesso! Faça login.");
-                    auth.toggle('login');
-                } else alert("Erro ao criar conta: " + error.message);
+                if(!error) { alert("Sucesso! Faça login."); auth.toggle('login'); }
+                else alert("Erro: " + error.message);
             },
-            logout: () => {
-                state.user = null;
-                localStorage.removeItem('2a_user');
-                auth.updateUI();
-            },
+            logout: () => { state.user = null; localStorage.removeItem('2a_user'); auth.updateUI(); },
             updateUI: () => {
                 const info = document.getElementById('user-info-cart');
                 if(state.user) {
                     info.style.display = 'block';
                     document.getElementById('lbl-user-name').innerText = state.user.name;
-                    document.getElementById('lbl-user-addr').innerText = `${state.user.address.street} - ${state.user.address.bairro}`;
-                } else {
-                    info.style.display = 'none';
-                }
+                    document.getElementById('lbl-user-addr').innerText = `${state.user.address.street}`;
+                } else { info.style.display = 'none'; }
             }
         };
 
-        // --- APP LOGIC ---
+        // --- APP ---
         const app = {
             render: (list) => {
                 const div = document.getElementById('products-list'); div.innerHTML = "";
                 list.forEach(p => {
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-                    const minP = Math.min(...vars.map(v => parseFloat(v.price)));
+                    // Proteção contra produto sem variação
+                    const minP = vars && vars.length ? Math.min(...vars.map(v => parseFloat(v.price))) : 0;
                     const isPromo = p.is_promo ? '<span class="tag-promo">OFERTA</span>' : '';
                     div.innerHTML += `
                         <div class="card" onclick="app.modal('${p.id}')">
@@ -401,15 +388,10 @@
             },
             openPromoCarousel: () => {
                 const promos = state.products.filter(p => p.is_promo);
-                if(!promos.length) return alert("Nenhuma promoção ativa no momento.");
-                
+                if(!promos.length) return alert("Sem promoções ativas.");
                 const cDiv = document.getElementById('promo-list'); cDiv.innerHTML = "";
                 promos.forEach(p => {
-                    cDiv.innerHTML += `
-                    <div class="carousel-item" onclick="app.modal('${p.id}'); document.getElementById('promo-modal').classList.remove('active');">
-                        <img src="${p.image_url}">
-                        <strong>${p.name}</strong>
-                    </div>`;
+                    cDiv.innerHTML += `<div class="carousel-item" onclick="app.modal('${p.id}');document.getElementById('promo-modal').classList.remove('active')"><img src="${p.image_url}"><strong>${p.name}</strong></div>`;
                 });
                 document.getElementById('promo-modal').classList.add('active');
             },
@@ -466,12 +448,11 @@
             cQty: (idx,n) => { state.cart[idx].qty+=n; if(state.cart[idx].qty<1) state.cart[idx].qty=1; app.renderCart(); },
             toggleCart: () => document.querySelector('.sidebar').classList.toggle('open'),
             
-            // --- CHECKOUT LOGIC ---
             checkAuth: () => {
                 if(!state.user) {
-                    alert("Por favor, faça login ou cadastre-se para continuar.");
+                    alert("Faça login ou cadastre-se para continuar.");
                     document.getElementById('auth-modal').classList.add('active');
-                    app.toggleCart(); // fecha carrinho
+                    app.toggleCart();
                     return false;
                 }
                 return true;
@@ -481,12 +462,11 @@
                 if(!app.checkAuth()) return;
 
                 if(method === 'whatsapp') {
-                    // Registra pedido e abre whats
                     await app.registerOrder('WhatsApp');
                     app.sendPaidOrder();
                 } else {
-                    // Mercado Pago
                     const btn = document.querySelector('.btn-mp'); 
+                    btn.innerText="Processando...";
                     try {
                         localStorage.setItem('2a_cart', JSON.stringify(state.cart));
                         const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
@@ -496,7 +476,7 @@
                         });
                         const data = await res.json();
                         if(data.init_point) window.location.href = data.init_point;
-                    } catch(e) { alert("Erro conexão MP"); }
+                    } catch(e) { alert("Erro conexão"); btn.innerText="Via Pix/Cartão"; }
                 }
             },
             registerOrder: async (method) => {
@@ -543,9 +523,7 @@
                 if(pass === "123") {
                     document.getElementById('auth-modal').classList.remove('active');
                     document.getElementById('admin-modal').classList.add('active');
-                    admin.updateStats();
-                    admin.renderOrders();
-                    admin.renderList();
+                    admin.updateStats(); admin.renderOrders(); admin.renderList();
                 }
             },
             tab: (t) => {
@@ -563,7 +541,7 @@
                 const file = document.getElementById('f-file').files[0];
                 let imgUrl = null;
                 if(file) {
-                    const fName = `prod_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+                    const fName = `prod_${Date.now()}`;
                     const { data } = await sb.storage.from('images').upload(fName, file);
                     const { data: url } = sb.storage.from('images').getPublicUrl(fName);
                     imgUrl = url.publicUrl;
@@ -585,6 +563,7 @@
                 
                 alert("Salvo!"); admin.clear(); location.reload();
             },
+            // FUNÇÃO EDITAR CORRIGIDA: REPOPULA CHECKBOXES
             edit: (id) => {
                 const p = state.products.find(x => String(x.id) === String(id));
                 document.getElementById('edit-id').value = p.id;
@@ -594,18 +573,42 @@
                 document.getElementById('f-desc').value = p.description;
                 document.getElementById('f-promo').checked = p.is_promo;
                 
-                // Repopulate logic simplified for brevity: User must re-check variations on edit in this version or expand logic to auto-check checkboxes based on JSON.
-                alert("Edição carregada. Por favor, recadastre as variações.");
+                // Limpa área de vars
+                document.getElementById('active-vars-area').innerHTML = "";
+                const checks = document.querySelectorAll('input[type="checkbox"]');
+                checks.forEach(c => c.checked = false);
+
+                // Repopula
+                const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+                if(vars) {
+                    vars.forEach(v => {
+                        // Encontra checkbox correspondente
+                        const cb = Array.from(checks).find(c => c.value === v.name);
+                        if(cb) {
+                            cb.checked = true;
+                            admin.toggleInput(cb);
+                            // Preenche valores
+                            const grp = document.getElementById(`grp-${v.name.replace(/[^a-z0-9]/gi,'')}`);
+                            if(grp) {
+                                grp.querySelector('.v-price').value = v.price;
+                                grp.querySelector('.v-stock').value = v.stock;
+                            }
+                        }
+                    });
+                }
+                // Rola para cima no modal
+                document.querySelector('#tab-prod').scrollTop = 0;
             },
             del: async (id) => { if(confirm("Excluir?")) { await sb.from('products').delete().eq('id', id); location.reload(); } },
             clear: () => { location.reload(); },
-            
             renderOrders: async () => {
                 const { data } = await sb.from('orders').select('*');
                 const tb = document.getElementById('orders-table-body'); tb.innerHTML="";
                 data.forEach(o => {
-                    const items = o.items.map(i=>`${i.name} (${i.qty})`).join(', ');
-                    tb.innerHTML += `<tr><td>${o.date}</td><td>${o.customer_name}</td><td>R$ ${o.total.toFixed(2)}</td><td><small>${items}</small></td></tr>`;
+                    // Proteção se items for string ou objeto
+                    const itemsArr = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
+                    const itemsTxt = itemsArr.map(i=>`${i.name} (${i.qty})`).join(', ');
+                    tb.innerHTML += `<tr><td>${o.date}</td><td>${o.customer_name}</td><td>R$ ${o.total.toFixed(2)}</td><td><small>${itemsTxt}</small></td></tr>`;
                 });
             },
             renderList: () => {
@@ -629,13 +632,15 @@
                 state.products.forEach(p => {
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                     let stock = 0, pRev = 0;
-                    vars.forEach(v => {
-                        let q = parseInt(v.stock)||0;
-                        cost += (p.cost_price * q);
-                        rev += (v.price * q);
-                        pRev += (v.price * q);
-                        stock += q;
-                    });
+                    if(vars) {
+                        vars.forEach(v => {
+                            let q = parseInt(v.stock)||0;
+                            cost += (p.cost_price * q);
+                            rev += (v.price * q);
+                            pRev += (v.price * q);
+                            stock += q;
+                        });
+                    }
                     miniList += `<div class="mini-prod"><img src="${p.image_url}"> <div><strong>${p.name}</strong><br><small>Estoque: ${stock} | Venda Potencial: R$ ${pRev.toFixed(2)}</small></div></div>`;
                 });
                 document.getElementById('st-cost').innerText = `R$ ${cost.toFixed(2)}`;
