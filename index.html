@@ -43,7 +43,7 @@
         .btn-cta:hover { transform: translateY(-5px); background: var(--primary); }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* CONTAINER */
+        /* CONTAINER LADO A LADO */
         .container { max-width:1200px; margin:0 auto; padding:40px 20px; flex: 1; }
         .filters { display:flex; justify-content:center; gap:12px; margin-bottom:50px; flex-wrap:wrap; }
         .filter-btn { padding: 10px 28px; border-radius: 30px; border: 1px solid #e0e0e0; background: white; color: #555; font-weight: 600; }
@@ -58,7 +58,7 @@
         .tag-promo { position:absolute; top:10px; right:10px; background:#e91e63; color:white; padding:4px 10px; border-radius:20px; font-size:0.6rem; font-weight:bold; z-index: 2; }
         .tag-delivery { font-size: 0.7rem; color: #27ae60; display: block; margin-top: 5px; font-weight: 600; }
 
-        /* MODALS */
+        /* MODALS (SOBRESSAIR + BLUR) */
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
         .overlay.active { display:flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
@@ -190,7 +190,7 @@
         </div>
     </div>
 
-    <div id="address-modal" class="overlay" style="justify-content:flex-start; padding-left:20px;">
+    <div id="address-modal" class="overlay" style="justify-content:flex-start; padding-left:20px; z-index:10001;">
         <div class="box single-col" style="width:100%; max-width:400px; height:auto;">
             <div style="padding:20px;">
                 <h3>📍 Onde entregar?</h3>
@@ -260,7 +260,7 @@
         </div>
     </div>
 
-    <div id="auth-modal" class="overlay" style="z-index:10000;">
+    <div id="auth-modal" class="overlay" style="z-index:10002;">
         <div class="box single-col" style="padding:40px; text-align:center; max-width:400px;">
             <h2 id="auth-title" style="margin-bottom:20px;">Acesso</h2>
             <div id="form-login">
@@ -301,10 +301,6 @@
                             <div style="color:#e74c3c; font-weight:bold;">CUSTO ESTOQUE</div>
                             <div class="stat-val" id="st-cost" style="font-size:1.5rem; font-weight:bold;">R$ 0.00</div>
                         </div>
-                        <div style="background:white; padding:20px; border-radius:12px; text-align:center;">
-                            <div style="color:#2980b9; font-weight:bold;">VENDA TOTAL</div>
-                            <div class="stat-val" id="st-rev" style="font-size:1.5rem; font-weight:bold;">R$ 0.00</div>
-                        </div>
                     </div>
                     <div style="background:white; padding:20px; border-radius:12px;">
                         <h4>Controle de Estoque</h4>
@@ -336,7 +332,6 @@
                         <div class="checkbox-grid" id="color-checks"></div>
                         <div class="checkbox-grid" id="volume-checks"></div>
                         <div id="active-vars-area"></div>
-                        
                         <textarea id="f-desc" class="input" rows="3" placeholder="Descrição" style="margin-top:10px;"></textarea>
                         <button onclick="admin.save()" id="btn-save" style="width:100%; background:var(--primary); color:white; padding:15px; border-radius:8px; border:none; margin-top:15px;">Salvar</button>
                         <button onclick="admin.clear()" style="width:100%; padding:10px; background:none; border:none; color:#666;">Limpar</button>
@@ -360,7 +355,7 @@
         const PRESETS_VOL = ['25ml','50ml','75ml','100ml','200ml','P','M','G','GG','Unico'];
         const COLOR_MAP = { 'Preto': '#000000', 'Branco': '#ffffff', 'Vermelho': '#e74c3c', 'Azul': '#3498db', 'Rosa': '#e91e63', 'Verde': '#2ecc71', 'Nude': '#e3c0a5', 'Estampado': 'linear-gradient(45deg, red, blue)', 'Bege': '#f5f5dc', 'Amarelo': '#f1c40f', 'Cinza': '#95a5a6' };
         
-        // --- FUNÇÃO PARA CORRIGIR "NULL" ---
+        // --- FUNÇÃO DE SEGURANÇA PARA EVITAR NULL ---
         const safeVal = (v) => {
             if (v === null || v === undefined || v === "null") return "";
             return v;
@@ -401,8 +396,6 @@
                 state.current = p; state.qty=1; state.var=null;
                 
                 document.getElementById('m-img').src = p.image_url || "";
-                
-                // USTA SAFEVAL PARA EVITAR NULL
                 const setText = (eid, t) => document.getElementById(eid).innerText = safeVal(t);
                 setText('m-title', p.name);
                 setText('m-cat', p.category);
@@ -521,27 +514,30 @@
                 }
                 if(!state.address) { app.openAddressModal(); return alert("Selecione entrega"); }
 
-                if(method === 'whatsapp') { 
-                    await app.updateStockDatabase(); // Baixa estoque
-                    app.sendPaidOrder(); 
-                } 
-                else {
-                    const btn = document.querySelector('.btn-mp'); if(btn) btn.innerText="Carregando...";
-                    try {
-                        localStorage.setItem('2a_cart', JSON.stringify(state.cart));
-                        const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
-                        const res = await fetch(GOOGLE_CLOUD_URL, {
-                            method:'POST', headers:{'Content-Type':'application/json'}, 
-                            body:JSON.stringify({items, address: state.address})
-                        });
-                        const data = await res.json();
-                        if(data.init_point) window.location.href = data.init_point;
-                    } catch(e) { 
-                        if(confirm("Erro de conexão com o Banco. Deseja finalizar pelo WhatsApp?")) {
-                            app.sendPaidOrder();
-                        }
-                        if(btn) btn.innerText="Tentar novamente"; 
+                const btn = document.querySelector('.btn-mp');
+                
+                // OPÇÃO SEGURA (WHATSAPP + MP LINK)
+                try {
+                    if(btn) btn.innerText = "Processando...";
+                    
+                    // Baixa o estoque no banco
+                    await app.updateStockDatabase(); 
+                    
+                    if(method === 'whatsapp') { 
+                        app.sendPaidOrder('Dinheiro/Combinar'); 
+                    } 
+                    else {
+                        // Registra como "Aguardando Link"
+                        await app.registerOrder('Aguardando Link MP');
+                        // Envia para o WhatsApp pedindo o link
+                        app.sendPaidOrder('Link de Pagamento (Cartão/Pix)');
                     }
+                } catch(e) {
+                    console.error(e);
+                    alert("Houve um erro de conexão, mas vamos finalizar pelo WhatsApp.");
+                    app.sendPaidOrder('Erro Sistêmico - Verificar Estoque');
+                } finally {
+                    if(btn) btn.innerText = "Via Pix/Cartão/Débito";
                 }
             },
             updateStockDatabase: async () => {
@@ -559,7 +555,6 @@
                 }
             },
             registerOrder: async (method) => {
-                await app.updateStockDatabase(); 
                 const total = state.cart.reduce((a,b)=>a+(b.price*b.qty),0);
                 const order = {
                     id: Date.now().toString(),
@@ -575,12 +570,26 @@
                 };
                 await sb.from('orders').insert([order]);
             },
-            sendPaidOrder: () => {
+            sendPaidOrder: (paymentType = 'Dinheiro/Outros') => {
                 let addr = state.address;
-                let msg = `*NOVO PEDIDO (2A Modas)*\n\n*CLIENTE:* ${addr.name}\n*TIPO:* ${addr.type || 'Entrega'}\n*ENDEREÇO:* ${addr.street}\n*REF:* ${addr.ref}\n*CONTATO:* ${addr.phone}\n\n*ITENS:*\n`;
-                let t=0;
-                state.cart.forEach(i=>{ msg+=`▪ ${i.name} (${i.variant}) x${i.qty}\n`; t+=i.price*i.qty; });
-                msg+=`\n*TOTAL: R$ ${t.toFixed(2)}*`;
+                let msg = `*NOVO PEDIDO 2A MODAS (${state.user ? state.user.name : addr.name})*\n`;
+                msg += `--------------------------------\n`;
+                msg += `*PAGAMENTO:* ${paymentType}\n`;
+                msg += `*TOTAL:* R$ ${document.getElementById('cart-total').innerText.replace('R$ ','')}\n`;
+                msg += `--------------------------------\n`;
+                msg += `*DADOS DE ENTREGA:*\n`;
+                msg += `📍 ${addr.street}\n`;
+                msg += `📌 Ref: ${addr.ref}\n`;
+                msg += `📞 Contato: ${addr.phone}\n`;
+                msg += `🏠 Tipo: ${addr.type || 'Casa'}\n`;
+                msg += `--------------------------------\n`;
+                msg += `*ITENS DO PEDIDO:*\n`;
+                state.cart.forEach(i=>{ msg += `▪ ${i.qty}x ${i.name} (${i.variant})\n`; });
+                
+                if(paymentType.includes('Link')) {
+                    msg += `\n🔴 *AGUARDANDO LINK DE PAGAMENTO*`;
+                }
+
                 localStorage.removeItem('2a_cart');
                 window.location.href = `https://wa.me/5567998951120?text=${encodeURIComponent(msg)}`;
             },
@@ -615,7 +624,13 @@
             login: async () => {
                 const e = document.getElementById('l-email').value, p = document.getElementById('l-pass').value;
                 const {data} = await sb.from('customers').select('*').eq('email',e).eq('password',p).single();
-                if(data) { state.user=data; localStorage.setItem('2a_user', JSON.stringify(data)); location.reload(); }
+                if(data) { 
+                    state.user=data; 
+                    localStorage.setItem('2a_user', JSON.stringify(data)); 
+                    app.updateUI(); 
+                    // Fecha o modal suavemente sem reload
+                    history.back(); 
+                }
                 else alert("Inválido");
             },
             register: async () => {
@@ -728,7 +743,7 @@
                 const p = state.products.find(x => String(x.id) === String(id));
                 document.getElementById('edit-id').value = p.id;
                 
-                // USE SAFEVAL AQUI TAMBÉM
+                // USE SAFEVAL
                 document.getElementById('f-name').value = safeVal(p.name);
                 document.getElementById('f-cat').value = safeVal(p.category);
                 document.getElementById('f-cost').value = safeVal(p.cost_price);
