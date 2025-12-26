@@ -24,92 +24,88 @@
         h2, h3 { font-family:'Plus Jakarta Sans', sans-serif; font-weight: 700; }
         button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); user-select: none; }
 
-        /* LOADING & STATUS */
+        /* LOADING */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #status-bar { position:fixed; top:0; left:0; width:100%; height:auto; min-height:30px; background:#222; color:white; font-size:0.8rem; display:flex; align-items:center; justify-content:center; z-index:99999; font-weight:600; padding:5px; text-align:center; }
-        .ok { background:#27ae60 !important; } .err { background:#c0392b !important; }
-
-        /* HEADER */
+        
+        /* HEADER & HERO */
         .header-floating { position: fixed; top: 20px; right: 5%; z-index: 1000; display:flex; gap:10px; align-items: center; }
         .icon-btn { width:45px; height:45px; border-radius:50%; border:none; background:white; box-shadow:0 4px 15px rgba(0,0,0,0.15); color:var(--accent); font-size:1.1rem; display:flex; align-items:center; justify-content:center; position:relative; }
-        .icon-btn:active { transform:scale(0.95); }
         .badge { position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; width:20px; height:20px; border-radius:50%; font-size:0.7rem; display:flex; align-items:center; justify-content:center; font-weight:bold; border:2px solid white; }
-        
-        /* LOGIN HEADER BUTTON */
-        .login-btn-header { padding: 0 20px; height: 45px; background: white; border: none; border-radius: 30px; font-weight: 700; color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-size: 0.85rem; overflow: hidden; max-width: 200px; white-space: nowrap; text-overflow: ellipsis; }
-        .login-btn-header:hover { transform: translateY(-2px); }
-        .login-btn-header i { color: var(--primary); }
+        .login-btn-header { padding: 0 20px; height: 45px; background: white; border: none; border-radius: 30px; font-weight: 700; color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
 
-        /* HERO */
         .hero { padding: 100px 20px 40px; text-align:center; background: radial-gradient(circle at top, #fff5f2 0%, transparent 100%); display: flex; flex-direction: column; align-items: center; }
         .hero img { width:140px; height:140px; border-radius:50%; object-fit:cover; border:4px solid white; box-shadow:var(--shadow); margin-bottom:15px; }
         .hero h1 { font-size:2.5rem; margin-bottom:5px; color:var(--accent); line-height: 1.1; }
         .btn-cta { padding: 14px 40px; background: var(--accent); color: white; border-radius: 50px; border: none; font-weight: 700; font-size: 1rem; box-shadow: 0 10px 25px rgba(44,62,80,0.25); margin-top: 30px; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* CONTAINER */
+        /* GRID & PRODUCTS */
         .container { max-width:1200px; margin:0 auto; padding:20px; flex: 1; }
         .filters { display:flex; justify-content:center; gap:8px; margin-bottom:30px; flex-wrap:wrap; }
         .filter-btn { padding: 8px 20px; border-radius: 30px; border: 1px solid #e0e0e0; background: white; color: #555; font-weight: 600; font-size: 0.9rem; }
         .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-
         .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:15px; }
         .card { background:white; border-radius:var(--radius); overflow:hidden; border:1px solid #f0f0f0; position:relative; cursor:pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-        .card:active { transform:scale(0.98); }
         .card img { width:100%; height:200px; object-fit:cover; background:#f9f9f9; }
         .card-info { padding:12px; text-align:center; }
         .tag-promo { position:absolute; top:8px; right:8px; background:#e91e63; color:white; padding:3px 8px; border-radius:20px; font-size:0.6rem; font-weight:bold; z-index: 2; }
-        .tag-delivery { font-size: 0.65rem; color: #27ae60; display: block; margin-top: 4px; font-weight: 600; }
 
         /* MODALS */
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(5px); z-index:2000; display:none; align-items:center; justify-content:center; padding:15px; }
         .overlay.active { display:flex; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from{transform:scale(0.95); opacity:0;} to{transform:scale(1); opacity:1;} }
-        
         .box { background:white; width:100%; max-width:900px; border-radius:15px; overflow:hidden; max-height:95vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         .box.single-col { display:block; max-width:500px; grid-template-columns: 1fr; }
         
         /* SIDEBAR */
         .sidebar { position:fixed; top:0; right:-100%; width:85%; max-width:400px; height:100%; background:white; z-index:3000; padding:25px; box-shadow:-10px 0 50px rgba(0,0,0,0.2); transition:0.3s; display:flex; flex-direction:column; }
         .sidebar.open { right:0; }
-        
-        /* CART ITEM */
         .cart-item { display:grid; grid-template-columns: 60px 1fr auto; gap:10px; align-items:center; padding:15px 0; border-bottom:1px solid #f5f5f5; }
         .cart-thumb { width:60px; height:60px; border-radius:8px; object-fit:cover; background:#f9f9f9; }
-        .qty-controls { display:flex; align-items:center; background:#f4f4f4; border-radius:25px; padding:2px; width:fit-content; margin-top:5px; }
-        .qty-btn { width:25px; height:25px; border-radius:50%; border:none; background:white; color:var(--accent); font-weight:bold; box-shadow:0 1px 3px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center; }
-        .qty-val { padding:0 10px; font-size:0.85rem; font-weight:600; min-width:25px; text-align:center; }
-        .btn-remove { width:30px; height:30px; border-radius:50%; border:none; background:#fff5f5; color:#e74c3c; display:flex; align-items:center; justify-content:center; }
         
-        /* ADMIN NAV & UI */
-        .input { width:100%; padding:14px; border:1px solid #ddd; border-radius:8px; font-size:1rem; margin-bottom:12px; }
+        /* ------------- ADMIN STYLES MODERNO ------------- */
+        .input { width:100%; padding:14px; border:1px solid #e0e0e0; border-radius:10px; font-size:1rem; margin-bottom:12px; background: #fdfdfd; transition: 0.3s; }
+        .input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(196, 139, 120, 0.1); }
         
-        /* ADMIN TABS ANIMATION */
         .admin-nav { padding:15px; background:white; border-bottom:1px solid #eee; display:flex; gap:10px; overflow-x:auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
-        .admin-tab { padding:8px 16px; border-radius:30px; border:1px solid #eee; background:transparent; font-weight:600; cursor:pointer; color: #777; transition: all 0.3s; }
-        .admin-tab:hover { background: #f0f0f0; color: var(--accent); transform: translateY(-2px); }
+        .admin-tab { padding:10px 20px; border-radius:30px; border:1px solid #eee; background:transparent; font-weight:600; cursor:pointer; color: #777; transition: all 0.3s; }
         .admin-tab.active { background:var(--accent); color:white; border-color: var(--accent); box-shadow: 0 4px 10px rgba(44,62,80,0.3); }
 
-        .checkbox-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(90px, 1fr)); gap:8px; background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #eee; }
-        .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; }
-        .var-inputs.show { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        /* CHECKBOXES MODERNOS (CHIPS) */
+        .checkbox-wrapper { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .modern-checkbox input { display: none; } /* Esconde o input original */
+        .variation-chip {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 20px; border: 1px solid #eee;
+            border-radius: 50px; cursor: pointer; transition: 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            font-weight: 600; color: #555; background: white; user-select: none;
+            font-size: 0.9rem;
+        }
+        .modern-checkbox input:checked + .variation-chip {
+            background: var(--accent); color: white; border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(44,62,80,0.25); transform: translateY(-2px);
+        }
+        .color-preview { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); display: inline-block; }
         
+        .var-inputs { display:none; background:#f8f9fa; border:1px solid #eee; padding:15px; border-radius:12px; margin-top:10px; animation: slideDown 0.3s ease; }
+        .var-inputs.show { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+        @keyframes slideDown { from{opacity:0;transform:translateY(-10px);} to{opacity:1;transform:translateY(0);} }
+
+        .admin-section-title { font-size: 0.9rem; text-transform: uppercase; color: #999; font-weight: 700; margin: 20px 0 10px; letter-spacing: 1px; }
+
+        /* LISTA ADMIN */
         .mini-prod { display:flex; align-items:center; gap:12px; padding:12px; border-bottom:1px solid #eee; background: #fff; margin-bottom: 5px; border-radius: 8px; }
         .mini-prod img { width:50px; height:50px; border-radius:8px; object-fit:cover; border: 1px solid #eee; }
-        .stock-info { font-size: 0.8rem; color: #666; margin-top: 2px; }
-        .stock-warn { color: #e74c3c; font-weight: bold; }
         .btn-mini-edit { background: var(--accent); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; border: none; }
         
-        /* UI */
+        /* ------------------------------------------------ */
+
         .var-btn { padding:12px; border:1px solid #eee; border-radius:8px; background:white; margin:4px; cursor:pointer; font-size: 0.9rem; }
         .var-btn.selected { background:var(--accent); color:white; border-color: var(--accent); }
-        .var-btn.disabled { opacity:0.5; cursor:not-allowed; }
         .btn-mp, .btn-whats { width:100%; padding:16px; border-radius:12px; border:none; font-weight:bold; margin-top:10px; color:white; display:flex; align-items:center; justify-content:center; gap:10px; font-size: 1rem; }
         .btn-mp { background:#009EE3; } .btn-whats { background:#25D366; }
-        .btn-addr-trigger { width:100%; padding:15px; border:2px dashed var(--accent); background:none; border-radius:12px; color:var(--accent); font-weight:bold; cursor:pointer; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:10px; }
-        .btn-addr-trigger.filled { border-style:solid; border-color:#27ae60; background:#eafff0; color:#27ae60; }
-        .color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; border: 1px solid #ddd; margin-right:5px; }
         
+        /* CLIENTE */
         .client-order { border:1px solid #eee; padding:15px; border-radius:12px; margin-bottom:12px; background:#fff; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         .track-container { margin-top: 15px; position: relative; padding-top: 20px; padding-bottom: 20px; }
         .track-line { height: 4px; background: #eee; border-radius: 2px; position: relative; }
@@ -117,9 +113,6 @@
         .truck-icon { position: absolute; top: 0; transform: translateX(-50%); font-size: 1.5rem; color: #2c3e50; transition: left 1s ease; left: 0%; background: white; padding: 0 5px; }
         .track-steps { display: flex; justify-content: space-between; font-size: 0.65rem; color: #aaa; margin-top: 8px; font-weight: bold; text-transform: uppercase; }
         .track-steps span.active { color: #27ae60; }
-
-        .order-card { background: white; border: 1px solid #eee; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; font-weight: bold; color: var(--accent); font-size: 0.9rem; }
 
         .carousel-wrapper { overflow: hidden; white-space: nowrap; padding: 10px 0; }
         .carousel-track { display: inline-flex; gap: 15px; animation: scrollPromo 20s linear infinite; }
@@ -149,8 +142,6 @@
         <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--primary);"></i>
         <p style="margin-top:15px; color:#666;">Carregando loja...</p>
     </div>
-
-    <div id="status-bar" style="display:none;"></div>
 
     <div class="header-floating">
         <button class="login-btn-header" onclick="auth.checkProfile()" id="btn-login-display">
@@ -234,21 +225,13 @@
                     <input type="text" id="addr-dist" class="input" placeholder="Bairro">
                     <div style="display:flex; gap:10px;">
                         <input type="text" id="addr-city" class="input" placeholder="Cidade" style="flex:2">
-                        <select id="addr-state" class="input" style="flex:1">
-                            <option value="">UF</option>
-                            </select>
+                        <select id="addr-state" class="input" style="flex:1"><option value="">UF</option></select>
                     </div>
-                    <input type="text" id="addr-ref" class="input" placeholder="Referência (Opcional)">
+                    <input type="text" id="addr-ref" class="input" placeholder="Referência">
                     <input type="text" id="addr-name" class="input" placeholder="Nome de quem recebe">
-                    <input type="text" id="addr-phone" class="input" placeholder="WhatsApp Contato">
-                    
+                    <input type="text" id="addr-phone" class="input" placeholder="WhatsApp">
                     <label style="display:block; margin:10px 0; font-weight:bold;">Salvar como:</label>
-                    <select id="addr-type" class="input">
-                        <option value="Casa">Casa</option>
-                        <option value="Trabalho">Trabalho</option>
-                        <option value="Outro">Outro</option>
-                    </select>
-                    
+                    <select id="addr-type" class="input"><option value="Casa">Casa</option><option value="Trabalho">Trabalho</option><option value="Outro">Outro</option></select>
                     <button onclick="app.addNewAddress()" style="width:100%; background:var(--primary); color:white; padding:15px; border-radius:12px; border:none; font-weight:bold;">Salvar Endereço</button>
                 </div>
                 <button onclick="app.closeModal('address-modal')" style="width:100%; margin-top:15px; padding:15px; background:none; border:none; color:#666; font-size:1rem;">Fechar</button>
@@ -373,27 +356,35 @@
 
                 <div id="tab-prod" style="display:none;">
                     <div style="background:white; padding:25px; border-radius:12px; margin-bottom:20px; box-shadow:var(--shadow);">
-                        <h3>Cadastro</h3>
+                        <h3>Cadastro de Produto</h3>
                         <input type="hidden" id="edit-id">
-                        <input type="text" id="f-name" class="input" placeholder="Nome">
+                        
+                        <div class="admin-section-title">Informações Básicas</div>
+                        <input type="text" id="f-name" class="input" placeholder="Nome do Produto">
                         <div style="display:flex; gap:10px; flex-wrap:wrap;">
                             <select id="f-cat" class="input" style="flex:1;"><option value="feminino">Feminino</option><option value="infantil">Infantil</option><option value="perfumes">Perfumes</option></select>
                             <input type="number" id="f-cost" class="input" placeholder="Custo Global (Opcional)" style="flex:1;">
                         </div>
-                        <label style="display:flex; align-items:center; gap:10px; margin-bottom:10px;"><input type="checkbox" id="f-promo"> Produto em Promoção?</label>
-                        <input type="file" id="f-file" class="input">
-                        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                         
-                        <label style="font-weight:bold; display:block; margin-bottom:10px;">Variações (Cores e Tamanhos):</label>
-                        <div class="checkbox-grid" id="color-checks"></div>
-                        <div class="checkbox-grid" id="volume-checks"></div>
+                        <label style="display:flex; align-items:center; gap:10px; margin-bottom:10px; font-weight:600;">
+                            <input type="checkbox" id="f-promo" style="transform:scale(1.5);"> Produto em Promoção?
+                        </label>
+                        <input type="file" id="f-file" class="input">
+                        
+                        <div class="admin-section-title">Variações (Cores e Tamanhos)</div>
+                        <div class="checkbox-wrapper" id="color-checks"></div>
+                        <div class="checkbox-wrapper" id="volume-checks"></div>
+                        
                         <div id="active-vars-area"></div>
-                        <textarea id="f-desc" class="input" rows="3" placeholder="Descrição detalhada"></textarea>
-                        <button onclick="admin.save()" id="btn-save" style="width:100%; background:var(--primary); color:white; padding:15px; border-radius:8px; border:none; margin-top:15px; font-weight:bold;">Salvar Produto</button>
-                        <button onclick="admin.clear()" style="width:100%; padding:15px; background:none; border:none; color:#666;">Limpar Campos</button>
+                        
+                        <div class="admin-section-title">Descrição</div>
+                        <textarea id="f-desc" class="input" rows="3" placeholder="Detalhes do produto..."></textarea>
+                        
+                        <button onclick="admin.save()" id="btn-save" style="width:100%; background:var(--primary); color:white; padding:15px; border-radius:8px; border:none; margin-top:15px; font-weight:bold; font-size:1rem;">Salvar Produto</button>
+                        <button onclick="admin.clear()" style="width:100%; padding:15px; background:none; border:none; color:#666;">Cancelar / Limpar</button>
                     </div>
                     <div style="background:white; padding:25px; border-radius:12px; box-shadow:var(--shadow);">
-                        <h3>Lista de Produtos</h3>
+                        <h3>Produtos Cadastrados</h3>
                         <div id="admin-list"></div>
                     </div>
                 </div>
@@ -402,7 +393,7 @@
     </div>
 
     <script>
-const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
+        const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
         const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
 
@@ -426,7 +417,6 @@ const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co';
             load: async () => {
                 const { data, error } = await sb.from('products').select('*');
                 if(!error) { state.products = data || []; app.render(state.products); }
-                // Preenche estados
                 const ufSel = document.getElementById('addr-state');
                 if(ufSel && ufSel.options.length <= 1) {
                     state.states.forEach(uf => { const op = document.createElement('option'); op.value=uf; op.text=uf; ufSel.add(op); });
@@ -697,6 +687,161 @@ const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co';
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 app.render(cat==='all' ? state.products : state.products.filter(p => p.category===cat));
+            },
+
+            // ADMIN EDIT / TOGGLES
+            initCheckboxes: () => {
+                const cDiv = document.getElementById('color-checks');
+                const vDiv = document.getElementById('volume-checks');
+                if(!cDiv || !vDiv) return;
+                cDiv.innerHTML = ""; vDiv.innerHTML = "";
+                Object.keys(COLOR_MAP).forEach(c => {
+                    cDiv.innerHTML += `<div class="modern-checkbox"><input type="checkbox" id="chk-${c}" value="${c}" onchange="admin.toggleInput(this)"><label class="variation-chip" for="chk-${c}"><span class="color-preview" style="background:${COLOR_MAP[c]}"></span>${c}</label></div>`;
+                });
+                PRESETS_VOL.forEach(v => {
+                    vDiv.innerHTML += `<div class="modern-checkbox"><input type="checkbox" id="chk-${v}" value="${v}" onchange="admin.toggleInput(this)"><label class="variation-chip" for="chk-${v}">${v}</label></div>`;
+                });
+            },
+            toggleInput: (cb) => {
+                const id = `grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`;
+                const area = document.getElementById('active-vars-area');
+                if(cb.checked) {
+                    area.innerHTML += `<div id="${id}" class="var-inputs show"><strong style="grid-column:span 3; color:var(--primary);">${cb.value}</strong><input type="hidden" class="v-name" value="${cb.value}"><input type="number" class="input v-cost" placeholder="Custo"><input type="number" class="input v-price" placeholder="Venda"><input type="number" class="input v-stock" placeholder="Estoque"></div>`;
+                } else { document.getElementById(id)?.remove(); }
+            },
+            checkAdmin: () => { 
+                const pass = document.getElementById('admin-pass-input').value;
+                if(pass === "123") { 
+                    app.closeModal('admin-login-modal'); app.showModal('admin-modal'); admin.renderList(); admin.renderOrders(); admin.updateStats(); 
+                } else alert("Senha incorreta");
+            },
+            tab: (t) => {
+                document.querySelectorAll('.admin-tab').forEach(el => el.classList.remove('active'));
+                event.target.classList.add('active');
+                document.getElementById('tab-dash').style.display=t==='dash'?'block':'none';
+                document.getElementById('tab-prod').style.display=t==='prod'?'block':'none';
+                document.getElementById('tab-orders').style.display=t==='orders'?'block':'none';
+            },
+            save: async () => {
+                const btn = document.getElementById('btn-save'); btn.innerText="Processando..."; btn.disabled=true;
+                try {
+                    const vars = [];
+                    document.querySelectorAll('.var-inputs').forEach(d => {
+                        const cost = d.querySelector('.v-cost').value || 0;
+                        const p = d.querySelector('.v-price').value, s = d.querySelector('.v-stock').value;
+                        if(p && s) vars.push({ name: d.querySelector('.v-name').value, cost: cost, price: p, stock: s });
+                    });
+                    const file = document.getElementById('f-file').files[0];
+                    let imgUrl = null;
+                    if(file) {
+                        const fName = `prod_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+                        const { data } = await sb.storage.from('images').upload(fName, file);
+                        const { data: url } = sb.storage.from('images').getPublicUrl(fName);
+                        imgUrl = url.publicUrl;
+                    }
+                    const payload = {
+                        name: document.getElementById('f-name').value,
+                        category: document.getElementById('f-cat').value,
+                        cost_price: document.getElementById('f-cost').value || 0,
+                        description: document.getElementById('f-desc').value || "",
+                        is_promo: document.getElementById('f-promo').checked,
+                        variations: JSON.stringify(vars)
+                    };
+                    if(imgUrl) payload.image_url = imgUrl; else if(!document.getElementById('edit-id').value) payload.image_url = "https://via.placeholder.com/300";
+                    const eid = document.getElementById('edit-id').value;
+                    if(eid) await sb.from('products').update(payload).eq('id', eid);
+                    else { payload.id = Date.now(); await sb.from('products').insert([payload]); }
+                    alert("Salvo!"); admin.clear(); await app.load(); admin.renderList(); admin.updateStats();
+                } catch(e) { alert(e.message); } finally { btn.innerText="Salvar Produto"; btn.disabled=false; }
+            },
+            edit: (id) => {
+                const p = state.products.find(x => String(x.id) === String(id));
+                document.getElementById('edit-id').value = p.id;
+                document.getElementById('f-name').value = safeVal(p.name);
+                document.getElementById('f-cat').value = safeVal(p.category);
+                document.getElementById('f-cost').value = safeVal(p.cost_price);
+                document.getElementById('f-desc').value = safeVal(p.description);
+                document.getElementById('f-promo').checked = p.is_promo;
+                admin.clear(true); document.getElementById('edit-id').value = p.id;
+                
+                // POPULATE VARS - AQUI ESTA A MAGICA DA EDICAO
+                const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+                if(vars) {
+                    const checks = document.querySelectorAll('input[type="checkbox"]');
+                    vars.forEach(v => {
+                        const cb = document.getElementById(`chk-${v.name}`);
+                        if(cb) {
+                            cb.checked = true;
+                            admin.toggleInput(cb);
+                            setTimeout(() => {
+                                const div = document.getElementById(`grp-${v.name.replace(/[^a-z0-9]/gi,'')}`);
+                                if(div) { 
+                                    div.querySelector('.v-cost').value = safeVal(v.cost || p.cost_price); 
+                                    div.querySelector('.v-price').value = safeVal(v.price); 
+                                    div.querySelector('.v-stock').value = safeVal(v.stock); 
+                                }
+                            }, 50);
+                        }
+                    });
+                }
+                // Muda para aba cadastro visualmente
+                document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+                document.querySelectorAll('.admin-tab')[2].classList.add('active'); // Aba Produtos
+                admin.tab('prod');
+            },
+            del: async (id) => { if(confirm("Excluir?")) { await sb.from('products').delete().eq('id', id); await app.load(); admin.renderList(); } },
+            clear: (soft=false) => { 
+                if(!soft) document.getElementById('edit-id').value=""; 
+                document.getElementById('f-name').value=""; document.getElementById('f-desc').value=""; 
+                document.getElementById('f-cost').value=""; document.getElementById('f-file').value=""; 
+                document.getElementById('active-vars-area').innerHTML="";
+                document.querySelectorAll('.modern-checkbox input').forEach(c => c.checked=false);
+            },
+            renderList: () => {
+                const div = document.getElementById('admin-list'); div.innerHTML="";
+                state.products.forEach(p => {
+                    const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+                    let stock = 0; if(vars) vars.forEach(v => stock += parseInt(v.stock||0));
+                    div.innerHTML += `<div class="mini-prod"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/50'"> <div style="flex:1"><strong>${p.name}</strong><div class="stock-info">Estoque: <span class="${stock<5?'stock-warn':''}">${stock}</span></div></div><div><button onclick="admin.edit('${p.id}')" class="btn-mini-edit"><i class="fas fa-edit"></i></button> <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none;margin-left:10px;"><i class="fas fa-trash"></i></button></div></div>`;
+                });
+            },
+            renderOrders: async () => {
+                const { data } = await sb.from('orders').select('*').order('id', {ascending:false});
+                const div = document.getElementById('orders-list'); 
+                if(div && data) {
+                    div.innerHTML="";
+                    data.forEach(o => {
+                        const iList = typeof o.items==='string'?JSON.parse(o.items):o.items;
+                        const addr = typeof o.address==='string'?JSON.parse(o.address):o.address;
+                        const status = o.status || 'Pendente';
+                        let prodHtml = iList.map(i => `<div>${i.qty}x ${i.name} (${i.variant})</div>`).join('');
+                        div.innerHTML += `<div class="order-card"><div class="order-header"><span>${o.date}</span><span>R$ ${o.total.toFixed(2)}</span></div><div class="order-body"><div><span class="order-label">Cliente</span><strong>${o.customer_name}</strong><br><small>${o.customer_email}</small><br><small>${addr.phone}</small></div><div><span class="order-label">Status</span><select onchange="admin.updateStatus('${o.id}', this.value)" style="padding:5px;"><option value="Pendente" ${status==='Pendente'?'selected':''}>Pendente</option><option value="Enviado" ${status==='Enviado'?'selected':''}>Enviado</option><option value="Entregue" ${status==='Entregue'?'selected':''}>Entregue</option></select></div></div><div class="order-items"><span class="order-label">Produtos</span>${prodHtml}</div></div>`;
+                    });
+                }
+            },
+            updateStatus: async (id, val) => { await sb.from('orders').update({status: val}).eq('id', id); alert("Status atualizado!"); },
+            updateStats: () => {
+                let cost=0, rev=0; let miniList = "";
+                const div = document.getElementById('mini-prod-list');
+                try {
+                    if(!state.products || state.products.length === 0) { if(div) div.innerHTML = "<p style='color:#666'>Sem dados.</p>"; return; }
+                    state.products.forEach(p => {
+                        const vars = typeof p.variations === 'string' ? JSON.parse(p.variations || '[]') : (p.variations || []);
+                        let stock = 0;
+                        if(vars) {
+                            vars.forEach(v => {
+                                let q = parseInt(v.stock)||0;
+                                let vCost = parseFloat(v.cost) || parseFloat(p.cost_price) || 0;
+                                cost += (vCost * q); rev += (parseFloat(v.price||0) * q); stock += q;
+                            });
+                        }
+                        miniList += `<div class="mini-prod"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/50'"> <div style="flex:1"><strong>${p.name}</strong><br><span class="stock-info ${stock === 0 ? 'stock-warn' : ''}">${stock === 0 ? 'ESGOTADO' : 'Estoque: ' + stock}</span></div><button onclick="admin.edit('${p.id}')" class="btn-mini-edit">Editar</button></div>`;
+                    });
+                    document.getElementById('st-cost').innerText = `R$ ${cost.toFixed(2)}`;
+                    document.getElementById('st-rev').innerText = `R$ ${rev.toFixed(2)}`;
+                    document.getElementById('st-profit').innerText = `R$ ${(rev-cost).toFixed(2)}`;
+                    if(div) div.innerHTML = miniList;
+                } catch(e) { console.error("Erro dashboard:", e); }
             }
         };
 
@@ -738,149 +883,6 @@ const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co';
             }
         };
 
-        // --- ADMIN ---
-        const admin = {
-            initCheckboxes: () => {
-                const cDiv = document.getElementById('color-checks');
-                const vDiv = document.getElementById('volume-checks');
-                if(!cDiv || !vDiv) return;
-                cDiv.innerHTML = ""; vDiv.innerHTML = "";
-                Object.keys(COLOR_MAP).forEach(c => { cDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${c}" onchange="admin.toggleInput(this)"> <span class="color-dot" style="background:${COLOR_MAP[c]}"></span> ${c}</label>`; });
-                PRESETS_VOL.forEach(v => vDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${v}" onchange="admin.toggleInput(this)"> ${v}</label>`);
-            },
-            toggleInput: (cb) => {
-                const id = `grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`;
-                const area = document.getElementById('active-vars-area');
-                if(cb.checked) area.innerHTML += `<div id="${id}" class="var-inputs show"><strong style="grid-column:span 2">${cb.value}</strong><input type="hidden" class="v-name" value="${cb.value}"><input type="number" class="input v-cost" placeholder="Custo (R$)"><input type="number" class="input v-price" placeholder="Venda (R$)"><input type="number" class="input v-stock" placeholder="Estoque"></div>`;
-                else document.getElementById(id)?.remove();
-            },
-            checkAdmin: () => { 
-                const pass = document.getElementById('admin-pass-input').value;
-                if(pass === "123") { 
-                    app.closeModal('admin-login-modal'); app.showModal('admin-modal'); admin.renderList(); admin.renderOrders(); admin.updateStats(); 
-                } else alert("Senha incorreta");
-            },
-            tab: (t) => { document.getElementById('tab-dash').style.display=t==='dash'?'block':'none'; document.getElementById('tab-prod').style.display=t==='prod'?'block':'none'; document.getElementById('tab-orders').style.display=t==='orders'?'block':'none'; },
-            save: async () => {
-                const btn = document.getElementById('btn-save'); btn.innerText="Processando..."; btn.disabled=true;
-                try {
-                    const vars = [];
-                    document.querySelectorAll('.var-inputs').forEach(d => {
-                        const cost = d.querySelector('.v-cost').value || 0;
-                        const p = d.querySelector('.v-price').value, s = d.querySelector('.v-stock').value;
-                        if(p && s) vars.push({ name: d.querySelector('.v-name').value, cost: cost, price: p, stock: s });
-                    });
-                    const file = document.getElementById('f-file').files[0];
-                    let imgUrl = null;
-                    if(file) {
-                        const fName = `prod_${Date.now()}_${Math.floor(Math.random()*1000)}`;
-                        const { data } = await sb.storage.from('images').upload(fName, file);
-                        const { data: url } = sb.storage.from('images').getPublicUrl(fName);
-                        imgUrl = url.publicUrl;
-                    }
-                    const payload = {
-                        name: document.getElementById('f-name').value,
-                        category: document.getElementById('f-cat').value,
-                        cost_price: document.getElementById('f-cost').value || 0,
-                        description: document.getElementById('f-desc').value || "",
-                        is_promo: document.getElementById('f-promo').checked,
-                        variations: JSON.stringify(vars)
-                    };
-                    if(imgUrl) payload.image_url = imgUrl; else if(!document.getElementById('edit-id').value) payload.image_url = "https://via.placeholder.com/300";
-                    const eid = document.getElementById('edit-id').value;
-                    if(eid) await sb.from('products').update(payload).eq('id', eid);
-                    else { payload.id = Date.now(); await sb.from('products').insert([payload]); }
-                    alert("Salvo!"); admin.clear(); await app.load(); admin.renderList(); admin.updateStats();
-                } catch(e) { alert(e.message); } finally { btn.innerText="Salvar"; btn.disabled=false; }
-            },
-            edit: (id) => {
-                const p = state.products.find(x => String(x.id) === String(id));
-                document.getElementById('edit-id').value = p.id;
-                document.getElementById('f-name').value = safeVal(p.name);
-                document.getElementById('f-cat').value = safeVal(p.category);
-                document.getElementById('f-cost').value = safeVal(p.cost_price);
-                document.getElementById('f-desc').value = safeVal(p.description);
-                document.getElementById('f-promo').checked = p.is_promo;
-                admin.clear(true); document.getElementById('edit-id').value = p.id;
-                
-                // POPULATE VARS
-                const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-                if(vars) {
-                    const checks = document.querySelectorAll('input[type="checkbox"]');
-                    vars.forEach(v => {
-                        checks.forEach(cb => {
-                            if(cb.value === v.name) {
-                                cb.checked = true; admin.toggleInput(cb);
-                                setTimeout(() => {
-                                    const div = document.getElementById(`grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`);
-                                    if(div) { 
-                                        div.querySelector('.v-cost').value = safeVal(v.cost || p.cost_price); 
-                                        div.querySelector('.v-price').value = safeVal(v.price); 
-                                        div.querySelector('.v-stock').value = safeVal(v.stock); 
-                                    }
-                                }, 50);
-                            }
-                        });
-                    });
-                }
-                alert("Edição carregada.");
-            },
-            del: async (id) => { if(confirm("Excluir?")) { await sb.from('products').delete().eq('id', id); await app.load(); admin.renderList(); } },
-            clear: (soft=false) => { 
-                if(!soft) document.getElementById('edit-id').value=""; 
-                document.getElementById('f-name').value=""; document.getElementById('f-desc').value=""; 
-                document.getElementById('f-cost').value=""; document.getElementById('f-file').value=""; 
-                document.getElementById('active-vars-area').innerHTML="";
-                document.querySelectorAll('.checkbox-grid input').forEach(c => c.checked=false);
-            },
-            renderList: () => {
-                const div = document.getElementById('admin-list'); div.innerHTML="";
-                state.products.forEach(p => {
-                    const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-                    let stock = 0; if(vars) vars.forEach(v => stock += parseInt(v.stock||0));
-                    div.innerHTML += `<div class="mini-prod"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/50'"> <div style="flex:1"><strong>${p.name}</strong><div class="stock-info">Estoque: <span class="${stock<5?'stock-warn':''}">${stock}</span></div></div><div><button onclick="admin.edit('${p.id}'); admin.tab('prod')" style="color:blue;border:none;background:none"><i class="fas fa-edit"></i></button> <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none"><i class="fas fa-trash"></i></button></div></div>`;
-                });
-            },
-            renderOrders: async () => {
-                const { data } = await sb.from('orders').select('*').order('id', {ascending:false});
-                const div = document.getElementById('orders-list'); 
-                if(div && data) {
-                    div.innerHTML="";
-                    data.forEach(o => {
-                        const iList = typeof o.items==='string'?JSON.parse(o.items):o.items;
-                        const addr = typeof o.address==='string'?JSON.parse(o.address):o.address;
-                        const status = o.status || 'Pendente';
-                        let prodHtml = iList.map(i => `<div>${i.qty}x ${i.name} (${i.variant})</div>`).join('');
-                        div.innerHTML += `<div class="order-card"><div class="order-header"><span>${o.date}</span><span>R$ ${o.total.toFixed(2)}</span></div><div class="order-body"><div><span class="order-label">Cliente</span><strong>${o.customer_name}</strong><br><small>${o.customer_email}</small><br><small>${addr.phone}</small></div><div><span class="order-label">Status</span><select onchange="admin.updateStatus('${o.id}', this.value)" style="padding:5px;"><option value="Pendente" ${status==='Pendente'?'selected':''}>Pendente</option><option value="Enviado" ${status==='Enviado'?'selected':''}>Enviado</option><option value="Entregue" ${status==='Entregue'?'selected':''}>Entregue</option></select></div></div><div class="order-items"><span class="order-label">Produtos</span>${prodHtml}</div></div>`;
-                    });
-                }
-            },
-            updateStatus: async (id, val) => { await sb.from('orders').update({status: val}).eq('id', id); alert("Status atualizado!"); },
-            updateStats: () => {
-                let cost=0, rev=0; let miniList = "";
-                const div = document.getElementById('mini-prod-list');
-                try {
-                    if(!state.products || state.products.length === 0) { if(div) div.innerHTML = "<p style='color:#666'>Sem dados.</p>"; return; }
-                    state.products.forEach(p => {
-                        const vars = typeof p.variations === 'string' ? JSON.parse(p.variations || '[]') : (p.variations || []);
-                        let stock = 0;
-                        if(vars) {
-                            vars.forEach(v => {
-                                let q = parseInt(v.stock)||0;
-                                let vCost = parseFloat(v.cost) || parseFloat(p.cost_price) || 0;
-                                cost += (vCost * q); rev += (parseFloat(v.price||0) * q); stock += q;
-                            });
-                        }
-                        miniList += `<div class="mini-prod"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/50'"> <div style="flex:1"><strong>${p.name}</strong><br><span class="stock-info ${stock === 0 ? 'stock-warn' : ''}">${stock === 0 ? 'ESGOTADO' : 'Estoque: ' + stock}</span></div><button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-mini-edit">Editar</button></div>`;
-                    });
-                    document.getElementById('st-cost').innerText = `R$ ${cost.toFixed(2)}`;
-                    document.getElementById('st-rev').innerText = `R$ ${rev.toFixed(2)}`;
-                    document.getElementById('st-profit').innerText = `R$ ${(rev-cost).toFixed(2)}`;
-                    if(div) div.innerHTML = miniList;
-                } catch(e) { console.error("Erro dashboard:", e); }
-            }
-        };
-
         // --- INIT CALL ---
         (async function init() {
             try {
@@ -909,7 +911,6 @@ const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co';
                 await app.load(); admin.initCheckboxes(); app.updateUI();
                 document.getElementById('status-bar').style.display='none';
                 
-                // MÁSCARAS
                 if(window.IMask) {
                     IMask(document.getElementById('addr-cep'), {mask: '00000-000'});
                     IMask(document.getElementById('addr-phone'), {mask: '(00) 00000-0000'});
@@ -919,7 +920,6 @@ const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co';
             } finally { document.getElementById('loading-screen').style.display='none'; }
         })();
 
-        // GLOBAL ESC HANDLER
         window.addEventListener('popstate', (e) => { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); });
         document.addEventListener('keydown', (e) => { if(e.key === "Escape") { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); history.back(); } });
     </script>
