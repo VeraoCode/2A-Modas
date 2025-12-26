@@ -23,7 +23,7 @@
         button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
 
         /* LOADING & STATUS */
-        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #status-bar { position:fixed; top:0; left:0; width:100%; height:auto; min-height:30px; background:#222; color:white; font-size:0.8rem; display:flex; align-items:center; justify-content:center; z-index:99999; font-weight:600; padding:5px; text-align:center; }
         .ok { background:#27ae60 !important; } .err { background:#c0392b !important; }
 
@@ -66,11 +66,24 @@
         .box { background:white; width:100%; max-width:900px; border-radius:20px; overflow:hidden; max-height:90vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         .box.single-col { display:block; max-width:500px; grid-template-columns: 1fr; }
         
-        /* SIDEBAR */
+        /* SIDEBAR & CARRINHO MODERNO */
         .sidebar { position:fixed; top:0; right:-500px; width:450px; height:100%; background:white; z-index:3000; padding:30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s; display:flex; flex-direction:column; }
         .sidebar.open { right:0; }
-        .cart-item { display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid #f5f5f5; }
         
+        /* Novo Item de Carrinho */
+        .cart-item { display:grid; grid-template-columns: 70px 1fr auto; gap:15px; align-items:center; padding:20px 0; border-bottom:1px solid #f5f5f5; }
+        .cart-thumb { width:70px; height:70px; border-radius:10px; object-fit:cover; background:#f9f9f9; }
+        
+        /* Controles de Quantidade (Pílula) */
+        .qty-controls { display:flex; align-items:center; background:#f4f4f4; border-radius:25px; padding:3px; width:fit-content; margin-top:8px; }
+        .qty-btn { width:28px; height:28px; border-radius:50%; border:none; background:white; color:var(--accent); font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; }
+        .qty-btn:hover { background:var(--primary); color:white; }
+        .qty-val { padding:0 12px; font-size:0.9rem; font-weight:600; min-width:30px; text-align:center; }
+
+        /* Botão Remover */
+        .btn-remove { width:35px; height:35px; border-radius:50%; border:1px solid #ffecec; background:#fff5f5; color:#e74c3c; display:flex; align-items:center; justify-content:center; transition:0.3s; }
+        .btn-remove:hover { background:#e74c3c; color:white; border-color:#e74c3c; }
+
         /* ADMIN/FORMS */
         .input { width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; margin-bottom:10px; }
         .admin-nav { padding:20px; background:white; border-bottom:1px solid #eee; display:flex; gap:10px; overflow-x:auto; }
@@ -79,8 +92,12 @@
         .checkbox-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #eee; }
         .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; }
         .var-inputs.show { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-        .mini-prod { display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid #eee; }
-        .mini-prod img { width:50px; height:50px; border-radius:8px; object-fit:cover; }
+        
+        /* Mini Produto Admin */
+        .mini-prod { display:flex; align-items:center; gap:15px; padding:15px; border-bottom:1px solid #eee; background: #fff; margin-bottom: 5px; border-radius: 8px; }
+        .mini-prod img { width:50px; height:50px; border-radius:8px; object-fit:cover; border: 1px solid #eee; }
+        .stock-info { font-size: 0.9rem; color: #666; margin-top: 4px; }
+        .stock-warn { color: #e74c3c; font-weight: bold; }
         
         /* UI */
         .var-btn { padding:10px; border:1px solid #eee; border-radius:8px; background:white; margin:5px; cursor:pointer; }
@@ -194,7 +211,7 @@
         </div>
     </div>
 
-    <div id="address-modal" class="overlay" style="justify-content:flex-start; padding-left:20px;">
+    <div id="address-modal" class="overlay" style="justify-content:flex-start; padding-left:20px; z-index:10001;">
         <div class="box single-col" style="width:100%; max-width:400px; height:auto;">
             <div style="padding:20px;">
                 <h3>📍 Onde entregar?</h3>
@@ -305,6 +322,10 @@
                             <div style="color:#e74c3c; font-weight:bold;">CUSTO ESTOQUE</div>
                             <div class="stat-val" id="st-cost" style="font-size:1.5rem; font-weight:bold;">R$ 0.00</div>
                         </div>
+                        <div style="background:white; padding:20px; border-radius:12px; text-align:center;">
+                            <div style="color:#2980b9; font-weight:bold;">VENDA TOTAL</div>
+                            <div class="stat-val" id="st-rev" style="font-size:1.5rem; font-weight:bold;">R$ 0.00</div>
+                        </div>
                     </div>
                     <div style="background:white; padding:20px; border-radius:12px;">
                         <h4>Controle de Estoque</h4>
@@ -355,6 +376,7 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
         const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
 
+
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const state = { products: [], cart: [], current: null, var: null, qty: 1, user: null, address: null };
         const PRESETS_VOL = ['25ml','50ml','75ml','100ml','200ml','P','M','G','GG','Unico'];
@@ -400,7 +422,6 @@
                 
                 document.getElementById('m-img').src = p.image_url || "";
                 
-                // USE SETSAFE
                 setSafe('m-title', p.name);
                 setSafe('m-cat', p.category);
                 setSafe('m-desc', p.description);
@@ -433,14 +454,29 @@
             updQty: (n) => { state.qty += n; if(state.qty<1) state.qty=1; document.getElementById('m-qty').innerText = state.qty; },
             addCart: () => {
                 if(!state.var) return alert("Selecione uma opção");
-                state.cart.push({name: state.current.name, variant: state.var.name, price: parseFloat(state.var.price), qty: state.qty});
+                state.cart.push({name: state.current.name, variant: state.var.name, price: parseFloat(state.var.price), qty: state.qty, image: state.current.image_url});
                 app.renderCart(); app.closeModal('product-modal'); app.toggleCart();
             },
             renderCart: () => {
                 const ul = document.getElementById('cart-list'); if(!ul) return; ul.innerHTML=""; let t=0;
                 state.cart.forEach((i,idx) => {
                     t += i.price*i.qty;
-                    ul.innerHTML += `<li class="cart-item"><div><b>${i.name}</b><br><small>${i.variant}</small><div class="qty-controls"><button class="qty-btn" onclick="app.cQty(${idx},-1)">-</button>${i.qty}<button class="qty-btn" onclick="app.cQty(${idx},1)">+</button></div></div><div style="text-align:right">R$ ${(i.price*i.qty).toFixed(2)}<br><i class="fas fa-trash" onclick="state.cart.splice(${idx},1);app.renderCart()" style="color:red;cursor:pointer"></i></div></li>`;
+                    ul.innerHTML += `
+                    <li class="cart-item">
+                        <img src="${i.image || 'https://via.placeholder.com/70'}" class="cart-thumb">
+                        <div>
+                            <b>${i.name}</b><br><small>${i.variant}</small>
+                            <div class="qty-controls">
+                                <button class="qty-btn" onclick="app.cQty(${idx},-1)">-</button>
+                                <span class="qty-val">${i.qty}</span>
+                                <button class="qty-btn" onclick="app.cQty(${idx},1)">+</button>
+                            </div>
+                        </div>
+                        <div style="text-align:right">
+                            R$ ${(i.price*i.qty).toFixed(2)}<br>
+                            <button class="btn-remove" onclick="state.cart.splice(${idx},1);app.renderCart()"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>`;
                 });
                 document.getElementById('cart-total').innerText = `R$ ${t.toFixed(2)}`;
                 document.getElementById('cart-count').innerText = state.cart.length;
@@ -520,21 +556,25 @@
 
                 const btn = document.querySelector('.btn-mp');
                 
-                // OPÇÃO SEGURA (WHATSAPP + MP LINK)
                 try {
                     if(btn) btn.innerText = "Processando...";
                     
+                    // WHATSAPP
                     if(method === 'whatsapp') { 
                         await app.updateStockDatabase(); 
                         app.sendPaidOrder('Dinheiro/Combinar'); 
                     } 
+                    // MERCADO PAGO
                     else {
-                        // 1. Registra o pedido no banco (Pendente)
-                        await app.registerOrder('Mercado Pago'); 
+                        // 1. Grava no banco ANTES de sair
+                        const newOrderId = Date.now().toString();
+                        await app.registerOrder(newOrderId, 'Mercado Pago (Pendente)');
                         
-                        // 2. Chama a API do Mercado Pago
+                        // 2. Prepara os dados
                         localStorage.setItem('2a_cart', JSON.stringify(state.cart));
                         const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
+                        
+                        // 3. Chama o Google Cloud
                         const res = await fetch(GOOGLE_CLOUD_URL, {
                             method:'POST', headers:{'Content-Type':'application/json'}, 
                             body:JSON.stringify({items, buyer: { email: state.user.email, name: state.user.name }, address: state.address})
@@ -542,8 +582,7 @@
                         const data = await res.json();
                         
                         if(data.init_point) {
-                            // Se gerou o link, vai pro MP (O estoque só baixa se o MP confirmar o pagamento depois ou se voce configurar o webhook, mas aqui deixamos para baixar no retorno)
-                            window.location.href = data.init_point;
+                            window.location.href = data.init_point; // Redireciona
                         } else {
                             throw new Error("Falha ao gerar link");
                         }
@@ -553,9 +592,10 @@
                     if(confirm("Erro de conexão com Mercado Pago. Deseja finalizar pelo WhatsApp?")) {
                         app.sendPaidOrder('Erro MP - Finalizado Whats');
                     }
-                    if(btn) btn.innerText = "Tentar novamente"; 
+                    if(btn) btn.innerText = "Via Pix/Cartão/Débito"; 
                 }
             },
+            // Baixa estoque no banco
             updateStockDatabase: async () => {
                 for (const item of state.cart) {
                     const { data: prod } = await sb.from('products').select('*').eq('name', item.name).single();
@@ -570,20 +610,22 @@
                     }
                 }
             },
-            registerOrder: async (method) => {
+            // Registra pedido
+            registerOrder: async (oid, method) => {
                 const total = state.cart.reduce((a,b)=>a+(b.price*b.qty),0);
                 const order = {
-                    id: Date.now().toString(),
+                    id: oid || Date.now().toString(),
                     customer_name: state.user ? state.user.name : state.address.name,
                     customer_email: state.user ? state.user.email : 'Não logado',
                     customer_id: state.user ? state.user.id : null,
                     total: total,
-                    items: state.cart,
+                    items: state.cart, // Salva o JSON do carrinho
                     address: state.address,
                     date: new Date().toLocaleDateString(),
                     method: method,
                     status: 'Pendente'
                 };
+                // Salva no Supabase
                 await sb.from('orders').insert([order]);
             },
             sendPaidOrder: (paymentType = 'Dinheiro/Outros') => {
@@ -602,10 +644,6 @@
                 msg += `*ITENS DO PEDIDO:*\n`;
                 state.cart.forEach(i=>{ msg += `▪ ${i.qty}x ${i.name} (${i.variant})\n`; });
                 
-                if(paymentType.includes('Link')) {
-                    msg += `\n🔴 *AGUARDANDO LINK DE PAGAMENTO*`;
-                }
-
                 localStorage.removeItem('2a_cart');
                 window.location.href = `https://wa.me/5567998951120?text=${encodeURIComponent(msg)}`;
             },
@@ -644,7 +682,7 @@
                     state.user=data; 
                     localStorage.setItem('2a_user', JSON.stringify(data)); 
                     app.updateUI(); 
-                    // FECHA MODAL SEM RELOAD
+                    // FECHA MODAL SEM RELOAD (MANTÉM CARRINHO)
                     history.back(); 
                 }
                 else alert("Inválido");
@@ -804,8 +842,23 @@
             renderList: () => {
                 const div = document.getElementById('admin-list'); div.innerHTML="";
                 state.products.forEach(p => {
-                    div.innerHTML += `<div class="mini-prod"><img src="${p.image_url}"> <strong>${p.name}</strong> 
-                    <div style="margin-left:auto"><button onclick="admin.edit('${p.id}')" style="color:blue;border:none;background:none"><i class="fas fa-edit"></i></button> <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none"><i class="fas fa-trash"></i></button></div></div>`;
+                    // CALCULA ESTOQUE VISUAL
+                    const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+                    let stock = 0;
+                    if(vars) vars.forEach(v => stock += parseInt(v.stock||0));
+
+                    div.innerHTML += `
+                    <div class="mini-prod">
+                        <img src="${p.image_url}"> 
+                        <div style="flex:1">
+                            <strong>${p.name}</strong>
+                            <div class="stock-info">Estoque: <span class="${stock<5?'stock-warn':''}">${stock}</span></div>
+                        </div>
+                        <div>
+                            <button onclick="admin.edit('${p.id}')" style="color:blue;border:none;background:none"><i class="fas fa-edit"></i></button> 
+                            <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`;
                 });
             },
             renderOrders: async () => {
@@ -842,44 +895,38 @@
                             stock += q;
                         });
                     }
-                    miniList += `<div class="mini-prod"><img src="${p.image_url}"> <div><strong>${p.name}</strong><br><small>Estoque: ${stock} | Venda Potencial: R$ ${pRev.toFixed(2)}</small></div></div>`;
                 });
                 document.getElementById('st-cost').innerText = `R$ ${cost.toFixed(2)}`;
                 document.getElementById('st-rev').innerText = `R$ ${rev.toFixed(2)}`;
                 document.getElementById('st-profit').innerText = `R$ ${(rev-cost).toFixed(2)}`;
-                document.getElementById('mini-prod-list').innerHTML = miniList;
             }
         };
 
-        // --- INIT CALL ---
+        // --- INIT CALL (COM RETORNO MP INTELIGENTE) ---
         (async function init() {
             try {
                 if(SUPABASE_URL.includes("COLE_SUA")) throw new Error("Chaves não configuradas.");
                 const u = localStorage.getItem('2a_user'); if(u) state.user=JSON.parse(u);
                 const a = localStorage.getItem('2a_active_addr'); if(a) state.address=JSON.parse(a);
                 
-                // --- NOVA LÓGICA DE CAPTURA DO RETORNO MP ---
+                // VERIFICA SE O CLIENTE VOLTOU DO PAGAMENTO
                 const urlParams = new URLSearchParams(window.location.search);
-                const status = urlParams.get('status') || urlParams.get('collection_status'); // Pega um ou outro
+                const status = urlParams.get('status') || urlParams.get('collection_status'); 
                 const paymentId = urlParams.get('payment_id');
 
-                // Se o status for approved OU se tiver um payment_id (indica que houve transação)
                 if (status === 'approved' || (status === null && paymentId)) {
                     const sc = localStorage.getItem('2a_cart');
                     if(sc) { 
                         state.cart = JSON.parse(sc); 
-                        // Registra informando o ID do pagamento para conferência
-                        await app.registerOrder(`Mercado Pago (ID: ${paymentId || 'Auto'})`); 
+                        // Atualiza o pedido para Pago, baixa estoque e limpa carrinho
+                        await app.registerOrder(Date.now().toString(), `Mercado Pago (ID: ${paymentId})`); 
                         await app.updateStockDatabase();
                         localStorage.removeItem('2a_cart');
                         
-                        // Limpa a URL para não registrar de novo se der F5
                         window.history.replaceState({}, document.title, window.location.pathname);
-                        
                         alert("Pagamento Confirmado! Seu pedido já está sendo separado.");
                     }
                 }
-                // ---------------------------------------------
 
                 await app.load();
                 admin.initCheckboxes();
