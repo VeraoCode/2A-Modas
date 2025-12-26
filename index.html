@@ -23,7 +23,7 @@
         button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
 
         /* LOADING & STATUS */
-        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #status-bar { position:fixed; top:0; left:0; width:100%; height:auto; min-height:30px; background:#222; color:white; font-size:0.8rem; display:flex; align-items:center; justify-content:center; z-index:99999; font-weight:600; padding:5px; text-align:center; }
         .ok { background:#27ae60 !important; } .err { background:#c0392b !important; }
 
@@ -43,7 +43,7 @@
         .btn-cta:hover { transform: translateY(-5px); background: var(--primary); }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* CONTAINER LADO A LADO */
+        /* CONTAINER */
         .container { max-width:1200px; margin:0 auto; padding:40px 20px; flex: 1; }
         .filters { display:flex; justify-content:center; gap:12px; margin-bottom:50px; flex-wrap:wrap; }
         .filter-btn { padding: 10px 28px; border-radius: 30px; border: 1px solid #e0e0e0; background: white; color: #555; font-weight: 600; }
@@ -58,7 +58,7 @@
         .tag-promo { position:absolute; top:10px; right:10px; background:#e91e63; color:white; padding:4px 10px; border-radius:20px; font-size:0.6rem; font-weight:bold; z-index: 2; }
         .tag-delivery { font-size: 0.7rem; color: #27ae60; display: block; margin-top: 5px; font-weight: 600; }
 
-        /* MODALS (SOBRESSAIR + BLUR) */
+        /* MODALS */
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
         .overlay.active { display:flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
@@ -82,6 +82,7 @@
         .mini-prod { display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid #eee; }
         .mini-prod img { width:50px; height:50px; border-radius:8px; object-fit:cover; }
         
+        /* UI */
         .var-btn { padding:10px; border:1px solid #eee; border-radius:8px; background:white; margin:5px; cursor:pointer; }
         .var-btn.selected { background:var(--accent); color:white; }
         .var-btn.disabled { opacity:0.5; cursor:not-allowed; }
@@ -111,6 +112,9 @@
         footer { background: #222; color: #888; text-align: center; padding: 40px 20px; margin-top: auto; }
         footer button { color: #ddd; text-decoration: none; font-size: 0.8rem; font-weight: bold; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; transition: 0.3s; cursor: pointer; background: transparent; }
         footer button:hover { background: #444; color: white; }
+
+        /* ENDEREÇO POPUP SOBRESSAINDO */
+        #address-modal { z-index: 10005; background: rgba(0,0,0,0.9); }
 
         @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} }
     </style>
@@ -190,7 +194,7 @@
         </div>
     </div>
 
-    <div id="address-modal" class="overlay" style="justify-content:flex-start; padding-left:20px; z-index:10001;">
+    <div id="address-modal" class="overlay" style="justify-content:flex-start; padding-left:20px;">
         <div class="box single-col" style="width:100%; max-width:400px; height:auto;">
             <div style="padding:20px;">
                 <h3>📍 Onde entregar?</h3>
@@ -346,6 +350,7 @@
     </div>
 
     <script>
+        // --- ⚠️ CONFIGURAÇÃO OBRIGATÓRIA (COLE SUAS CHAVES AQUI) ---
         const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
         const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
@@ -355,11 +360,9 @@
         const PRESETS_VOL = ['25ml','50ml','75ml','100ml','200ml','P','M','G','GG','Unico'];
         const COLOR_MAP = { 'Preto': '#000000', 'Branco': '#ffffff', 'Vermelho': '#e74c3c', 'Azul': '#3498db', 'Rosa': '#e91e63', 'Verde': '#2ecc71', 'Nude': '#e3c0a5', 'Estampado': 'linear-gradient(45deg, red, blue)', 'Bege': '#f5f5dc', 'Amarelo': '#f1c40f', 'Cinza': '#95a5a6' };
         
-        // --- FUNÇÃO DE SEGURANÇA PARA EVITAR NULL ---
-        const safeVal = (v) => {
-            if (v === null || v === undefined || v === "null") return "";
-            return v;
-        };
+        // --- FUNÇÃO DE SEGURANÇA (EVITA CRASH E NULL) ---
+        const safeVal = (v) => (v === null || v === undefined || v === "null") ? "" : v;
+        const setSafe = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = safeVal(val); };
 
         // --- APP ---
         const app = {
@@ -396,11 +399,12 @@
                 state.current = p; state.qty=1; state.var=null;
                 
                 document.getElementById('m-img').src = p.image_url || "";
-                const setText = (eid, t) => document.getElementById(eid).innerText = safeVal(t);
-                setText('m-title', p.name);
-                setText('m-cat', p.category);
-                setText('m-desc', p.description);
-                setText('m-price', "Selecione...");
+                
+                // USE SETSAFE
+                setSafe('m-title', p.name);
+                setSafe('m-cat', p.category);
+                setSafe('m-desc', p.description);
+                setSafe('m-price', "Selecione...");
                 
                 const vDiv = document.getElementById('m-vars'); vDiv.innerHTML = "";
                 const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
@@ -520,24 +524,36 @@
                 try {
                     if(btn) btn.innerText = "Processando...";
                     
-                    // Baixa o estoque no banco
-                    await app.updateStockDatabase(); 
-                    
                     if(method === 'whatsapp') { 
+                        await app.updateStockDatabase(); 
                         app.sendPaidOrder('Dinheiro/Combinar'); 
                     } 
                     else {
-                        // Registra como "Aguardando Link"
-                        await app.registerOrder('Aguardando Link MP');
-                        // Envia para o WhatsApp pedindo o link
-                        app.sendPaidOrder('Link de Pagamento (Cartão/Pix)');
+                        // 1. Registra o pedido no banco (Pendente)
+                        await app.registerOrder('Mercado Pago'); 
+                        
+                        // 2. Chama a API do Mercado Pago
+                        localStorage.setItem('2a_cart', JSON.stringify(state.cart));
+                        const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
+                        const res = await fetch(GOOGLE_CLOUD_URL, {
+                            method:'POST', headers:{'Content-Type':'application/json'}, 
+                            body:JSON.stringify({items, buyer: { email: state.user.email, name: state.user.name }, address: state.address})
+                        });
+                        const data = await res.json();
+                        
+                        if(data.init_point) {
+                            // Se gerou o link, vai pro MP (O estoque só baixa se o MP confirmar o pagamento depois ou se voce configurar o webhook, mas aqui deixamos para baixar no retorno)
+                            window.location.href = data.init_point;
+                        } else {
+                            throw new Error("Falha ao gerar link");
+                        }
                     }
                 } catch(e) {
                     console.error(e);
-                    alert("Houve um erro de conexão, mas vamos finalizar pelo WhatsApp.");
-                    app.sendPaidOrder('Erro Sistêmico - Verificar Estoque');
-                } finally {
-                    if(btn) btn.innerText = "Via Pix/Cartão/Débito";
+                    if(confirm("Erro de conexão com Mercado Pago. Deseja finalizar pelo WhatsApp?")) {
+                        app.sendPaidOrder('Erro MP - Finalizado Whats');
+                    }
+                    if(btn) btn.innerText = "Tentar novamente"; 
                 }
             },
             updateStockDatabase: async () => {
@@ -628,7 +644,7 @@
                     state.user=data; 
                     localStorage.setItem('2a_user', JSON.stringify(data)); 
                     app.updateUI(); 
-                    // Fecha o modal suavemente sem reload
+                    // FECHA MODAL SEM RELOAD
                     history.back(); 
                 }
                 else alert("Inválido");
@@ -844,7 +860,14 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 if(urlParams.get('status') === 'approved') {
                     const sc = localStorage.getItem('2a_cart');
-                    if(sc) { state.cart = JSON.parse(sc); await app.registerOrder('Mercado Pago'); app.sendPaidOrder(); }
+                    if(sc) { 
+                        state.cart = JSON.parse(sc); 
+                        // CONFIRMA O PEDIDO E BAIXA ESTOQUE NO RETORNO DO MP
+                        await app.registerOrder('Mercado Pago (Confirmado)'); 
+                        await app.updateStockDatabase();
+                        localStorage.removeItem('2a_cart');
+                        alert("Pagamento Aprovado! Pedido realizado com sucesso.");
+                    }
                 }
                 await app.load();
                 admin.initCheckboxes();
