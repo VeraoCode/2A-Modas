@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2A Modas e Perfumes | Loja Premium</title>
+    <title>2A Modas e Perfumes</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,20 +11,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- DESIGN SYSTEM REFINADO --- */
+        /* --- DESIGN SYSTEM --- */
         :root {
-            --primary: #c48b78; /* Rose Gold */
-            --primary-hover: #b07561;
-            --accent: #2c3e50; /* Navy Blue */
+            --primary: #c48b78; 
+            --accent: #2c3e50;
             --bg: #f8f9fa;
             --white: #ffffff;
             --glass: rgba(255, 255, 255, 0.95);
             --shadow: 0 10px 40px rgba(0,0,0,0.08);
-            --radius: 16px;
+            --radius: 12px;
         }
 
         * { margin:0; padding:0; box-sizing:border-box; outline:none; font-family:'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg); color: var(--accent); padding-top: 80px; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--accent); overflow-x: hidden; }
         h1, h2, h3 { font-family:'Playfair Display', serif; }
         button { cursor:pointer; transition: all 0.2s ease; }
 
@@ -32,18 +31,27 @@
         #status-bar { position:fixed; top:0; left:0; width:100%; height:30px; background:#222; color:white; font-size:0.75rem; display:flex; align-items:center; justify-content:center; z-index:9999; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
         .ok { background:#27ae60 !important; } .err { background:#c0392b !important; }
 
-        /* HEADER GLASSMORPHISM */
-        header { position:fixed; top:30px; width:100%; height:70px; background:var(--glass); backdrop-filter:blur(10px); border-bottom:1px solid rgba(0,0,0,0.05); z-index:1000; display:flex; align-items:center; justify-content:space-between; padding:0 5%; box-shadow:0 4px 20px rgba(0,0,0,0.02); }
-        .logo { font-family:'Playfair Display'; font-size:1.5rem; font-weight:bold; color:var(--primary); }
-        
-        .cart-btn { position:relative; width:45px; height:45px; border-radius:50%; border:none; background:white; box-shadow:0 4px 10px rgba(0,0,0,0.1); color:var(--accent); font-size:1.2rem; display:flex; align-items:center; justify-content:center; }
-        .cart-btn:hover { background:var(--primary); color:white; transform:translateY(-2px); }
-        .cart-badge { position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; width:20px; height:20px; border-radius:50%; font-size:0.7rem; display:flex; align-items:center; justify-content:center; border:2px solid white; }
+        /* HEADER & CART BUTTON (Flutuante sem faixa branca) */
+        .header-floating {
+            position: fixed; top: 40px; right: 5%; z-index: 1000;
+        }
+        .cart-btn { 
+            position:relative; width:55px; height:55px; border-radius:50%; border:none; 
+            background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
+            color: var(--accent); font-size: 1.3rem; display: flex; align-items: center; justify-content: center;
+            transition: 0.3s;
+        }
+        .cart-btn:hover { background: var(--primary); color: white; transform: scale(1.1); }
+        .cart-badge { 
+            position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; 
+            width:24px; height:24px; border-radius:50%; font-size:0.75rem; 
+            display:flex; align-items:center; justify-content:center; border:2px solid white; font-weight: bold;
+        }
 
         /* HERO */
-        .hero { padding:80px 20px; text-align:center; background: radial-gradient(circle at top, #fff5f2 0%, transparent 100%); }
-        .hero img { width:160px; height:160px; border-radius:50%; object-fit:cover; border:4px solid white; box-shadow:var(--shadow); margin-bottom:20px; }
-        .hero h1 { font-size:3rem; margin-bottom:10px; color:var(--accent); }
+        .hero { padding: 120px 20px 80px; text-align:center; background: radial-gradient(circle at top, #fff5f2 0%, transparent 100%); }
+        .hero img { width:180px; height:180px; border-radius:50%; object-fit:cover; border:5px solid white; box-shadow:var(--shadow); margin-bottom:20px; }
+        .hero h1 { font-size:3.5rem; margin-bottom:10px; color:var(--accent); }
         .hero p { color:#666; max-width:500px; margin:0 auto 30px; font-size:1.1rem; }
         .btn-cta { padding:15px 40px; background:var(--accent); color:white; border-radius:50px; border:none; font-weight:600; font-size:1rem; letter-spacing:0.5px; box-shadow:0 10px 20px rgba(44,62,80,0.2); }
         .btn-cta:hover { background:var(--primary); transform:translateY(-3px); }
@@ -64,7 +72,7 @@
 
         /* MODAL */
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(8px); padding:20px; }
-        .overlay.active { display:flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .overlay.active { display:flex; animation: popIn 0.3s ease; }
         @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
         
         .box { background:white; width:100%; max-width:900px; border-radius:20px; overflow:hidden; max-height:90vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow:var(--shadow); }
@@ -74,23 +82,29 @@
         .var-btn.selected { background:var(--accent); color:white; border-color:var(--accent); }
         .var-btn.disabled { opacity:0.5; cursor:not-allowed; background:#f5f5f5; color:#999; }
 
-        /* SIDEBAR CARRINHO */
-        .sidebar { position:fixed; top:0; right:-450px; width:420px; height:100%; background:white; z-index:3000; padding:30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s cubic-bezier(0.4, 0, 0.2, 1); display:flex; flex-direction:column; }
+        /* SIDEBAR CARRINHO (FORMULÁRIO INTEGRADO) */
+        .sidebar { position:fixed; top:0; right:-500px; width:450px; height:100%; background:white; z-index:3000; padding:30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s; display:flex; flex-direction:column; }
         .sidebar.open { right:0; }
         
-        .cart-item { display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid #eee; }
+        .cart-items-container { flex: 1; overflow-y: auto; margin-bottom: 20px; border-bottom: 1px solid #eee; }
+        
+        .cart-item { display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid #f5f5f5; }
         .qty-controls { display:flex; align-items:center; gap:8px; background:#f5f5f5; padding:5px; border-radius:8px; margin-top:5px; }
         .qty-btn { width:25px; height:25px; border:none; background:white; border-radius:4px; display:flex; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; }
         
-        .btn-mp { background:#009EE3; color:white; width:100%; padding:16px; border-radius:12px; border:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:12px; font-size:1rem; margin-top:15px; transition:0.2s; box-shadow:0 4px 15px rgba(0, 158, 227, 0.3); }
-        .btn-mp:hover { background:#007eb5; transform:translateY(-2px); }
+        /* FORMULÁRIO DO CARRINHO */
+        .cart-form { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #eee; }
+        .cart-form h4 { margin-bottom: 10px; font-size: 0.9rem; color: var(--primary); }
+        .cart-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; }
+        
+        .btn-mp { background:#009EE3; color:white; width:100%; padding:14px; border-radius:12px; border:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9rem; margin-top:10px; }
+        .btn-whats { background:#25D366; color:white; width:100%; padding:14px; border-radius:12px; border:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9rem; }
 
         /* ADMIN */
         .admin-nav { padding:20px; background:white; border-bottom:1px solid #eee; display:flex; gap:15px; position:sticky; top:0; z-index:10; }
         .admin-tab { padding:10px 20px; border-radius:30px; border:1px solid #eee; background:transparent; font-weight:600; color:#666; }
         .admin-tab.active { background:var(--accent); color:white; border-color:var(--accent); }
         
-        /* ADMIN FORM CHECKBOXES */
         .checkbox-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #eee; }
         .check-label { display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer; user-select:none; }
         .check-label input { accent-color:var(--accent); width:16px; height:16px; }
@@ -100,28 +114,26 @@
         @keyframes slideDown { from{opacity:0; transform:translateY(-10px)} to{opacity:1; transform:translateY(0)} }
 
         .input { width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; }
-        .input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(196, 139, 120, 0.2); }
 
-        @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:100px;} }
+        @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} .header-floating{top:20px; right:20px;} }
     </style>
 </head>
 <body>
 
     <div id="status-bar" class="err">Conectando...</div>
 
-    <header>
-        <div class="logo">2A Modas</div>
+    <div class="header-floating">
         <button class="cart-btn" onclick="app.toggleCart()">
             <i class="fas fa-shopping-bag"></i>
             <span class="cart-badge" id="cart-count">0</span>
         </button>
-    </header>
+    </div>
 
     <div class="hero">
         <img src="logo.jpg" onerror="this.src='https://via.placeholder.com/200?text=2A'">
-        <h1>Elegância em cada detalhe</h1>
-        <p>Moda feminina, infantil e perfumaria selecionada para você.</p>
-        <button class="btn-cta" onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})">Explorar Coleção</button>
+        <h1>2A Modas e Perfumes</h1>
+        <p>Elegância que transforma. Descubra sua essência.</p>
+        <button class="btn-cta" onclick="document.getElementById('vitrine').scrollIntoView({behavior:'smooth'})">Ver Coleção</button>
     </div>
 
     <div class="container" id="vitrine">
@@ -141,11 +153,11 @@
             <div style="padding:40px; position:relative;">
                 <button onclick="document.getElementById('product-modal').classList.remove('active')" style="position:absolute; top:20px; right:20px; border:none; background:none; font-size:1.5rem; color:#999;">&times;</button>
                 <small id="m-cat" style="color:var(--primary); font-weight:700; text-transform:uppercase; letter-spacing:1px;">Categoria</small>
-                <h2 id="m-title" style="margin:10px 0; font-size:2rem; line-height:1.1;">Nome do Produto</h2>
+                <h2 id="m-title" style="margin:10px 0; font-size:2rem; line-height:1.1;">Nome</h2>
                 <h3 id="m-price" style="color:var(--accent); font-size:1.8rem; margin-bottom:15px;">R$ 0,00</h3>
                 <p id="m-desc" style="color:#666; line-height:1.6; margin-bottom:30px;">Descrição...</p>
                 
-                <label style="font-weight:bold; display:block; margin-bottom:10px;">Escolha a Opção:</label>
+                <label style="font-weight:bold; display:block; margin-bottom:10px;">Opções:</label>
                 <div id="m-vars" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:30px;"></div>
                 
                 <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
@@ -162,24 +174,35 @@
     </div>
 
     <div class="sidebar">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid #eee;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-bottom:10px; border-bottom:1px solid #eee;">
             <h2 style="margin:0;">Sua Sacola</h2>
             <button onclick="app.toggleCart()" style="border:none; background:none; font-size:1.5rem; color:#999;">&times;</button>
         </div>
         
-        <ul id="cart-list" style="flex:1; overflow-y:auto; list-style:none;"></ul>
+        <div class="cart-items-container">
+            <ul id="cart-list" style="list-style:none;"></ul>
+        </div>
         
-        <div style="border-top:1px solid #eee; padding-top:25px;">
-            <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:20px; font-size:1.2rem;">
+        <div style="border-top:1px solid #eee; padding-top:15px;">
+            <div class="cart-form">
+                <h4>📍 Dados de Entrega (Obrigatório)</h4>
+                <input type="text" id="c-name" class="cart-input" placeholder="Nome Completo">
+                <input type="text" id="c-phone" class="cart-input" placeholder="Telefone / WhatsApp">
+                <input type="text" id="c-street" class="cart-input" placeholder="Rua e Número">
+                <input type="text" id="c-bairro" class="cart-input" placeholder="Bairro">
+                <input type="text" id="c-ref" class="cart-input" placeholder="Ponto de Referência">
+            </div>
+
+            <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:10px; font-size:1.1rem;">
                 <span>Total</span> <span id="cart-total">R$ 0.00</span>
             </div>
             
-            <button onclick="app.checkoutMp()" class="btn-mp">
-                <img src="https://logopng.com.br/logos/mercado-pago-85.png" style="height:24px; filter:brightness(0) invert(1);"> Via Pix/Cartão
+            <button onclick="app.checkoutWs()" class="btn-whats">
+                <i class="fab fa-whatsapp" style="font-size:1.2rem;"></i> Falar via WhatsApp
             </button>
             
-            <button onclick="app.checkoutWs()" style="width:100%; padding:15px; border:none; background:none; color:#25D366; font-weight:bold; margin-top:10px; display:flex; align-items:center; justify-content:center; gap:8px;">
-                <i class="fab fa-whatsapp"></i> Negociar no WhatsApp
+            <button onclick="app.checkoutMp()" class="btn-mp">
+                <img src="https://logopng.com.br/logos/mercado-pago-85.png" style="height:20px; filter:brightness(0) invert(1);"> Pagamento Via Pix/Cartão de Crédito e Débito
             </button>
         </div>
     </div>
@@ -267,13 +290,11 @@
                             
                             <div style="margin-bottom:15px;">
                                 <small style="display:block; margin-bottom:5px; font-weight:bold;">Selecione Cores:</small>
-                                <div class="checkbox-grid" id="color-checks">
-                                    </div>
+                                <div class="checkbox-grid" id="color-checks"></div>
                             </div>
                             <div style="margin-bottom:15px;">
                                 <small style="display:block; margin-bottom:5px; font-weight:bold;">Selecione Volumetria:</small>
-                                <div class="checkbox-grid" id="volume-checks">
-                                    </div>
+                                <div class="checkbox-grid" id="volume-checks"></div>
                             </div>
 
                             <div id="active-vars-area"></div>
@@ -297,12 +318,12 @@
     </div>
 
     <footer style="text-align:center; padding:60px 20px; color:#aaa; font-size:0.8rem;">
-        &copy; 2025 2A Modas e Perfumes. Todos os direitos reservados.<br><br>
+        &copy; 2025 2A Modas e Perfumes.<br><br>
         <button onclick="document.getElementById('login-modal').classList.add('active')" style="background:none; border:none; color:#ddd; font-size:0.75rem;">Acesso Administrativo</button>
     </footer>
 
     <script>
-        // --- CONFIGURAÇÃO (COLE SUAS CHAVES AQUI) ---
+        // --- 1. CONFIGURAÇÃO (COLE SUAS CHAVES AQUI) ---
         const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
         const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
@@ -311,11 +332,10 @@
         const state = { products: [], cart: [], current: null, var: null, qty: 1 };
         let chartInst = null;
 
-        // Lista de Variações Padrão
         const PRESET_COLORS = ['Preto', 'Branco', 'Vermelho', 'Azul', 'Rosa', 'Verde', 'Nude', 'Estampado'];
         const PRESET_VOLUMES = ['25ml', '50ml', '75ml', '100ml', '200ml'];
 
-        // --- INICIALIZAÇÃO ---
+        // --- INIT ---
         (async function init() {
             const status = document.getElementById('status-bar');
             try {
@@ -323,9 +343,9 @@
                 if(error) throw error;
                 status.className='ok'; status.innerText="SISTEMA ONLINE"; setTimeout(()=>status.style.top='-30px', 3000);
                 app.load();
-                admin.initCheckboxes(); // Cria os checkboxes no admin
+                admin.initCheckboxes();
             } catch(e) {
-                status.className='err'; status.innerText="ERRO DE CONEXÃO: Verifique as Chaves API";
+                status.className='err'; status.innerText="ERRO DE CONEXÃO: " + e.message;
             }
         })();
 
@@ -344,7 +364,6 @@
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                     const minP = vars && vars.length ? Math.min(...vars.map(v => parseFloat(v.price))) : 0;
                     
-                    // Verifica estoque total
                     const totalStock = vars.reduce((acc, v) => acc + parseInt(v.stock), 0);
                     const tag = totalStock <= 0 
                         ? '<span class="tag-soldout">ESGOTADO</span>' 
@@ -399,8 +418,6 @@
                             document.getElementById('m-price').innerText = `R$ ${parseFloat(v.price).toFixed(2)}`;
                             Array.from(vDiv.children).forEach(b => b.classList.remove('selected'));
                             btn.classList.add('selected');
-                            
-                            // Libera botão
                             btnAdd.disabled = false; btnAdd.style.opacity = 1; btnAdd.innerText = "Adicionar à Sacola";
                         };
                     }
@@ -413,14 +430,9 @@
 
             addCart: () => {
                 if(!state.var) return;
+                const currentInCart = state.cart.filter(i => i.name === state.current.name && i.variant === state.var.name).reduce((acc, i) => acc + i.qty, 0);
                 
-                // Validação de Estoque no Carrinho
-                const currentInCart = state.cart.filter(i => i.name === state.current.name && i.variant === state.var.name)
-                                                .reduce((acc, i) => acc + i.qty, 0);
-                
-                if(currentInCart + state.qty > state.var.stock) {
-                    return alert(`Desculpe! Só temos ${state.var.stock} unidades desta opção no estoque.`);
-                }
+                if(currentInCart + state.qty > state.var.stock) return alert(`Estoque insuficiente! Apenas ${state.var.stock} disponíveis.`);
 
                 state.cart.push({
                     name: state.current.name,
@@ -435,7 +447,6 @@
 
             renderCart: () => {
                 const ul = document.getElementById('cart-list'); ul.innerHTML=""; let t=0;
-                
                 state.cart.forEach((i, idx) => {
                     t += i.price * i.qty;
                     ul.innerHTML += `
@@ -443,7 +454,6 @@
                         <div>
                             <div style="font-weight:bold;">${i.name}</div>
                             <small style="color:#666">${i.variant} - R$ ${i.price.toFixed(2)} unit.</small>
-                            
                             <div class="qty-controls">
                                 <button class="qty-btn" onclick="app.cartQty(${idx}, -1)">-</button>
                                 <span style="font-size:0.9rem;">${i.qty}</span>
@@ -466,46 +476,48 @@
                 if(product) {
                     const vars = typeof product.variations === 'string' ? JSON.parse(product.variations) : product.variations;
                     const variant = vars.find(v => v.name === item.variant);
-                    
                     if(item.qty + n > variant.stock) return alert("Estoque máximo atingido!");
                 }
-                
                 item.qty += n;
                 if(item.qty < 1) item.qty = 1;
                 app.renderCart();
             },
 
-            cartRemove: (idx) => {
-                state.cart.splice(idx, 1);
-                app.renderCart();
-            },
-
+            cartRemove: (idx) => { state.cart.splice(idx, 1); app.renderCart(); },
             toggleCart: () => document.querySelector('.sidebar').classList.toggle('open'),
 
             checkoutWs: () => {
                 if(!state.cart.length) return alert("Carrinho vazio");
-                let msg = "*NOVO PEDIDO (Site 2A Modas)*\n\n"; let total = 0;
+                
+                const name = document.getElementById('c-name').value;
+                const street = document.getElementById('c-street').value;
+                const phone = document.getElementById('c-phone').value;
+                
+                if(!name || !street || !phone) return alert("Por favor, preencha os dados de entrega (Nome, Telefone e Endereço).");
+
+                let msg = `*NOVO PEDIDO (Site 2A Modas)*\n\n*CLIENTE:* ${name}\n*CONTATO:* ${phone}\n*ENDEREÇO:* ${street}, ${document.getElementById('c-bairro').value}, Ref: ${document.getElementById('c-ref').value}\n\n*ITENS:*\n`;
+                let total = 0;
+                
                 state.cart.forEach(i => {
                     msg += `▪ ${i.name} (${i.variant})\n   Qtd: ${i.qty} | Sub: R$ ${(i.price*i.qty).toFixed(2)}\n\n`;
                     total += i.price * i.qty;
                 });
                 msg += `*TOTAL FINAL: R$ ${total.toFixed(2)}*`;
-                window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(msg)}`);
+                
+                window.open(`https://wa.me/5567998951120?text=${encodeURIComponent(msg)}`);
             },
 
             checkoutMp: async () => {
                 if(!state.cart.length) return alert("Carrinho vazio");
                 const btn = document.querySelector('.btn-mp'); const original = btn.innerHTML;
                 btn.innerHTML = "<i class='fas fa-circle-notch fa-spin'></i> Processando..."; btn.disabled = true;
-                
                 try {
                     const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
                     const res = await fetch(GOOGLE_CLOUD_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({items})});
                     const data = await res.json();
                     if(data.init_point) window.location.href = data.init_point; else throw new Error("Link não gerado");
-                } catch(e) { 
-                    alert("Erro ao conectar com Pagamento. Tente novamente ou use o WhatsApp."); 
-                } finally { btn.innerHTML = original; btn.disabled = false; }
+                } catch(e) { alert("Erro pagamento. Use o WhatsApp."); } 
+                finally { btn.innerHTML = original; btn.disabled = false; }
             }
         };
 
@@ -514,34 +526,19 @@
             initCheckboxes: () => {
                 const cDiv = document.getElementById('color-checks');
                 const vDiv = document.getElementById('volume-checks');
-                
-                PRESET_COLORS.forEach(c => {
-                    cDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${c}" onchange="admin.toggleVarInput(this)"> ${c}</label>`;
-                });
-                PRESET_VOLUMES.forEach(v => {
-                    vDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${v}" onchange="admin.toggleVarInput(this)"> ${v}</label>`;
-                });
+                PRESET_COLORS.forEach(c => { cDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${c}" onchange="admin.toggleVarInput(this)"> ${c}</label>`; });
+                PRESET_VOLUMES.forEach(v => { vDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${v}" onchange="admin.toggleVarInput(this)"> ${v}</label>`; });
             },
 
             toggleVarInput: (checkbox) => {
                 const container = document.getElementById('active-vars-area');
                 const id = `input-group-${checkbox.value.replace(/\s+/g, '')}`;
-                
                 if(checkbox.checked) {
                     const div = document.createElement('div');
-                    div.id = id;
-                    div.className = 'var-inputs show';
-                    div.innerHTML = `
-                        <div style="grid-column: span 2; font-weight:bold; color:var(--primary);">${checkbox.value}</div>
-                        <input type="hidden" class="v-name" value="${checkbox.value}">
-                        <input type="number" placeholder="Preço Venda (R$)" class="input v-price">
-                        <input type="number" placeholder="Estoque (Qtd)" class="input v-stock">
-                    `;
+                    div.id = id; div.className = 'var-inputs show';
+                    div.innerHTML = `<div style="grid-column: span 2; font-weight:bold; color:var(--primary);">${checkbox.value}</div><input type="hidden" class="v-name" value="${checkbox.value}"><input type="number" placeholder="Preço Venda (R$)" class="input v-price"><input type="number" placeholder="Estoque (Qtd)" class="input v-stock">`;
                     container.appendChild(div);
-                } else {
-                    const el = document.getElementById(id);
-                    if(el) el.remove();
-                }
+                } else { const el = document.getElementById(id); if(el) el.remove(); }
             },
 
             login: () => {
@@ -549,7 +546,7 @@
                     document.getElementById('login-modal').classList.remove('active');
                     document.getElementById('admin-modal').classList.add('active');
                     admin.renderList(); admin.updateStats();
-                } else alert("Acesso negado");
+                } else alert("Dados incorretos");
             },
 
             tab: (t) => {
@@ -562,21 +559,13 @@
 
             save: async () => {
                 const btn = document.getElementById('btn-save'); btn.innerText="Salvando..."; btn.disabled=true;
-                
                 try {
-                    // Coleta Variações dos Inputs Ativos
                     const vars = [];
                     document.querySelectorAll('.var-inputs').forEach(div => {
-                        vars.push({
-                            name: div.querySelector('.v-name').value,
-                            price: div.querySelector('.v-price').value,
-                            stock: div.querySelector('.v-stock').value
-                        });
+                        vars.push({ name: div.querySelector('.v-name').value, price: div.querySelector('.v-price').value, stock: div.querySelector('.v-stock').value });
                     });
+                    if(!vars.length) throw new Error("Selecione pelo menos uma cor/volumetria.");
 
-                    if(!vars.length) throw new Error("Selecione pelo menos uma cor ou volumetria e preencha preço/estoque.");
-
-                    // Upload Imagem
                     const file = document.getElementById('f-file').files[0];
                     let imgUrl = null;
                     if(file) {
@@ -592,76 +581,50 @@
                         category: document.getElementById('f-cat').value,
                         description: document.getElementById('f-desc').value,
                         cost_price: parseFloat(document.getElementById('f-cost').value) || 0,
-                        variations: vars // JSON
+                        variations: vars
                     };
-
-                    if(imgUrl) payload.image_url = imgUrl;
-                    else if(!document.getElementById('edit-id').value) payload.image_url = "https://via.placeholder.com/300";
+                    if(imgUrl) payload.image_url = imgUrl; else if(!document.getElementById('edit-id').value) payload.image_url = "https://via.placeholder.com/300";
 
                     const editId = document.getElementById('edit-id').value;
-                    
                     if(editId) {
                         const { error } = await sb.from('products').update(payload).eq('id', editId);
                         if(error) throw error;
                     } else {
-                        // ID Manual para evitar erro de sequence
-                        payload.id = Date.now(); 
+                        payload.id = Date.now();
                         const { error } = await sb.from('products').insert([payload]);
                         if(error) throw error;
                     }
-
-                    alert("Salvo com sucesso!"); 
-                    admin.clear(); 
-                    app.load(); // Atualiza front
-                    admin.renderList(); // Atualiza lista admin
-                } catch(e) { 
-                    alert("Erro: " + e.message); 
-                } finally { 
-                    btn.innerText="Salvar Produto"; btn.disabled=false; 
-                }
+                    alert("Salvo com sucesso!"); admin.clear(); app.load(); admin.renderList();
+                } catch(e) { alert("Erro: " + e.message); } finally { btn.innerText="Salvar Produto"; btn.disabled=false; }
             },
 
             edit: (id) => {
                 const p = state.products.find(x => String(x.id) === String(id));
                 if(!p) return;
-
                 document.getElementById('edit-id').value = p.id;
                 document.getElementById('f-name').value = p.name;
                 document.getElementById('f-cat').value = p.category;
                 document.getElementById('f-desc').value = p.description;
                 document.getElementById('f-cost').value = p.cost_price;
-                
-                // Resetar checkboxes e inputs
                 admin.clear(true); 
-                document.getElementById('edit-id').value = p.id; // Restaurar ID após clear
-
+                document.getElementById('edit-id').value = p.id;
                 const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-                
-                // Marcar checkboxes e preencher valores
                 vars.forEach(v => {
                     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
                     checkboxes.forEach(cb => {
                         if(cb.value === v.name) {
-                            cb.checked = true;
-                            admin.toggleVarInput(cb); // Cria o input
-                            
-                            // Preenche os valores criados
+                            cb.checked = true; admin.toggleVarInput(cb);
                             const div = document.getElementById(`input-group-${v.name.replace(/\s+/g, '')}`);
-                            if(div) {
-                                div.querySelector('.v-price').value = v.price;
-                                div.querySelector('.v-stock').value = v.stock;
-                            }
+                            if(div) { div.querySelector('.v-price').value = v.price; div.querySelector('.v-stock').value = v.stock; }
                         }
                     });
                 });
-                
-                // Rolar para o topo
                 document.querySelector('.box').scrollTop = 0;
             },
 
             del: async (id) => {
-                // Conversão explícita para garantir match com o tipo no banco (int8 vs text)
                 if(confirm("Excluir produto?")) {
+                    // GARANTE QUE O ID SEJA NÚMERO (BIGINT) SE FOR O CASO
                     const { error } = await sb.from('products').delete().eq('id', id);
                     if(error) alert("Erro ao excluir: " + error.message);
                     else { app.load(); admin.renderList(); }
@@ -670,10 +633,7 @@
 
             clear: (soft=false) => {
                 if(!soft) document.getElementById('edit-id').value="";
-                document.getElementById('f-name').value="";
-                document.getElementById('f-desc').value="";
-                document.getElementById('f-cost').value="";
-                document.getElementById('f-file').value="";
+                document.getElementById('f-name').value=""; document.getElementById('f-desc').value=""; document.getElementById('f-cost').value=""; document.getElementById('f-file').value="";
                 document.getElementById('active-vars-area').innerHTML="";
                 document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked=false);
             },
@@ -681,16 +641,9 @@
             renderList: () => {
                 const div = document.getElementById('admin-list'); div.innerHTML="";
                 state.products.forEach(p => {
-                    div.innerHTML += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <img src="${p.image_url}" style="width:40px; height:40px; border-radius:5px; object-fit:cover;">
-                            <strong>${p.name}</strong>
-                        </div>
-                        <div>
-                            <button onclick="admin.edit('${p.id}')" style="color:#2980b9; background:none; border:none; margin-right:10px;"><i class="fas fa-edit"></i></button>
-                            <button onclick="admin.del('${p.id}')" style="color:#e74c3c; background:none; border:none;"><i class="fas fa-trash"></i></button>
-                        </div>
+                    div.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
+                        <div style="display:flex; align-items:center; gap:10px;"><img src="${p.image_url}" style="width:40px; height:40px; border-radius:5px; object-fit:cover;"> <strong>${p.name}</strong></div>
+                        <div><button onclick="admin.edit('${p.id}')" style="color:#2980b9; background:none; border:none; margin-right:10px;"><i class="fas fa-edit"></i></button><button onclick="admin.del(${p.id})" style="color:#e74c3c; background:none; border:none;"><i class="fas fa-trash"></i></button></div>
                     </div>`;
                 });
             },
@@ -700,28 +653,19 @@
                 state.products.forEach(p => {
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                     if(vars) vars.forEach(v => {
-                        let q = parseInt(v.stock)||0;
-                        cost += (p.cost_price * q);
-                        rev += (v.price * q);
+                        let q = parseInt(v.stock)||0; cost += (p.cost_price * q); rev += (v.price * q);
                         if(cats[p.category]!==undefined) cats[p.category]+=q;
                         if(q < 3) lowStock += `<div style="padding:5px; border-bottom:1px solid #eee; color:#e74c3c;">${p.name} (${v.name}): ${q} un</div>`;
                     });
                 });
-
                 document.getElementById('stat-cost').innerText = `R$ ${cost.toFixed(2)}`;
                 document.getElementById('stat-rev').innerText = `R$ ${rev.toFixed(2)}`;
                 document.getElementById('stat-prof').innerText = `R$ ${(rev-cost).toFixed(2)}`;
                 document.getElementById('low-stock-list').innerHTML = lowStock || "<small>Estoque saudável</small>";
-
+                
                 const ctx = document.getElementById('chartStock');
                 if(chartInst) chartInst.destroy();
-                chartInst = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Feminino', 'Infantil', 'Perfumes'],
-                        datasets: [{ data: [cats.feminino, cats.infantil, cats.perfumes], backgroundColor: ['#c48b78', '#f1c40f', '#2c3e50'] }]
-                    }
-                });
+                chartInst = new Chart(ctx, { type: 'doughnut', data: { labels: ['Feminino', 'Infantil', 'Perfumes'], datasets: [{ data: [cats.feminino, cats.infantil, cats.perfumes], backgroundColor: ['#c48b78', '#f1c40f', '#2c3e50'] }] } });
             }
         };
     </script>
