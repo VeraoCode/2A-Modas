@@ -66,12 +66,21 @@
         .tag-promo { position:absolute; top:15px; right:15px; background:#e91e63; color:white; padding:5px 12px; border-radius:20px; font-size:0.7rem; font-weight:bold; z-index: 2; }
         .tag-delivery { font-size: 0.75rem; color: #27ae60; display: block; margin-top: 5px; font-weight: 600; }
 
-        /* MODALS */
-        .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(8px); padding:20px; }
-        .overlay.active { display:flex; animation: popIn 0.3s ease; }
+        /* MODALS (ATUALIZADO PARA SOBRESSAIR MAIS) */
+        .overlay { 
+            position:fixed; top:0; left:0; width:100%; height:100%; 
+            background: rgba(0, 0, 0, 0.85); /* Fundo bem escuro */
+            backdrop-filter: blur(8px); /* Desfoque intenso */
+            z-index: 2000; display:none; align-items:center; justify-content:center; padding:20px; 
+        }
+        .overlay.active { display:flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
         
-        .box { background:white; width:100%; max-width:900px; border-radius:20px; overflow:hidden; max-height:90vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow:var(--shadow); }
+        .box { 
+            background:white; width:100%; max-width:900px; border-radius:20px; overflow:hidden; 
+            max-height:90vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); /* Sombra forte para destacar */
+        }
         .box.single-col { display:block; max-width:500px; grid-template-columns: 1fr; }
         
         /* PROMO CARROSEL */
@@ -214,7 +223,7 @@
         </div>
         <div style="border-top:1px solid #eee; padding-top:20px;">
             <div id="cart-auth-area" style="margin-bottom:15px;">
-                <button onclick="document.getElementById('auth-modal').classList.add('active')" style="width:100%; padding:10px; background:#f0f0f0; border:none; border-radius:8px; color:#555;">
+                <button onclick="app.showModal('auth-modal')" style="width:100%; padding:10px; background:#f0f0f0; border:none; border-radius:8px; color:#555;">
                     <i class="fas fa-user-circle"></i> Login / Cadastro (Opcional)
                 </button>
             </div>
@@ -229,7 +238,7 @@
         </div>
     </div>
 
-    <div id="auth-modal" class="overlay">
+    <div id="auth-modal" class="overlay" style="z-index:10000;">
         <div class="box single-col" style="padding:40px; text-align:center;">
             <h2 id="auth-title" style="margin-bottom:20px;">Acesso</h2>
             <div id="form-login">
@@ -322,7 +331,7 @@
         // --- ⚠️ CONFIGURAÇÃO OBRIGATÓRIA (COLE SUAS CHAVES AQUI) ---
         const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
-        const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
+        const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app';  
 
         // Inicializa o Cliente
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -338,11 +347,11 @@
             'Bege': '#f5f5dc', 'Amarelo': '#f1c40f', 'Cinza': '#95a5a6'
         };
 
-        // --- APP ---
+        // --- APP OBJECT (DECLARADO ANTES DO INIT) ---
         const app = {
             load: async () => {
                 const { data, error } = await sb.from('products').select('*');
-                if(error) throw error; // Lança erro para o catch do init
+                if(error) throw error;
                 state.products = data || [];
                 app.render(state.products);
             },
@@ -358,6 +367,7 @@
 
                 list.forEach(p => {
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+                    // Proteção se variations for nulo
                     const minP = (vars && vars.length) ? Math.min(...vars.map(v => parseFloat(v.price))) : 0;
                     const isPromo = p.is_promo ? '<span class="tag-promo">OFERTA</span>' : '';
                     
@@ -461,13 +471,14 @@
             cQty: (idx,n) => { state.cart[idx].qty+=n; if(state.cart[idx].qty<1) state.cart[idx].qty=1; app.renderCart(); },
             toggleCart: () => document.querySelector('.sidebar').classList.toggle('open'),
             
+            // ADDRESS
             openAddressModal: () => {
                 const list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
                 const div = document.getElementById('saved-addresses-list');
                 if(div) {
                     div.innerHTML="";
                     list.forEach((a,i) => {
-                        div.innerHTML += `<div style="border:1px solid #eee; padding:10px; margin-bottom:5px; cursor:pointer; border-radius:8px;" onclick="app.setAddr(${i})"><b>${a.street}</b><br><small>${a.name}</small></div>`;
+                        div.innerHTML += `<div style="border:1px solid #eee; padding:10px; margin-bottom:5px; cursor:pointer;" onclick="app.setAddr(${i})"><b>${a.street}</b><br><small>${a.name}</small></div>`;
                     });
                 }
                 app.showModal('address-modal');
@@ -490,13 +501,31 @@
                 const btn = document.getElementById('btn-address-trigger');
                 if(btn && state.address) { btn.classList.add('filled'); btn.innerHTML = `📍 Entrega: ${state.address.street}`; }
                 const authArea = document.getElementById('cart-auth-area');
-                if(authArea && state.user) authArea.innerHTML = `<small>Olá, ${state.user.name}</small>`;
+                if(authArea) {
+                    if(state.user) {
+                        authArea.innerHTML = `<small style="color:#27ae60"><i class="fas fa-check-circle"></i> Olá, ${state.user.name}</small>`;
+                    } else {
+                        authArea.innerHTML = `<button onclick="app.showModal('auth-modal')" style="width:100%; padding:10px; background:#f0f0f0; border:none; border-radius:8px; color:#555; font-weight:bold;"><i class="fas fa-user-circle"></i> Fazer Login / Cadastro</button>`;
+                    }
+                }
             },
+
+            // CHECKOUT
             checkout: async (method) => {
                 if(!state.cart.length) return alert("Carrinho vazio");
+                
+                // TRAVA DE SEGURANÇA: EXIGIR LOGIN PARA MERCADO PAGO
+                if(method === 'mercadopago' && !state.user) {
+                    alert("Para sua segurança e histórico, faça Login ou Cadastre-se para concluir a compra.");
+                    app.showModal('auth-modal');
+                    return;
+                }
+
                 if(!state.address) { app.openAddressModal(); return alert("Selecione onde entregar primeiro"); }
-                if(method === 'whatsapp') { app.sendPaidOrder(); } 
-                else {
+
+                if(method === 'whatsapp') {
+                    app.sendPaidOrder();
+                } else {
                     const btn = document.querySelector('.btn-mp'); 
                     if(btn) btn.innerText="Carregando...";
                     try {
@@ -511,6 +540,21 @@
                     } catch(e) { alert("Erro conexão Pagamento"); if(btn) btn.innerText="Tentar novamente"; }
                 }
             },
+            registerOrder: async (method) => {
+                const total = state.cart.reduce((a,b)=>a+(b.price*b.qty),0);
+                const order = {
+                    id: Date.now().toString(),
+                    customer_name: state.user ? state.user.name : state.address.name,
+                    customer_email: state.user ? state.user.email : 'Não logado',
+                    customer_id: state.user ? state.user.id : null,
+                    total: total,
+                    items: state.cart,
+                    address: state.address,
+                    date: new Date().toLocaleDateString(),
+                    method: method
+                };
+                await sb.from('orders').insert([order]);
+            },
             sendPaidOrder: () => {
                 let msg = `*PEDIDO 2A MODAS (${state.address.name})*\n\nEndereço: ${state.address.street} (${state.address.ref})\nTel: ${state.address.phone}\n\nITENS:\n`;
                 let t=0;
@@ -519,14 +563,20 @@
                 localStorage.removeItem('2a_cart');
                 window.location.href = `https://wa.me/5567998951120?text=${encodeURIComponent(msg)}`;
             },
+
+            // UTILS
             showModal: (id) => { 
                 const el = document.getElementById(id);
-                if(el) el.classList.add('active'); 
-                history.pushState({modal:id}, null, ""); 
+                if(el) {
+                    el.classList.add('active'); 
+                    // Salva no histórico para o botão voltar funcionar
+                    history.pushState({modalOpen: true, id: id}, null, ""); 
+                }
             },
             closeModal: (id) => { 
                 const el = document.getElementById(id);
                 if(el) el.classList.remove('active'); 
+                // Apenas remove a classe, não tenta limpar inputs para evitar erro "null"
             },
             closeAllModals: () => { 
                 document.querySelectorAll('.overlay.active').forEach(el => el.classList.remove('active')); 
@@ -544,6 +594,7 @@
                 const cDiv = document.getElementById('color-checks');
                 const vDiv = document.getElementById('volume-checks');
                 if(!cDiv || !vDiv) return;
+                
                 cDiv.innerHTML = ""; vDiv.innerHTML = "";
                 Object.keys(COLOR_MAP).forEach(c => {
                     const dot = `<span class="color-dot" style="background:${COLOR_MAP[c]}"></span>`;
@@ -562,7 +613,7 @@
                 if(prompt("Senha:") === "123") {
                     app.closeModal('auth-modal'); app.showModal('admin-modal'); 
                     admin.renderList(); admin.renderOrders(); admin.updateStats();
-                } else { alert("Senha Incorreta"); }
+                }
             },
             tab: (t) => {
                 document.getElementById('tab-dash').style.display=t==='dash'?'block':'none';
@@ -584,8 +635,7 @@
                     let imgUrl = null;
                     if(file) {
                         const fName = `prod_${Date.now()}_${Math.floor(Math.random()*1000)}`;
-                        const { data, error } = await sb.storage.from('images').upload(fName, file);
-                        if(error) throw error;
+                        const { data } = await sb.storage.from('images').upload(fName, file);
                         const { data: url } = sb.storage.from('images').getPublicUrl(fName);
                         imgUrl = url.publicUrl;
                     }
@@ -664,7 +714,6 @@
                         const iList = typeof o.items==='string'?JSON.parse(o.items):o.items;
                         const addr = typeof o.address==='string'?JSON.parse(o.address):o.address;
                         let prodHtml = iList.map(i => `<div>${i.qty}x ${i.name} (${i.variant})</div>`).join('');
-                        
                         div.innerHTML += `
                         <div class="order-card">
                             <div class="order-header">
@@ -733,7 +782,7 @@
             }
         };
 
-        // --- INIT CALL (MOVIDO PARA FINAL DO SCRIPT) ---
+        // --- INIT CALL (NO FINAL) ---
         (async function initCall() {
             const loadingScreen = document.getElementById('loading-screen'); 
             const statusBar = document.getElementById('status-bar');
@@ -749,7 +798,7 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 if(urlParams.get('status') === 'approved') {
                     const sc = localStorage.getItem('2a_cart');
-                    if(sc) { state.cart = JSON.parse(sc); app.sendPaidOrder(); }
+                    if(sc) { state.cart = JSON.parse(sc); await app.registerOrder('Mercado Pago'); app.sendPaidOrder(); }
                 }
 
                 await app.load();
