@@ -21,17 +21,27 @@
             --radius: 12px;
         }
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; outline:none; }
-        body { background: var(--bg-body); color: var(--text-main); }
+        body { background: var(--bg-body); color: var(--text-main); padding-top: 30px; /* Espaço para barra de status */ }
         h1,h2,h3 { font-family:'Montserrat',sans-serif; }
         button { cursor:pointer; transition:0.3s; }
 
+        /* BARRA DE STATUS DO SISTEMA */
+        #system-status {
+            position: fixed; top: 0; left: 0; width: 100%; height: 30px;
+            background: #333; color: white; font-size: 0.8rem;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 9999; font-weight: bold;
+        }
+        .status-ok { background: #27ae60 !important; }
+        .status-error { background: #c0392b !important; }
+
         /* HEADER */
-        header { position:fixed; top:0; width:100%; background:rgba(255,255,255,0.95); padding:15px 5%; display:flex; justify-content:flex-end; z-index:1000; backdrop-filter:blur(5px); border-bottom:1px solid #eee; }
+        header { position:fixed; top:30px; width:100%; background:rgba(255,255,255,0.95); padding:15px 5%; display:flex; justify-content:flex-end; z-index:1000; backdrop-filter:blur(5px); border-bottom:1px solid #eee; }
         .cart-btn { background:white; border:1px solid #ddd; width:45px; height:45px; border-radius:50%; font-size:1.2rem; position:relative; }
         .cart-badge { position:absolute; top:-5px; right:-5px; background:var(--primary); color:white; width:20px; height:20px; border-radius:50%; font-size:0.7rem; display:flex; align-items:center; justify-content:center; }
 
         /* HERO */
-        .hero { padding:120px 20px 60px; text-align:center; background:radial-gradient(circle at top, #fff5f2 0%, #fff 100%); }
+        .hero { padding:140px 20px 60px; text-align:center; background:radial-gradient(circle at top, #fff5f2 0%, #fff 100%); }
         .brand-img { width:180px; height:180px; border-radius:50%; object-fit:cover; border:5px solid white; box-shadow:0 10px 30px rgba(0,0,0,0.1); margin-bottom:20px; animation:float 6s infinite; }
         @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
         .btn-cta { background:var(--text-main); color:white; border:none; padding:12px 30px; border-radius:30px; margin-top:20px; }
@@ -56,7 +66,7 @@
         .modal-content { padding:40px; position:relative; }
         
         /* ADMIN */
-        #admin-panel { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#f4f6f9; z-index:3000; overflow-y:auto; padding:20px; }
+        #admin-panel { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#f4f6f9; z-index:3000; overflow-y:auto; padding:20px; padding-top: 50px; }
         #admin-panel.active { display:block; }
         .admin-box { max-width:800px; margin:0 auto; background:white; padding:30px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.05); }
         
@@ -73,12 +83,12 @@
         /* BUTTONS */
         .btn-mp { background:#009EE3; color:white; width:100%; padding:15px; border:none; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; margin-top:10px; font-weight: 600; }
         .btn-mp:hover { background: #007eb5; }
-        .mp-icon-img { height: 26px; width: auto; display: block; filter: brightness(0) invert(1); } /* Logo Branco */
+        .mp-icon-img { height: 26px; width: auto; display: block; } 
         
         .btn-whats { background:#25D366; color:white; width:100%; padding:15px; border:none; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; font-weight: 600; }
         
         /* SIDEBAR */
-        .cart-sidebar { position:fixed; top:0; right:-400px; width:350px; height:100%; background:white; z-index:2001; padding:20px; transition:0.3s; box-shadow:-5px 0 20px rgba(0,0,0,0.1); display:flex; flex-direction:column; }
+        .cart-sidebar { position:fixed; top:30px; right:-400px; width:350px; height:100%; background:white; z-index:2001; padding:20px; transition:0.3s; box-shadow:-5px 0 20px rgba(0,0,0,0.1); display:flex; flex-direction:column; padding-bottom: 50px;}
         .cart-sidebar.open { right:0; }
 
         @media(max-width:768px){ .modal-box{grid-template-columns:1fr;} .cart-sidebar{width:100%;} }
@@ -87,6 +97,8 @@
     </style>
 </head>
 <body>
+
+    <div id="system-status">Verificando conexão...</div>
 
     <header>
         <button class="cart-btn" onclick="app.toggleCart()">
@@ -151,7 +163,7 @@
             <button class="btn-whats" onclick="app.checkoutWs()"><i class="fab fa-whatsapp"></i> Pedir no WhatsApp</button>
             
             <button class="btn-mp" onclick="app.checkoutMp()">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Mercado_Pago_Logo.svg/1024px-Mercado_Pago_Logo.svg.png?20230522171120" alt="MP" class="mp-icon-img" style="filter: brightness(0) invert(1);">
+                <img src="https://http2.mlstatic.com/frontend-assets/ui-navigation/5.18.9/mercadopago/logo__small.png" alt="MP" class="mp-icon-img" style="filter: brightness(0) invert(1);">
                 Pagar com Mercado Pago
             </button>
         </div>
@@ -233,31 +245,40 @@
     </footer>
 
     <script>
-        /* =========================================================
-           PASSO CRUCIAL: Substitua os campos abaixo pelas
-           chaves REAIS do seu projeto Firebase.
-           Sem isso, os dados NÃO FICARÃO SALVOS!
-           ========================================================= */
         const firebaseConfig = {
-           apiKey: "AIzaSyB1Z3Vy5-wVfJ7yelQ7b_GakJWjhmD338o",
-  authDomain: "loja2a.firebaseapp.com",
-  projectId: "loja2a",
-  storageBucket: "loja2a.firebasestorage.app",
-  messagingSenderId: "864712234172",
-  appId: "1:864712234172:web:670edd2de6d85fb118acb9",
-  measurementId: "G-26EMJRJ3EY"
+            apiKey: "AIzaSyB1Z3Vy5-wVfJ7yelQ7b_GakJWjhmD338o",
+            authDomain: "loja2a.firebaseapp.com",
+            projectId: "loja2a",
+            storageBucket: "loja2a.firebasestorage.app",
+            messagingSenderId: "864712234172",
+            appId: "1:864712234172:web:670edd2de6d85fb118acb9"
         };
         const CLOUD_URL = "https://criarpagamentoss-967029810770.southamerica-east1.run.app"; 
 
         // Inicialização Segura
         let db, storage;
+        
+        function updateStatus(status, msg) {
+            const el = document.getElementById('system-status');
+            el.innerText = msg;
+            if(status === 'ok') { el.className = 'status-ok'; }
+            else if(status === 'error') { el.className = 'status-error'; }
+        }
+
         try {
+            // Verifica se o usuário colou as chaves
+            if(firebaseConfig.apiKey.includes("COLE_SUA")) {
+                throw new Error("Chaves do Firebase não configuradas no código.");
+            }
+
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
             storage = firebase.storage();
+            updateStatus('ok', 'SISTEMA ONLINE - Conectado ao Banco de Dados');
         } catch (error) {
             console.error("Erro Firebase:", error);
-            alert("Atenção: As chaves do Firebase não foram configuradas. Os produtos não serão salvos.");
+            updateStatus('error', 'ERRO: ' + error.message);
+            alert("ERRO CRÍTICO: " + error.message + "\n\nEdite o arquivo index.html e coloque suas chaves do Firebase.");
         }
 
         const state = { products: [], cart: [], current: null, var: null, qty: 1 };
@@ -266,6 +287,8 @@
             init: async () => {
                 if (!db) return;
                 const loader = document.getElementById('loading-products');
+                
+                // Ouve o banco de dados em tempo real
                 db.collection("products").onSnapshot((querySnapshot) => {
                     state.products = [];
                     querySnapshot.forEach((doc) => {
@@ -278,7 +301,8 @@
                     loader.style.display = 'none';
                 }, (error) => {
                     console.error(error);
-                    loader.innerHTML = "<p>Erro ao carregar. Verifique as chaves e regras do Firebase.</p>";
+                    loader.innerHTML = "<p>Erro ao carregar. Verifique as Regras do Firestore.</p>";
+                    updateStatus('error', 'ERRO DE PERMISSÃO NO BANCO');
                 });
             },
 
@@ -377,6 +401,7 @@
 
         const admin = {
             open: () => {
+                if(!db) return alert("Banco de Dados não conectado. Verifique as chaves.");
                 document.getElementById('admin-panel').classList.add('active');
                 admin.renderList();
             },
@@ -415,9 +440,8 @@
                 const btn = document.getElementById('btn-save'); btn.innerText="Salvando..."; btn.disabled=true;
                 
                 try {
-                    // Pegar opções marcadas
                     const selectedOptions = admin.getCheckedOptions();
-                    if(selectedOptions.length === 0) throw new Error("Selecione pelo menos uma opção de cor ou volume.");
+                    if(selectedOptions.length === 0) throw new Error("Selecione pelo menos uma opção.");
 
                     const file = document.getElementById('f-file').files[0];
                     let imgUrl = "";
@@ -436,7 +460,7 @@
                         category: document.getElementById('f-cat').value,
                         stock: parseInt(document.getElementById('f-stock').value),
                         type: document.getElementById('f-type').value,
-                        options: selectedOptions, // Usa as checkboxes
+                        options: selectedOptions,
                         desc: document.getElementById('f-desc').value
                     };
                     if(imgUrl) data.image = imgUrl;
@@ -455,9 +479,8 @@
                 document.getElementById('edit-id').value="";
                 document.getElementById('f-preview').style.display='none';
                 document.getElementById('file-text').innerText="Clique para selecionar uma foto";
-                // Desmarcar tudo
                 document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-                admin.toggleType(); // Resetar visual
+                admin.toggleType();
             },
             
             renderList: () => {
