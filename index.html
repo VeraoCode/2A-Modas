@@ -12,16 +12,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root { --primary: #c48b78; --accent: #2c3e50; --bg: #f8f9fa; --white: #ffffff; --radius: 12px; --shadow: 0 10px 40px rgba(0,0,0,0.08); }
+        :root {
+            --primary: #c48b78; --accent: #2c3e50; --bg: #f8f9fa; --white: #ffffff;
+            --radius: 12px; --shadow: 0 10px 40px rgba(0,0,0,0.08);
+        }
         * { margin:0; padding:0; box-sizing:border-box; outline:none; font-family:'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg); color: var(--accent); overflow-x: hidden; }
+        body { background: var(--bg); color: var(--accent); overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh; }
         h1, h2, h3 { font-family:'Playfair Display', serif; }
         button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
 
+        /* LOADING */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #status-bar { position:fixed; top:0; left:0; width:100%; height:auto; min-height:30px; background:#222; color:white; font-size:0.8rem; display:flex; align-items:center; justify-content:center; z-index:99999; font-weight:600; padding:5px; text-align:center; }
         .ok { background:#27ae60 !important; } .err { background:#c0392b !important; }
 
+        /* HEADER & HERO */
         .header-floating { position: fixed; top: 40px; right: 5%; z-index: 1000; display:flex; gap:15px; }
         .icon-btn { width:55px; height:55px; border-radius:50%; border:none; background:white; box-shadow:0 4px 15px rgba(0,0,0,0.15); color:var(--accent); font-size:1.2rem; display:flex; align-items:center; justify-content:center; position:relative; }
         .icon-btn:hover { background:var(--primary); color:white; transform:scale(1.1) rotate(5deg); }
@@ -34,7 +39,8 @@
         .btn-cta:hover { transform: translateY(-5px); background: var(--primary); }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        .container { max-width:1200px; margin:0 auto; padding:40px 20px; }
+        /* PRODUTOS */
+        .container { max-width:1200px; margin:0 auto; padding:40px 20px; flex: 1; }
         .filters { display:flex; justify-content:center; gap:12px; margin-bottom:50px; flex-wrap:wrap; }
         .filter-btn { padding: 10px 28px; border-radius: 30px; border: 1px solid #e0e0e0; background: white; color: #555; font-weight: 600; }
         .filter-btn:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-3px); }
@@ -48,6 +54,7 @@
         .tag-promo { position:absolute; top:15px; right:15px; background:#e91e63; color:white; padding:5px 12px; border-radius:20px; font-size:0.7rem; font-weight:bold; z-index: 2; }
         .tag-delivery { font-size: 0.75rem; color: #27ae60; display: block; margin-top: 5px; font-weight: 600; }
 
+        /* MODALS */
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
         .overlay.active { display:flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
@@ -55,44 +62,50 @@
         .box { background:white; width:100%; max-width:900px; border-radius:20px; overflow:hidden; max-height:90vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         .box.single-col { display:block; max-width:500px; grid-template-columns: 1fr; }
         
+        /* SIDEBAR */
         .sidebar { position:fixed; top:0; right:-500px; width:450px; height:100%; background:white; z-index:3000; padding:30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s; display:flex; flex-direction:column; }
         .sidebar.open { right:0; }
         .cart-item { display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid #f5f5f5; }
         
+        /* ADMIN/FORMS */
         .input { width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; margin-bottom:10px; }
-        .checkbox-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #eee; }
-        .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; }
-        .var-inputs.show { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-        .var-btn { padding:10px; border:1px solid #eee; border-radius:8px; background:white; margin:5px; cursor:pointer; }
-        .var-btn.selected { background:var(--accent); color:white; }
-        .var-btn.disabled { opacity:0.5; cursor:not-allowed; }
-        
-        .btn-mp { background:#009EE3; color:white; width:100%; padding:14px; border-radius:12px; border:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9rem; margin-top:10px; }
-        .btn-whats { background:#25D366; color:white; width:100%; padding:14px; border-radius:12px; border:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9rem; }
-        .btn-addr-trigger { width:100%; padding:15px; border:2px dashed var(--accent); background:none; border-radius:12px; color:var(--accent); font-weight:bold; cursor:pointer; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:10px; }
-        .btn-addr-trigger.filled { border-style:solid; border-color:#27ae60; background:#eafff0; color:#27ae60; }
-
         .admin-nav { padding:20px; background:white; border-bottom:1px solid #eee; display:flex; gap:10px; overflow-x:auto; }
         .admin-tab { padding:10px 20px; border-radius:30px; border:1px solid #eee; background:transparent; font-weight:600; cursor:pointer; white-space:nowrap; }
         .admin-tab.active { background:var(--accent); color:white; }
-        .admin-table { width:100%; border-collapse:collapse; font-size:0.9rem; }
-        .admin-table th { text-align:left; padding:12px; background:#f9f9f9; color:#666; }
-        .admin-table td { padding:12px; border-bottom:1px solid #eee; }
+        .checkbox-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #eee; }
+        .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; }
+        .var-inputs.show { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
         .mini-prod { display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid #eee; }
         .mini-prod img { width:50px; height:50px; border-radius:8px; object-fit:cover; }
         
+        /* UI ELEMENTS */
+        .var-btn { padding:10px; border:1px solid #eee; border-radius:8px; background:white; margin:5px; cursor:pointer; }
+        .var-btn.selected { background:var(--accent); color:white; }
+        .var-btn.disabled { opacity:0.5; cursor:not-allowed; }
+        .btn-mp, .btn-whats { width:100%; padding:14px; border-radius:12px; border:none; font-weight:bold; margin-top:10px; color:white; display:flex; align-items:center; justify-content:center; gap:10px; }
+        .btn-mp { background:#009EE3; } .btn-whats { background:#25D366; }
+        .btn-addr-trigger { width:100%; padding:15px; border:2px dashed var(--accent); background:none; border-radius:12px; color:var(--accent); font-weight:bold; cursor:pointer; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:10px; }
+        .btn-addr-trigger.filled { border-style:solid; border-color:#27ae60; background:#eafff0; color:#27ae60; }
+        .color-dot { width: 15px; height: 15px; border-radius: 50%; display: inline-block; border: 1px solid #ddd; margin-right:5px; }
+        
+        /* CLIENT DASHBOARD */
+        .client-order { border:1px solid #eee; padding:15px; border-radius:10px; margin-bottom:10px; background:#fdfdfd; }
+        .status-badge { padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; color:white; }
+        .st-pendente { background:#f39c12; } .st-enviado { background:#3498db; } .st-entregue { background:#27ae60; }
+        .order-card { background: white; border: 1px solid #eee; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; font-weight: bold; color: var(--accent); }
+
+        /* CARROSSEL */
         .carousel-wrapper { overflow: hidden; white-space: nowrap; padding: 10px 0; }
         .carousel-track { display: inline-flex; gap: 15px; animation: scrollPromo 20s linear infinite; }
         .promo-card { width: 250px; background: white; border: 1px solid #eee; border-radius: 12px; padding: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; white-space: normal; }
         .promo-card img { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; }
         @keyframes scrollPromo { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-        .client-order { border:1px solid #eee; padding:15px; border-radius:10px; margin-bottom:10px; background:#fdfdfd; }
-        .status-badge { padding:5px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold; color:white; }
-        .st-pendente { background:#f39c12; } .st-enviado { background:#3498db; } .st-entregue { background:#27ae60; }
-        .order-card { background: white; border: 1px solid #eee; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; font-weight: bold; color: var(--accent); }
-        .color-dot { width: 15px; height: 15px; border-radius: 50%; display: inline-block; border: 1px solid #ddd; margin-right:5px; }
+        /* FOOTER */
+        footer { background: #222; color: #888; text-align: center; padding: 40px 20px; margin-top: auto; }
+        footer a { color: #ddd; text-decoration: none; font-size: 0.8rem; font-weight: bold; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; transition: 0.3s; }
+        footer a:hover { background: #444; color: white; }
 
         @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} }
     </style>
@@ -127,6 +140,12 @@
         </div>
         <div id="products-list" class="grid"></div>
     </div>
+
+    <footer>
+        <p>&copy; 2025 2A Modas e Perfumes.</p>
+        <br>
+        <button onclick="admin.checkAdmin()" style="background:none; border:none; color:#666; font-size:0.8rem; text-decoration:underline;">Área Administrativa</button>
+    </footer>
 
     <div id="promo-modal" class="overlay">
         <div class="box single-col" style="background:var(--bg); overflow:hidden;">
@@ -234,8 +253,6 @@
                 <input type="password" id="l-pass" class="input" placeholder="Senha">
                 <button onclick="auth.login()" style="width:100%; background:var(--accent); color:white; padding:12px; border-radius:8px; border:none; font-weight:bold;">Entrar</button>
                 <p style="margin-top:15px; font-size:0.9rem;">Não tem conta? <a href="#" onclick="auth.toggle('register')">Cadastre-se</a></p>
-                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-                <button onclick="admin.checkAdmin()" style="background:none; border:none; color:#999; font-size:0.8rem;">Sou Admin</button>
             </div>
             <div id="form-register" style="display:none;">
                 <input type="text" id="r-name" class="input" placeholder="Nome">
@@ -325,15 +342,13 @@
         const PRESETS_VOL = ['25ml','50ml','75ml','100ml','200ml','P','M','G','GG','Unico'];
         const COLOR_MAP = { 'Preto': '#000000', 'Branco': '#ffffff', 'Vermelho': '#e74c3c', 'Azul': '#3498db', 'Rosa': '#e91e63', 'Verde': '#2ecc71', 'Nude': '#e3c0a5', 'Estampado': 'linear-gradient(45deg, red, blue)', 'Bege': '#f5f5dc', 'Amarelo': '#f1c40f', 'Cinza': '#95a5a6' };
         
-        const safeVal = (v) => v || ""; // Evita null
+        const safeVal = (v) => v || ""; 
 
-        // --- APP OBJECT ---
+        // --- APP ---
         const app = {
             load: async () => {
                 const { data, error } = await sb.from('products').select('*');
-                if(error) throw error;
-                state.products = data || [];
-                app.render(state.products);
+                if(!error) { state.products = data || []; app.render(state.products); }
             },
             render: (list) => {
                 const div = document.getElementById('products-list'); 
@@ -494,7 +509,7 @@
                 window.location.href = `https://wa.me/5567998951120?text=${encodeURIComponent(msg)}`;
             },
 
-            // UTILS (CORREÇÃO POPUP)
+            // UTILS
             showModal: (id) => { 
                 const el = document.getElementById(id);
                 if(el) { el.classList.add('active'); history.pushState({modal:id}, null, ""); }
@@ -634,7 +649,8 @@
             renderList: () => {
                 const div = document.getElementById('admin-list'); div.innerHTML="";
                 state.products.forEach(p => {
-                    div.innerHTML += `<div class="mini-prod"><img src="${p.image_url}"> <strong>${p.name}</strong><div style="margin-left:auto"><button onclick="admin.edit('${p.id}')" style="color:blue;border:none;background:none"><i class="fas fa-edit"></i></button> <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none"><i class="fas fa-trash"></i></button></div></div>`;
+                    div.innerHTML += `<div class="mini-prod"><img src="${p.image_url}"> <strong>${p.name}</strong> 
+                    <div style="margin-left:auto"><button onclick="admin.edit('${p.id}')" style="color:blue;border:none;background:none"><i class="fas fa-edit"></i></button> <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none"><i class="fas fa-trash"></i></button></div></div>`;
                 });
             },
             renderOrders: async () => {
