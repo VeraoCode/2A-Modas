@@ -18,10 +18,8 @@
         * { margin:0; padding:0; box-sizing:border-box; outline:none; font-family:'Plus Jakarta Sans', sans-serif; }
         body { background: var(--bg); color: var(--accent); overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh; }
         
-        /* TIPOGRAFIA UNIFORME */
         h1, .brand-font { font-family:'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -0.5px; }
         h2, h3 { font-family:'Plus Jakarta Sans', sans-serif; font-weight: 700; }
-        
         button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
 
         /* LOADING & STATUS */
@@ -34,8 +32,6 @@
         .icon-btn { width:50px; height:50px; border-radius:50%; border:none; background:white; box-shadow:0 4px 15px rgba(0,0,0,0.15); color:var(--accent); font-size:1.2rem; display:flex; align-items:center; justify-content:center; position:relative; }
         .icon-btn:hover { background:var(--primary); color:white; transform:scale(1.1); }
         .badge { position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; width:22px; height:22px; border-radius:50%; font-size:0.75rem; display:flex; align-items:center; justify-content:center; font-weight:bold; border:2px solid white; }
-        
-        /* LOGIN BTN */
         .login-btn-header { padding: 10px 20px; background: white; border: none; border-radius: 30px; font-weight: 700; color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
         .login-btn-header:hover { background: var(--primary); color: white; transform: translateY(-2px); }
 
@@ -47,7 +43,7 @@
         .btn-cta:hover { transform: translateY(-5px); background: var(--primary); }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* PRODUTOS */
+        /* CONTAINER */
         .container { max-width:1200px; margin:0 auto; padding:40px 20px; flex: 1; }
         .filters { display:flex; justify-content:center; gap:12px; margin-bottom:50px; flex-wrap:wrap; }
         .filter-btn { padding: 10px 28px; border-radius: 30px; border: 1px solid #e0e0e0; background: white; color: #555; font-weight: 600; }
@@ -62,7 +58,7 @@
         .tag-promo { position:absolute; top:10px; right:10px; background:#e91e63; color:white; padding:4px 10px; border-radius:20px; font-size:0.6rem; font-weight:bold; z-index: 2; }
         .tag-delivery { font-size: 0.7rem; color: #27ae60; display: block; margin-top: 5px; font-weight: 600; }
 
-        /* MODALS (SOBRESSAIR + BLUR) */
+        /* MODALS */
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
         .overlay.active { display:flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
@@ -86,7 +82,6 @@
         .mini-prod { display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid #eee; }
         .mini-prod img { width:50px; height:50px; border-radius:8px; object-fit:cover; }
         
-        /* UI ELEMENTS */
         .var-btn { padding:10px; border:1px solid #eee; border-radius:8px; background:white; margin:5px; cursor:pointer; }
         .var-btn.selected { background:var(--accent); color:white; }
         .var-btn.disabled { opacity:0.5; cursor:not-allowed; }
@@ -96,7 +91,6 @@
         .btn-addr-trigger.filled { border-style:solid; border-color:#27ae60; background:#eafff0; color:#27ae60; }
         .color-dot { width: 15px; height: 15px; border-radius: 50%; display: inline-block; border: 1px solid #ddd; margin-right:5px; }
         
-        /* CLIENT DASHBOARD */
         .client-order { border:1px solid #eee; padding:20px; border-radius:12px; margin-bottom:15px; background:#fff; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
         .track-container { margin-top: 20px; position: relative; padding-top: 20px; padding-bottom: 20px; }
         .track-line { height: 4px; background: #eee; border-radius: 2px; position: relative; }
@@ -108,14 +102,12 @@
         .order-card { background: white; border: 1px solid #eee; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
         .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; font-weight: bold; color: var(--accent); }
 
-        /* CARROSSEL */
         .carousel-wrapper { overflow: hidden; white-space: nowrap; padding: 10px 0; }
         .carousel-track { display: inline-flex; gap: 15px; animation: scrollPromo 20s linear infinite; }
         .promo-card { width: 250px; background: white; border: 1px solid #eee; border-radius: 12px; padding: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; white-space: normal; }
         .promo-card img { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; }
         @keyframes scrollPromo { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-        /* FOOTER */
         footer { background: #222; color: #888; text-align: center; padding: 40px 20px; margin-top: auto; }
         footer button { color: #ddd; text-decoration: none; font-size: 0.8rem; font-weight: bold; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; transition: 0.3s; cursor: pointer; background: transparent; }
         footer button:hover { background: #444; color: white; }
@@ -368,7 +360,11 @@
         const PRESETS_VOL = ['25ml','50ml','75ml','100ml','200ml','P','M','G','GG','Unico'];
         const COLOR_MAP = { 'Preto': '#000000', 'Branco': '#ffffff', 'Vermelho': '#e74c3c', 'Azul': '#3498db', 'Rosa': '#e91e63', 'Verde': '#2ecc71', 'Nude': '#e3c0a5', 'Estampado': 'linear-gradient(45deg, red, blue)', 'Bege': '#f5f5dc', 'Amarelo': '#f1c40f', 'Cinza': '#95a5a6' };
         
-        const safeVal = (v) => (v === null || v === undefined || v === "null") ? "" : v;
+        // --- FUNÇÃO PARA CORRIGIR "NULL" ---
+        const safeVal = (v) => {
+            if (v === null || v === undefined || v === "null") return "";
+            return v;
+        };
 
         // --- APP ---
         const app = {
@@ -405,6 +401,8 @@
                 state.current = p; state.qty=1; state.var=null;
                 
                 document.getElementById('m-img').src = p.image_url || "";
+                
+                // USTA SAFEVAL PARA EVITAR NULL
                 const setText = (eid, t) => document.getElementById(eid).innerText = safeVal(t);
                 setText('m-title', p.name);
                 setText('m-cat', p.category);
@@ -493,11 +491,11 @@
             editAddress: (i) => {
                 const list = JSON.parse(localStorage.getItem('2a_addrs'));
                 const a = list[i];
-                document.getElementById('addr-name').value = a.name;
-                document.getElementById('addr-phone').value = a.phone;
-                document.getElementById('addr-street').value = a.street;
-                document.getElementById('addr-ref').value = a.ref;
-                app.delAddress(i); // Remove old to save new
+                document.getElementById('addr-name').value = safeVal(a.name);
+                document.getElementById('addr-phone').value = safeVal(a.phone);
+                document.getElementById('addr-street').value = safeVal(a.street);
+                document.getElementById('addr-ref').value = safeVal(a.ref);
+                app.delAddress(i); 
             },
             setAddr: (i) => {
                 const list = JSON.parse(localStorage.getItem('2a_addrs'));
@@ -510,7 +508,7 @@
                 const authArea = document.getElementById('cart-auth-area');
                 if(authArea) {
                     if(state.user) authArea.innerHTML = `<small style="color:#27ae60"><i class="fas fa-check-circle"></i> Olá, ${state.user.name}</small>`;
-                    else authArea.innerHTML = `<button onclick="app.showModal('auth-modal')" style="width:100%; padding:10px; background:#f0f0f0; border:none; border-radius:8px; color:#555; font-weight:bold;"><i class="fas fa-user-circle"></i> Fazer Login / Cadastro</button>`;
+                    else authArea.innerHTML = `<button onclick="app.showModal('auth-modal')" style="width:100%; padding:10px; background:#f0f0f0; border:none; border-radius:8px; color:#555; font-weight:bold;"><i class="fas fa-user-circle"></i> Login / Cadastro</button>`;
                 }
             },
 
@@ -538,11 +536,15 @@
                         });
                         const data = await res.json();
                         if(data.init_point) window.location.href = data.init_point;
-                    } catch(e) { alert("Erro conexão"); if(btn) btn.innerText="Tentar novamente"; }
+                    } catch(e) { 
+                        if(confirm("Erro de conexão com o Banco. Deseja finalizar pelo WhatsApp?")) {
+                            app.sendPaidOrder();
+                        }
+                        if(btn) btn.innerText="Tentar novamente"; 
+                    }
                 }
             },
             updateStockDatabase: async () => {
-                // Loop para dar baixa no estoque
                 for (const item of state.cart) {
                     const { data: prod } = await sb.from('products').select('*').eq('name', item.name).single();
                     if(prod) {
@@ -551,14 +553,13 @@
                         if(targetVar) {
                             targetVar.stock = parseInt(targetVar.stock) - item.qty;
                             if(targetVar.stock < 0) targetVar.stock = 0;
-                            // Atualiza
                             await sb.from('products').update({ variations: JSON.stringify(vars) }).eq('id', prod.id);
                         }
                     }
                 }
             },
             registerOrder: async (method) => {
-                await app.updateStockDatabase(); // Baixa estoque no retorno do MP
+                await app.updateStockDatabase(); 
                 const total = state.cart.reduce((a,b)=>a+(b.price*b.qty),0);
                 const order = {
                     id: Date.now().toString(),
@@ -607,7 +608,7 @@
                 if(state.user) { 
                     app.showModal('client-modal');
                     auth.loadClientOrders();
-                    document.getElementById('client-info-txt').innerHTML = `<strong>${state.user.name}</strong><br>${state.user.email}<br>${state.user.address.phone || ''}`;
+                    document.getElementById('client-info-txt').innerHTML = `<strong>${safeVal(state.user.name)}</strong><br>${safeVal(state.user.email)}<br>${state.user.address ? safeVal(state.user.address.phone) : ''}`;
                 } else app.showModal('auth-modal'); 
             },
             toggle: (m) => { document.getElementById('form-login').style.display=m==='login'?'block':'none'; document.getElementById('form-register').style.display=m==='register'?'block':'none'; },
@@ -726,12 +727,38 @@
             edit: (id) => {
                 const p = state.products.find(x => String(x.id) === String(id));
                 document.getElementById('edit-id').value = p.id;
+                
+                // USE SAFEVAL AQUI TAMBÉM
                 document.getElementById('f-name').value = safeVal(p.name);
                 document.getElementById('f-cat').value = safeVal(p.category);
                 document.getElementById('f-cost').value = safeVal(p.cost_price);
                 document.getElementById('f-desc').value = safeVal(p.description);
                 document.getElementById('f-promo').checked = p.is_promo;
-                alert("Edição carregada. Por favor, recadastre as variações.");
+                
+                admin.clear(true);
+                document.getElementById('edit-id').value = p.id;
+
+                const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+                if(vars) {
+                    const checks = document.querySelectorAll('input[type="checkbox"]');
+                    vars.forEach(v => {
+                        checks.forEach(cb => {
+                            if(cb.value === v.name) {
+                                cb.checked = true;
+                                admin.toggleInput(cb);
+                                setTimeout(() => {
+                                    const div = document.getElementById(`grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`);
+                                    if(div) {
+                                        div.querySelector('.v-cost').value = safeVal(v.cost || p.cost_price);
+                                        div.querySelector('.v-price').value = safeVal(v.price);
+                                        div.querySelector('.v-stock').value = safeVal(v.stock);
+                                    }
+                                }, 50);
+                            }
+                        });
+                    });
+                }
+                alert("Edição carregada.");
             },
             del: async (id) => { if(confirm("Excluir?")) { await sb.from('products').delete().eq('id', id); await app.load(); admin.renderList(); } },
             clear: (soft=false) => { 
@@ -812,16 +839,19 @@
             } finally { document.getElementById('loading-screen').style.display='none'; }
         })();
 
-        // GLOBAL ESC HANDLER
+        // GLOBAL ESC/BACK HANDLER
         window.addEventListener('popstate', (e) => {
-            document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active'));
+            const modals = document.querySelectorAll('.overlay.active');
+            if(modals.length > 0) {
+                modals.forEach(m => m.classList.remove('active'));
+            }
         });
         document.addEventListener('keydown', (e) => {
             if(e.key === "Escape") {
                 const modals = document.querySelectorAll('.overlay.active');
                 if(modals.length > 0) {
                     modals.forEach(m => m.classList.remove('active'));
-                    history.back();
+                    history.back(); // Remove o state do histórico
                 }
             }
         });
