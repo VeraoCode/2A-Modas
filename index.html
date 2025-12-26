@@ -7,7 +7,6 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -22,10 +21,17 @@
         h1, h2, h3 { font-family:'Playfair Display', serif; }
         button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
 
+        /* LOADING SPINNER */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 9999; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
         /* HEADER */
         .header-floating { position: fixed; top: 30px; right: 5%; z-index: 1000; display:flex; gap:15px; }
-        .icon-btn { width:55px; height:55px; border-radius:50%; border:none; background:white; box-shadow:0 4px 15px rgba(0,0,0,0.15); color:var(--accent); font-size:1.2rem; display:flex; align-items:center; justify-content:center; position:relative; }
-        .icon-btn:hover { background:var(--primary); color:white; transform:scale(1.1) rotate(5deg); }
+        .icon-btn { width:55px; height:55px; border-radius:50%; border:none; background:white; box-shadow:0 4px 15px rgba(0,0,0,0.15); color:var(--accent); font-size:1.2rem; display:flex; align-items:center; justify-content:center; transition:0.3s; position:relative; }
+        .icon-btn:hover { background:var(--primary); color:white; transform:scale(1.1); }
         .badge { position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; width:22px; height:22px; border-radius:50%; font-size:0.75rem; display:flex; align-items:center; justify-content:center; font-weight:bold; border:2px solid white; }
 
         /* HERO */
@@ -33,60 +39,28 @@
         .hero img { width:180px; height:180px; border-radius:50%; object-fit:cover; border:5px solid white; box-shadow:var(--shadow); margin-bottom:20px; }
         .hero h1 { font-size:3.5rem; margin-bottom:10px; color:var(--accent); }
         
-        /* BOTÃO PROMOÇÕES (POSICIONADO MAIS ABAIXO) */
+        /* BOTÃO PROMOÇÕES */
         .btn-cta { 
-            padding: 16px 50px; 
-            background: var(--accent); 
-            color: white; 
-            border-radius: 50px; 
-            border: none; 
-            font-weight: 600; 
-            font-size: 1.1rem; 
-            box-shadow: 0 10px 25px rgba(44,62,80,0.25); 
-            margin-top: 45px; /* Mais espaço do topo */
-            animation: pulse 2s infinite; 
+            padding: 16px 50px; background: var(--accent); color: white; border-radius: 50px; border: none; font-weight: 600; font-size: 1.1rem; 
+            box-shadow: 0 10px 25px rgba(44,62,80,0.25); margin-top: 45px; animation: pulse 2s infinite; 
         }
         .btn-cta:hover { transform: translateY(-5px); background: var(--primary); }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* FILTROS (MENU INTERATIVO) */
+        /* VITRINE */
         .container { max-width:1200px; margin:0 auto; padding:40px 20px; }
         .filters { display:flex; justify-content:center; gap:12px; margin-bottom:50px; flex-wrap:wrap; }
         
-        .filter-btn { 
-            padding: 10px 28px; 
-            border-radius: 30px; 
-            border: 1px solid #e0e0e0; 
-            background: white; 
-            color: #555; 
-            font-weight: 600; 
-            font-size: 0.95rem;
-            position: relative;
-            overflow: hidden;
-        }
-        .filter-btn:hover { 
-            background: var(--primary); 
-            color: white; 
-            border-color: var(--primary); 
-            transform: translateY(-3px); 
-            box-shadow: 0 5px 15px rgba(196, 139, 120, 0.4);
-        }
-        .filter-btn.active { 
-            background: var(--accent); 
-            color: white; 
-            border-color: var(--accent); 
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3);
-        }
+        .filter-btn { padding: 10px 28px; border-radius: 30px; border: 1px solid #e0e0e0; background: white; color: #555; font-weight: 600; }
+        .filter-btn:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-3px); }
+        .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); transform: scale(1.05); }
 
-        /* GRID PRODUTOS */
         .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:30px; }
         .card { background:white; border-radius:var(--radius); overflow:hidden; border:1px solid #f0f0f0; transition:0.4s; position:relative; cursor:pointer; }
         .card:hover { transform:translateY(-10px); box-shadow:var(--shadow); border-color:var(--primary); }
         .card img { width:100%; height:350px; object-fit:cover; background:#f9f9f9; }
         .card-info { padding:20px; text-align:center; }
         .tag-promo { position:absolute; top:15px; right:15px; background:#e91e63; color:white; padding:5px 12px; border-radius:20px; font-size:0.7rem; font-weight:bold; z-index: 2; }
-        .tag-delivery { font-size: 0.75rem; color: #27ae60; display: block; margin-top: 5px; font-weight: 600; }
 
         /* MODALS */
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(8px); padding:20px; }
@@ -96,10 +70,9 @@
         .box { background:white; width:100%; max-width:900px; border-radius:20px; overflow:hidden; max-height:90vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow:var(--shadow); }
         .box.single-col { display:block; max-width:500px; grid-template-columns: 1fr; }
         
-        /* PROMO LIST (MINIATURAS) */
         .promo-list { display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; padding: 10px; }
         .promo-item { display: flex; gap: 15px; padding: 15px; border: 1px solid #eee; border-radius: 12px; align-items: center; cursor: pointer; transition: 0.2s; }
-        .promo-item:hover { background: #fff5f2; border-color: var(--primary); transform: translateX(5px); }
+        .promo-item:hover { background: #fff5f2; border-color: var(--primary); }
         .promo-item img { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; }
 
         /* SIDEBAR */
@@ -107,15 +80,10 @@
         .sidebar.open { right:0; }
         .cart-item { display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid #f5f5f5; }
         
-        /* BOTÕES INTERATIVOS */
+        /* BOTÕES */
         .btn-mp { background:#009EE3; color:white; width:100%; padding:14px; border-radius:12px; border:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9rem; margin-top:10px; transition: 0.3s; }
-        .btn-mp:hover { background: #007eb5; transform: scale(1.02); }
-        
         .btn-whats { background:#25D366; color:white; width:100%; padding:14px; border-radius:12px; border:none; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9rem; transition: 0.3s; }
-        .btn-whats:hover { background: #1ebd56; transform: scale(1.02); }
-        
-        .btn-addr-trigger { width:100%; padding:15px; border:2px dashed var(--accent); background:none; border-radius:12px; color:var(--accent); font-weight:bold; cursor:pointer; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:10px; transition: 0.3s; }
-        .btn-addr-trigger:hover { background: var(--bg); border-color: var(--primary); color: var(--primary); }
+        .btn-addr-trigger { width:100%; padding:15px; border:2px dashed var(--accent); background:none; border-radius:12px; color:var(--accent); font-weight:bold; cursor:pointer; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:10px; }
         .btn-addr-trigger.filled { border-style:solid; border-color:#27ae60; background:#eafff0; color:#27ae60; }
 
         /* ADMIN */
@@ -123,26 +91,26 @@
         .admin-tab { padding:10px 20px; border-radius:30px; border:1px solid #eee; background:transparent; font-weight:600; color:#666; white-space:nowrap; cursor: pointer; }
         .admin-tab.active { background:var(--accent); color:white; border-color:var(--accent); }
         .input { width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; margin-bottom:10px; }
-        
         .checkbox-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #eee; }
-        .check-label { font-size: 0.9rem; display: flex; align-items: center; gap: 5px; cursor: pointer; }
-        .color-dot { width: 15px; height: 15px; border-radius: 50%; display: inline-block; border: 1px solid #ddd; }
-        
         .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; }
         .var-inputs.show { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
         .mini-prod { display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid #eee; }
         .mini-prod img { width:50px; height:50px; border-radius:8px; object-fit:cover; }
-
-        /* STATUS */
-        #status-bar { position:fixed; top:0; left:0; width:100%; height:30px; background:#222; color:white; font-size:0.75rem; display:flex; align-items:center; justify-content:center; z-index:9999; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
-        .ok { background:#27ae60 !important; } .err { background:#c0392b !important; }
+        
+        .var-btn { padding:10px; border:1px solid #eee; border-radius:8px; background:white; margin:5px; cursor:pointer; font-size:0.9rem; transition:0.2s; display:inline-flex; align-items:center; gap:8px; }
+        .var-btn.selected { background:var(--accent); color:white; border-color:var(--accent); }
+        .var-btn.disabled { opacity:0.5; cursor:not-allowed; background:#f5f5f5; color:#999; }
+        .color-dot { width: 15px; height: 15px; border-radius: 50%; display: inline-block; border: 1px solid #ddd; }
 
         @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} }
     </style>
 </head>
 <body>
 
-    <div id="status-bar" class="err">Conectando...</div>
+    <div id="loading-screen">
+        <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--primary);"></i>
+        <p style="margin-top:15px; color:#666;">Carregando loja...</p>
+    </div>
 
     <div class="header-floating">
         <button class="icon-btn" onclick="auth.checkProfile()">
@@ -168,7 +136,6 @@
             <button class="filter-btn" onclick="app.filter('infantil', this)">Infantil</button>
             <button class="filter-btn" onclick="app.filter('perfumes', this)">Perfumes</button>
         </div>
-        <div id="loading" style="text-align:center; padding:50px; color:#aaa;"><i class="fas fa-circle-notch fa-spin fa-2x"></i></div>
         <div id="products-list" class="grid"></div>
     </div>
 
@@ -333,6 +300,7 @@
                         <div id="active-vars-area"></div>
                         <textarea id="f-desc" class="input" rows="3" placeholder="Descrição" style="margin-top:10px;"></textarea>
                         <button onclick="admin.save()" id="btn-save" style="width:100%; background:var(--primary); color:white; padding:15px; border-radius:8px; border:none; margin-top:15px;">Salvar</button>
+                        <button onclick="admin.clear()" style="width:100%; padding:10px; background:none; border:none; color:#666;">Limpar</button>
                     </div>
                     <div style="background:white; padding:25px; border-radius:12px; overflow-y:auto; max-height:80vh;">
                         <h3>Lista</h3>
@@ -364,42 +332,52 @@
         // --- INIT & EVENTS ---
         (async function init() {
             try {
-                // EmailJS Init
-                // emailjs.init(EMAILJS_KEY); 
+                // Se as chaves estiverem vazias, alerta e para
+                if(SUPABASE_URL.includes("COLE_SUA")) {
+                    alert("Configure as chaves do Supabase no código!");
+                    document.getElementById('loading-screen').style.display='none';
+                    return;
+                }
 
-                // Load User & Addr
+                // Recupera usuario
                 const u = localStorage.getItem('2a_user'); if(u) state.user=JSON.parse(u);
                 const a = localStorage.getItem('2a_active_addr'); if(a) state.address=JSON.parse(a);
 
-                // Payment Return
+                // Recupera pagamento MP
                 const urlParams = new URLSearchParams(window.location.search);
                 if(urlParams.get('status') === 'approved') {
                     const sc = localStorage.getItem('2a_cart');
                     if(sc) {
                         state.cart = JSON.parse(sc);
-                        app.notifySale('Mercado Pago');
                         app.sendPaidOrder();
                     }
                 }
 
-                app.load();
+                const { data, error } = await sb.from('products').select('*');
+                if(error) throw error;
+                
+                state.products = data || [];
+                app.render(state.products);
                 admin.initCheckboxes();
                 app.updateUI();
                 
-            } catch(e) { console.error(e); }
+            } catch(e) { 
+                console.error(e);
+                alert("Erro ao conectar: " + e.message);
+            } finally {
+                document.getElementById('loading-screen').style.display='none';
+            }
         })();
 
-        // ESC / BACK Handling (CORREÇÃO DO BUG "NULL")
-        const handleBack = () => { app.closeAllModals(); };
-        document.addEventListener('keydown', (e) => { if(e.key === "Escape") handleBack(); });
-        window.onpopstate = handleBack;
+        document.addEventListener('keydown', (e) => { if(e.key === "Escape") app.closeAllModals(); });
+        window.onpopstate = () => app.closeAllModals();
 
+        // --- APP ---
         const app = {
             load: async () => {
                 const { data } = await sb.from('products').select('*');
                 state.products = data || [];
                 app.render(state.products);
-                document.getElementById('loading').style.display='none';
             },
             render: (list) => {
                 const div = document.getElementById('products-list'); div.innerHTML = "";
@@ -432,8 +410,7 @@
                         <img src="${p.image_url}">
                         <div>
                             <strong>${p.name}</strong><br>
-                            <small style="color:var(--primary)">A partir R$ ${minP.toFixed(2)}</small><br>
-                            <span class="tag-delivery">Entrega Rápida</span>
+                            <small style="color:var(--primary)">A partir R$ ${minP.toFixed(2)}</small>
                         </div>
                     </div>`;
                 });
@@ -443,43 +420,42 @@
                 const p = state.products.find(x => String(x.id) === String(id));
                 state.current = p; state.qty=1; state.var=null;
                 
-                // Safe Set Values (Proteção contra null)
-                const setTxt = (id, val) => document.getElementById(id).innerText = val || "";
-                document.getElementById('m-img').src = p.image_url;
-                setTxt('m-title', p.name);
-                setTxt('m-cat', p.category);
-                setTxt('m-desc', p.description);
-                setTxt('m-price', "Selecione...");
+                // Safe set
+                document.getElementById('m-img').src = p.image_url || "";
+                document.getElementById('m-title').innerText = p.name || "";
+                document.getElementById('m-cat').innerText = p.category || "";
+                document.getElementById('m-desc').innerText = p.description || "";
+                document.getElementById('m-price').innerText = "Selecione...";
                 
                 const vDiv = document.getElementById('m-vars'); vDiv.innerHTML = "";
                 const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                 
-                vars.forEach(v => {
-                    const btn = document.createElement('button');
-                    const hasStock = parseInt(v.stock)>0;
-                    btn.className = hasStock ? 'var-btn' : 'var-btn disabled';
-                    
-                    let dot = "";
-                    if(COLOR_MAP[v.name]) dot = `<span style="width:12px;height:12px;border-radius:50%;background:${COLOR_MAP[v.name]};display:inline-block;margin-right:5px;border:1px solid #ddd;"></span>`;
+                if(vars) {
+                    vars.forEach(v => {
+                        const btn = document.createElement('button');
+                        const hasStock = parseInt(v.stock)>0;
+                        btn.className = hasStock ? 'var-btn' : 'var-btn disabled';
+                        
+                        let dot = "";
+                        if(COLOR_MAP[v.name]) dot = `<span class="color-dot" style="background:${COLOR_MAP[v.name]}"></span>`;
 
-                    btn.innerHTML = `${dot}${v.name} - <b>R$ ${parseFloat(v.price).toFixed(2)}</b>`;
-                    if(hasStock) {
-                        btn.onclick = () => {
-                            state.var = v;
-                            document.getElementById('m-price').innerText = `R$ ${parseFloat(v.price).toFixed(2)}`;
-                            Array.from(vDiv.children).forEach(b=>b.classList.remove('selected'));
-                            btn.classList.add('selected');
-                        };
-                    }
-                    vDiv.appendChild(btn);
-                });
+                        btn.innerHTML = `${dot}${v.name} - <b>R$ ${parseFloat(v.price).toFixed(2)}</b>`;
+                        if(hasStock) {
+                            btn.onclick = () => {
+                                state.var = v;
+                                document.getElementById('m-price').innerText = `R$ ${parseFloat(v.price).toFixed(2)}`;
+                                Array.from(vDiv.children).forEach(b=>b.classList.remove('selected'));
+                                btn.classList.add('selected');
+                            };
+                        }
+                        vDiv.appendChild(btn);
+                    });
+                }
                 app.showModal('product-modal');
             },
             updQty: (n) => { state.qty += n; if(state.qty<1) state.qty=1; document.getElementById('m-qty').innerText = state.qty; },
             addCart: () => {
                 if(!state.var) return alert("Selecione uma opção");
-                const inCart = state.cart.filter(i => i.name===state.current.name && i.variant===state.var.name).reduce((a,b)=>a+b.qty,0);
-                if(inCart + state.qty > state.var.stock) return alert("Estoque insuficiente.");
                 state.cart.push({name: state.current.name, variant: state.var.name, price: parseFloat(state.var.price), qty: state.qty});
                 app.renderCart(); app.closeModal('product-modal'); app.toggleCart();
             },
@@ -508,10 +484,8 @@
                 app.showModal('address-modal');
             },
             addNewAddress: () => {
-                // Safe val (evita null)
-                const val = (id) => document.getElementById(id).value || "";
+                const val = id => document.getElementById(id).value;
                 const a = { name: val('addr-name'), phone: val('addr-phone'), street: val('addr-street'), ref: val('addr-ref') };
-                
                 if(!a.name || !a.street) return alert("Preencha obrigatórios");
                 const list = JSON.parse(localStorage.getItem('2a_addrs') || '[]'); list.push(a);
                 localStorage.setItem('2a_addrs', JSON.stringify(list));
@@ -536,7 +510,6 @@
                 if(!state.address) { app.openAddressModal(); return alert("Selecione entrega"); }
 
                 if(method === 'whatsapp') {
-                    app.notifySale('WhatsApp');
                     app.sendPaidOrder();
                 } else {
                     const btn = document.querySelector('.btn-mp'); btn.innerText="Carregando...";
@@ -560,13 +533,6 @@
                 localStorage.removeItem('2a_cart');
                 window.location.href = `https://wa.me/5567998951120?text=${encodeURIComponent(msg)}`;
             },
-            notifySale: (method) => {
-                // Exemplo EmailJS
-                /* emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-                    to_email: 'erickveraosilva@gmail.com',
-                    message: `Venda ${method} - Cliente: ${state.address.name}`
-                }); */
-            },
 
             // UTILS
             showModal: (id) => { 
@@ -575,7 +541,6 @@
             },
             closeModal: (id) => { 
                 document.getElementById(id).classList.remove('active'); 
-                // NÃO limpamos inputs aqui para evitar o bug do "null"
             },
             closeAllModals: () => { 
                 document.querySelectorAll('.overlay.active').forEach(el => el.classList.remove('active')); 
@@ -589,11 +554,12 @@
                 const vDiv = document.getElementById('volume-checks');
                 if(!cDiv || !vDiv) return;
                 cDiv.innerHTML = ""; vDiv.innerHTML = "";
-                PRESETS.colors.forEach(c => {
+                
+                Object.keys(COLOR_MAP).forEach(c => {
                     const dot = `<span class="color-dot" style="background:${COLOR_MAP[c]}"></span>`;
                     cDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${c}" onchange="admin.toggleInput(this)"> ${dot} ${c}</label>`;
                 });
-                PRESETS.vols.forEach(v => vDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${v}" onchange="admin.toggleInput(this)"> ${v}</label>`);
+                PRESETS_VOL.forEach(v => vDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${v}" onchange="admin.toggleInput(this)"> ${v}</label>`);
             },
             toggleInput: (cb) => {
                 const id = `grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`;
@@ -611,9 +577,11 @@
             tab: (t) => {
                 document.getElementById('tab-dash').style.display=t==='dash'?'block':'none';
                 document.getElementById('tab-prod').style.display=t==='prod'?'block':'none';
+                document.querySelectorAll('.admin-tab').forEach(e=>e.classList.remove('active'));
+                event.target.classList.add('active');
             },
             save: async () => {
-                const btn = document.getElementById('btn-save'); btn.innerText="Salvando..."; btn.disabled=true;
+                const btn = document.getElementById('btn-save'); btn.innerText="Processando..."; btn.disabled=true;
                 try {
                     const vars = [];
                     document.querySelectorAll('.var-inputs').forEach(d => {
@@ -650,16 +618,41 @@
             edit: (id) => {
                 const p = state.products.find(x => String(x.id) === String(id));
                 document.getElementById('edit-id').value = p.id;
-                document.getElementById('f-name').value = p.name || "";
+                document.getElementById('f-name').value = p.name;
                 document.getElementById('f-cat').value = p.category;
-                document.getElementById('f-cost').value = p.cost_price || "";
-                document.getElementById('f-desc').value = p.description || "";
+                document.getElementById('f-cost').value = p.cost_price;
+                document.getElementById('f-desc').value = p.description;
                 document.getElementById('f-promo').checked = p.is_promo;
-                alert("Edição carregada. Por favor, recadastre as variações.");
+                
+                admin.clear(true);
+                document.getElementById('edit-id').value = p.id;
+
+                const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+                if(vars) {
+                    const checks = document.querySelectorAll('input[type="checkbox"]');
+                    vars.forEach(v => {
+                        checks.forEach(cb => {
+                            if(cb.value === v.name) {
+                                cb.checked = true;
+                                admin.toggleInput(cb);
+                                const div = document.getElementById(`grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`);
+                                if(div) {
+                                    div.querySelector('.v-price').value = v.price;
+                                    div.querySelector('.v-stock').value = v.stock;
+                                }
+                            }
+                        });
+                    });
+                }
+                alert("Edição carregada.");
             },
             del: async (id) => { if(confirm("Excluir?")) { await sb.from('products').delete().eq('id', id); await app.load(); admin.renderList(); } },
-            clear: () => { 
-                document.getElementById('edit-id').value=""; document.getElementById('f-name').value=""; 
+            clear: (soft=false) => { 
+                if(!soft) document.getElementById('edit-id').value=""; 
+                document.getElementById('f-name').value=""; 
+                document.getElementById('f-desc').value=""; 
+                document.getElementById('f-cost').value=""; 
+                document.getElementById('f-file').value=""; 
                 document.getElementById('active-vars-area').innerHTML="";
                 document.querySelectorAll('.checkbox-grid input').forEach(c => c.checked=false);
             },
