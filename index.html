@@ -66,21 +66,17 @@
         .box { background:white; width:100%; max-width:900px; border-radius:20px; overflow:hidden; max-height:90vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         .box.single-col { display:block; max-width:500px; grid-template-columns: 1fr; }
         
-        /* SIDEBAR & CARRINHO MODERNO */
+        /* SIDEBAR */
         .sidebar { position:fixed; top:0; right:-500px; width:450px; height:100%; background:white; z-index:3000; padding:30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s; display:flex; flex-direction:column; }
         .sidebar.open { right:0; }
         
-        /* Novo Item de Carrinho */
+        /* CART ITEM */
         .cart-item { display:grid; grid-template-columns: 70px 1fr auto; gap:15px; align-items:center; padding:20px 0; border-bottom:1px solid #f5f5f5; }
         .cart-thumb { width:70px; height:70px; border-radius:10px; object-fit:cover; background:#f9f9f9; }
-        
-        /* Controles de Quantidade (Pílula) */
         .qty-controls { display:flex; align-items:center; background:#f4f4f4; border-radius:25px; padding:3px; width:fit-content; margin-top:8px; }
         .qty-btn { width:28px; height:28px; border-radius:50%; border:none; background:white; color:var(--accent); font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; }
         .qty-btn:hover { background:var(--primary); color:white; }
         .qty-val { padding:0 12px; font-size:0.9rem; font-weight:600; min-width:30px; text-align:center; }
-
-        /* Botão Remover */
         .btn-remove { width:35px; height:35px; border-radius:50%; border:1px solid #ffecec; background:#fff5f5; color:#e74c3c; display:flex; align-items:center; justify-content:center; transition:0.3s; }
         .btn-remove:hover { background:#e74c3c; color:white; border-color:#e74c3c; }
 
@@ -93,7 +89,7 @@
         .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; }
         .var-inputs.show { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
         
-        /* Mini Produto Admin */
+        /* MINI PROD ADMIN */
         .mini-prod { display:flex; align-items:center; gap:15px; padding:15px; border-bottom:1px solid #eee; background: #fff; margin-bottom: 5px; border-radius: 8px; }
         .mini-prod img { width:50px; height:50px; border-radius:8px; object-fit:cover; border: 1px solid #eee; }
         .stock-info { font-size: 0.9rem; color: #666; margin-top: 4px; }
@@ -130,7 +126,6 @@
         footer button { color: #ddd; text-decoration: none; font-size: 0.8rem; font-weight: bold; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; transition: 0.3s; cursor: pointer; background: transparent; }
         footer button:hover { background: #444; color: white; }
 
-        /* ENDEREÇO POPUP SOBRESSAINDO */
         #address-modal { z-index: 10005; background: rgba(0,0,0,0.9); }
 
         @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} }
@@ -322,10 +317,6 @@
                             <div style="color:#e74c3c; font-weight:bold;">CUSTO ESTOQUE</div>
                             <div class="stat-val" id="st-cost" style="font-size:1.5rem; font-weight:bold;">R$ 0.00</div>
                         </div>
-                        <div style="background:white; padding:20px; border-radius:12px; text-align:center;">
-                            <div style="color:#2980b9; font-weight:bold;">VENDA TOTAL</div>
-                            <div class="stat-val" id="st-rev" style="font-size:1.5rem; font-weight:bold;">R$ 0.00</div>
-                        </div>
                     </div>
                     <div style="background:white; padding:20px; border-radius:12px;">
                         <h4>Controle de Estoque</h4>
@@ -411,7 +402,7 @@
                 items.forEach(p => {
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                     const minP = Math.min(...vars.map(v => v.price));
-                    cDiv.innerHTML += `<div class="promo-card" onclick="app.openModal('${p.id}');app.closeModal('promo-modal')"><img src="${p.image_url}"><div><strong>${p.name}</strong><br><small style="color:var(--primary)">R$ ${minP.toFixed(2)}</small></div></div>`;
+                    cDiv.innerHTML += `<div class="promo-card" onclick="app.closeModal('promo-modal'); app.openModal('${p.id}')"><img src="${p.image_url}"><div><strong>${p.name}</strong><br><small style="color:var(--primary)">R$ ${minP.toFixed(2)}</small></div></div>`;
                 });
                 app.showModal('promo-modal');
             },
@@ -451,9 +442,26 @@
                 }
                 app.showModal('product-modal');
             },
-            updQty: (n) => { state.qty += n; if(state.qty<1) state.qty=1; document.getElementById('m-qty').innerText = state.qty; },
+            updQty: (n) => { 
+                if (n > 0) {
+                    if (!state.var) return alert("Selecione a variação primeiro.");
+                    if (state.qty + n > parseInt(state.var.stock)) return alert("Estoque máximo atingido.");
+                }
+                state.qty += n; 
+                if(state.qty<1) state.qty=1; 
+                document.getElementById('m-qty').innerText = state.qty; 
+            },
             addCart: () => {
                 if(!state.var) return alert("Selecione uma opção");
+                
+                // Verifica estoque considerando o que já tem no carrinho
+                const existingItem = state.cart.find(i => i.name === state.current.name && i.variant === state.var.name);
+                const currentCartQty = existingItem ? existingItem.qty : 0;
+                
+                if (currentCartQty + state.qty > parseInt(state.var.stock)) {
+                    return alert(`Estoque insuficiente. Você já tem ${currentCartQty} no carrinho e o estoque é ${state.var.stock}.`);
+                }
+
                 state.cart.push({name: state.current.name, variant: state.var.name, price: parseFloat(state.var.price), qty: state.qty, image: state.current.image_url});
                 app.renderCart(); app.closeModal('product-modal'); app.toggleCart();
             },
@@ -559,22 +567,17 @@
                 try {
                     if(btn) btn.innerText = "Processando...";
                     
-                    // WHATSAPP
                     if(method === 'whatsapp') { 
                         await app.updateStockDatabase(); 
                         app.sendPaidOrder('Dinheiro/Combinar'); 
                     } 
-                    // MERCADO PAGO
                     else {
-                        // 1. Grava no banco ANTES de sair
-                        const newOrderId = Date.now().toString();
-                        await app.registerOrder(newOrderId, 'Mercado Pago (Pendente)');
+                        // 1. Registra o pedido no banco (Pendente)
+                        await app.registerOrder(null, 'Mercado Pago (Pendente)'); 
                         
-                        // 2. Prepara os dados
+                        // 2. Chama a API do Mercado Pago
                         localStorage.setItem('2a_cart', JSON.stringify(state.cart));
                         const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
-                        
-                        // 3. Chama o Google Cloud
                         const res = await fetch(GOOGLE_CLOUD_URL, {
                             method:'POST', headers:{'Content-Type':'application/json'}, 
                             body:JSON.stringify({items, buyer: { email: state.user.email, name: state.user.name }, address: state.address})
@@ -582,7 +585,7 @@
                         const data = await res.json();
                         
                         if(data.init_point) {
-                            window.location.href = data.init_point; // Redireciona
+                            window.location.href = data.init_point;
                         } else {
                             throw new Error("Falha ao gerar link");
                         }
@@ -592,10 +595,9 @@
                     if(confirm("Erro de conexão com Mercado Pago. Deseja finalizar pelo WhatsApp?")) {
                         app.sendPaidOrder('Erro MP - Finalizado Whats');
                     }
-                    if(btn) btn.innerText = "Via Pix/Cartão/Débito"; 
+                    if(btn) btn.innerText = "Tentar novamente"; 
                 }
             },
-            // Baixa estoque no banco
             updateStockDatabase: async () => {
                 for (const item of state.cart) {
                     const { data: prod } = await sb.from('products').select('*').eq('name', item.name).single();
@@ -610,7 +612,6 @@
                     }
                 }
             },
-            // Registra pedido
             registerOrder: async (oid, method) => {
                 const total = state.cart.reduce((a,b)=>a+(b.price*b.qty),0);
                 const order = {
@@ -619,13 +620,12 @@
                     customer_email: state.user ? state.user.email : 'Não logado',
                     customer_id: state.user ? state.user.id : null,
                     total: total,
-                    items: state.cart, // Salva o JSON do carrinho
+                    items: state.cart, 
                     address: state.address,
                     date: new Date().toLocaleDateString(),
                     method: method,
                     status: 'Pendente'
                 };
-                // Salva no Supabase
                 await sb.from('orders').insert([order]);
             },
             sendPaidOrder: (paymentType = 'Dinheiro/Outros') => {
@@ -682,7 +682,6 @@
                     state.user=data; 
                     localStorage.setItem('2a_user', JSON.stringify(data)); 
                     app.updateUI(); 
-                    // FECHA MODAL SEM RELOAD (MANTÉM CARRINHO)
                     history.back(); 
                 }
                 else alert("Inválido");
@@ -796,8 +795,6 @@
             edit: (id) => {
                 const p = state.products.find(x => String(x.id) === String(id));
                 document.getElementById('edit-id').value = p.id;
-                
-                // USE SAFEVAL
                 document.getElementById('f-name').value = safeVal(p.name);
                 document.getElementById('f-cat').value = safeVal(p.category);
                 document.getElementById('f-cost').value = safeVal(p.cost_price);
@@ -841,15 +838,18 @@
             },
             renderList: () => {
                 const div = document.getElementById('admin-list'); div.innerHTML="";
+                if(!state.products || state.products.length === 0) {
+                    div.innerHTML = "<p style='color:#666'>Sem produtos cadastrados.</p>";
+                    return;
+                }
                 state.products.forEach(p => {
-                    // CALCULA ESTOQUE VISUAL
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                     let stock = 0;
                     if(vars) vars.forEach(v => stock += parseInt(v.stock||0));
 
                     div.innerHTML += `
                     <div class="mini-prod">
-                        <img src="${p.image_url}"> 
+                        <img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/50'"> 
                         <div style="flex:1">
                             <strong>${p.name}</strong>
                             <div class="stock-info">Estoque: <span class="${stock<5?'stock-warn':''}">${stock}</span></div>
@@ -882,6 +882,13 @@
             updateStats: () => {
                 let cost=0, rev=0;
                 let miniList = "";
+                const div = document.getElementById('mini-prod-list');
+                
+                if(!state.products || state.products.length === 0) {
+                    if(div) div.innerHTML = "Sem dados.";
+                    return;
+                }
+
                 state.products.forEach(p => {
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                     let stock = 0, pRev = 0;
@@ -895,10 +902,12 @@
                             stock += q;
                         });
                     }
+                    miniList += `<div class="mini-prod"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/50'"> <div><strong>${p.name}</strong><br><small>Estoque: ${stock}</small></div></div>`;
                 });
                 document.getElementById('st-cost').innerText = `R$ ${cost.toFixed(2)}`;
                 document.getElementById('st-rev').innerText = `R$ ${rev.toFixed(2)}`;
                 document.getElementById('st-profit').innerText = `R$ ${(rev-cost).toFixed(2)}`;
+                if(div) div.innerHTML = miniList;
             }
         };
 
@@ -919,7 +928,7 @@
                     if(sc) { 
                         state.cart = JSON.parse(sc); 
                         // Atualiza o pedido para Pago, baixa estoque e limpa carrinho
-                        await app.registerOrder(Date.now().toString(), `Mercado Pago (ID: ${paymentId})`); 
+                        await app.registerOrder(Date.now().toString(), `Mercado Pago (ID: ${paymentId || 'Auto'})`); 
                         await app.updateStockDatabase();
                         localStorage.removeItem('2a_cart');
                         
