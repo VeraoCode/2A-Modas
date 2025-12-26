@@ -247,27 +247,13 @@
         // --- 1. COLE SUAS CHAVES REAIS AQUI ---
         // Se você não colar isso, o site VAI TRAVAR.
         const firebaseConfig = {
-            // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyB1Z3Vy5-wVfJ7yelQ7b_GakJWjhmD338o",
+            apiKey: "AIzaSyB1Z3Vy5-wVfJ7yelQ7b_GakJWjhmD338o",
   authDomain: "loja2a.firebaseapp.com",
   projectId: "loja2a",
   storageBucket: "loja2a.firebasestorage.app",
   messagingSenderId: "864712234172",
   appId: "1:864712234172:web:670edd2de6d85fb118acb9",
   measurementId: "G-26EMJRJ3EY"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
         };
 
         // URL da Cloud Function (Seu backend de pagamento)
