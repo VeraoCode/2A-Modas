@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>2A Modas e Perfumes | Loja Oficial</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -16,12 +16,12 @@
             --primary: #c48b78; --accent: #2c3e50; --bg: #f8f9fa; --white: #ffffff;
             --radius: 12px; --shadow: 0 10px 40px rgba(0,0,0,0.08);
         }
-        * { margin:0; padding:0; box-sizing:border-box; outline:none; font-family:'Plus Jakarta Sans', sans-serif; }
+        * { margin:0; padding:0; box-sizing:border-box; outline:none; font-family:'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--accent); overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh; }
         
         h1, .brand-font { font-family:'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -0.5px; }
         h2, h3 { font-family:'Plus Jakarta Sans', sans-serif; font-weight: 700; }
-        button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); user-select: none; }
 
         /* LOADING & STATUS */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -29,108 +29,113 @@
         .ok { background:#27ae60 !important; } .err { background:#c0392b !important; }
 
         /* HEADER */
-        .header-floating { position: fixed; top: 30px; right: 5%; z-index: 1000; display:flex; gap:10px; align-items: center; }
-        .icon-btn { width:50px; height:50px; border-radius:50%; border:none; background:white; box-shadow:0 4px 15px rgba(0,0,0,0.15); color:var(--accent); font-size:1.2rem; display:flex; align-items:center; justify-content:center; position:relative; }
-        .icon-btn:hover { background:var(--primary); color:white; transform:scale(1.1); }
-        .badge { position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; width:22px; height:22px; border-radius:50%; font-size:0.75rem; display:flex; align-items:center; justify-content:center; font-weight:bold; border:2px solid white; }
-        .login-btn-header { padding: 10px 20px; background: white; border: none; border-radius: 30px; font-weight: 700; color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
-        .login-btn-header:hover { background: var(--primary); color: white; transform: translateY(-2px); }
+        .header-floating { position: fixed; top: 20px; right: 5%; z-index: 1000; display:flex; gap:10px; align-items: center; }
+        .icon-btn { width:45px; height:45px; border-radius:50%; border:none; background:white; box-shadow:0 4px 15px rgba(0,0,0,0.15); color:var(--accent); font-size:1.1rem; display:flex; align-items:center; justify-content:center; position:relative; }
+        .icon-btn:active { transform:scale(0.95); }
+        .badge { position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; width:20px; height:20px; border-radius:50%; font-size:0.7rem; display:flex; align-items:center; justify-content:center; font-weight:bold; border:2px solid white; }
+        .login-btn-header { padding: 10px 20px; background: white; border: none; border-radius: 30px; font-weight: 700; color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-size: 0.85rem; height: 45px; }
 
         /* HERO */
-        .hero { padding: 100px 20px 80px; text-align:center; background: radial-gradient(circle at top, #fff5f2 0%, transparent 100%); display: flex; flex-direction: column; align-items: center; }
-        .hero img { width:180px; height:180px; border-radius:50%; object-fit:cover; border:5px solid white; box-shadow:var(--shadow); margin-bottom:20px; }
-        .hero h1 { font-size:3.5rem; margin-bottom:10px; color:var(--accent); }
-        .btn-cta { padding: 16px 50px; background: var(--accent); color: white; border-radius: 50px; border: none; font-weight: 700; font-size: 1.1rem; box-shadow: 0 10px 25px rgba(44,62,80,0.25); margin-top: 45px; animation: pulse 2s infinite; }
-        .btn-cta:hover { transform: translateY(-5px); background: var(--primary); }
+        .hero { padding: 100px 20px 40px; text-align:center; background: radial-gradient(circle at top, #fff5f2 0%, transparent 100%); display: flex; flex-direction: column; align-items: center; }
+        .hero img { width:140px; height:140px; border-radius:50%; object-fit:cover; border:4px solid white; box-shadow:var(--shadow); margin-bottom:15px; }
+        .hero h1 { font-size:2.5rem; margin-bottom:5px; color:var(--accent); line-height: 1.1; }
+        .btn-cta { padding: 14px 40px; background: var(--accent); color: white; border-radius: 50px; border: none; font-weight: 700; font-size: 1rem; box-shadow: 0 10px 25px rgba(44,62,80,0.25); margin-top: 30px; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         /* CONTAINER */
-        .container { max-width:1200px; margin:0 auto; padding:40px 20px; flex: 1; }
-        .filters { display:flex; justify-content:center; gap:12px; margin-bottom:50px; flex-wrap:wrap; }
-        .filter-btn { padding: 10px 28px; border-radius: 30px; border: 1px solid #e0e0e0; background: white; color: #555; font-weight: 600; }
-        .filter-btn:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-3px); }
-        .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); transform: scale(1.05); }
+        .container { max-width:1200px; margin:0 auto; padding:20px; flex: 1; }
+        .filters { display:flex; justify-content:center; gap:8px; margin-bottom:30px; flex-wrap:wrap; }
+        .filter-btn { padding: 8px 20px; border-radius: 30px; border: 1px solid #e0e0e0; background: white; color: #555; font-weight: 600; font-size: 0.9rem; }
+        .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-        .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:20px; }
-        .card { background:white; border-radius:var(--radius); overflow:hidden; border:1px solid #f0f0f0; transition:0.4s; position:relative; cursor:pointer; }
-        .card:hover { transform:translateY(-5px); box-shadow:var(--shadow); border-color:var(--primary); }
-        .card img { width:100%; height:250px; object-fit:cover; background:#f9f9f9; }
-        .card-info { padding:15px; text-align:center; }
-        .tag-promo { position:absolute; top:10px; right:10px; background:#e91e63; color:white; padding:4px 10px; border-radius:20px; font-size:0.6rem; font-weight:bold; z-index: 2; }
-        .tag-delivery { font-size: 0.7rem; color: #27ae60; display: block; margin-top: 5px; font-weight: 600; }
+        /* GRID RESPONSIVA (Mobile First) */
+        .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:15px; }
+        .card { background:white; border-radius:var(--radius); overflow:hidden; border:1px solid #f0f0f0; position:relative; cursor:pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .card:active { transform:scale(0.98); }
+        .card img { width:100%; height:200px; object-fit:cover; background:#f9f9f9; }
+        .card-info { padding:12px; text-align:center; }
+        .card-info div { font-size: 0.95rem; }
+        .tag-promo { position:absolute; top:8px; right:8px; background:#e91e63; color:white; padding:3px 8px; border-radius:20px; font-size:0.6rem; font-weight:bold; z-index: 2; }
+        .tag-delivery { font-size: 0.65rem; color: #27ae60; display: block; margin-top: 4px; font-weight: 600; }
 
         /* MODALS */
-        .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
-        .overlay.active { display:flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
+        .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(5px); z-index:2000; display:none; align-items:center; justify-content:center; padding:15px; }
+        .overlay.active { display:flex; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { from{transform:scale(0.95); opacity:0;} to{transform:scale(1); opacity:1;} }
         
-        .box { background:white; width:100%; max-width:900px; border-radius:20px; overflow:hidden; max-height:90vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .box { background:white; width:100%; max-width:900px; border-radius:15px; overflow:hidden; max-height:95vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         .box.single-col { display:block; max-width:500px; grid-template-columns: 1fr; }
         
         /* SIDEBAR */
-        .sidebar { position:fixed; top:0; right:-500px; width:450px; height:100%; background:white; z-index:3000; padding:30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s; display:flex; flex-direction:column; }
+        .sidebar { position:fixed; top:0; right:-100%; width:85%; max-width:400px; height:100%; background:white; z-index:3000; padding:25px; box-shadow:-10px 0 50px rgba(0,0,0,0.2); transition:0.3s; display:flex; flex-direction:column; }
         .sidebar.open { right:0; }
         
         /* CART ITEM */
-        .cart-item { display:grid; grid-template-columns: 70px 1fr auto; gap:15px; align-items:center; padding:20px 0; border-bottom:1px solid #f5f5f5; }
-        .cart-thumb { width:70px; height:70px; border-radius:10px; object-fit:cover; background:#f9f9f9; }
-        .qty-controls { display:flex; align-items:center; background:#f4f4f4; border-radius:25px; padding:3px; width:fit-content; margin-top:8px; }
-        .qty-btn { width:28px; height:28px; border-radius:50%; border:none; background:white; color:var(--accent); font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; }
-        .qty-btn:hover { background:var(--primary); color:white; }
-        .qty-val { padding:0 12px; font-size:0.9rem; font-weight:600; min-width:30px; text-align:center; }
-        .btn-remove { width:35px; height:35px; border-radius:50%; border:1px solid #ffecec; background:#fff5f5; color:#e74c3c; display:flex; align-items:center; justify-content:center; transition:0.3s; }
-        .btn-remove:hover { background:#e74c3c; color:white; border-color:#e74c3c; }
+        .cart-item { display:grid; grid-template-columns: 60px 1fr auto; gap:10px; align-items:center; padding:15px 0; border-bottom:1px solid #f5f5f5; }
+        .cart-thumb { width:60px; height:60px; border-radius:8px; object-fit:cover; background:#f9f9f9; }
+        .qty-controls { display:flex; align-items:center; background:#f4f4f4; border-radius:25px; padding:2px; width:fit-content; margin-top:5px; }
+        .qty-btn { width:25px; height:25px; border-radius:50%; border:none; background:white; color:var(--accent); font-weight:bold; box-shadow:0 1px 3px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center; }
+        .qty-val { padding:0 10px; font-size:0.85rem; font-weight:600; min-width:25px; text-align:center; }
+        .btn-remove { width:30px; height:30px; border-radius:50%; border:none; background:#fff5f5; color:#e74c3c; display:flex; align-items:center; justify-content:center; }
         
         /* ADMIN/FORMS */
-        .input { width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; margin-bottom:10px; }
-        .admin-nav { padding:20px; background:white; border-bottom:1px solid #eee; display:flex; gap:10px; overflow-x:auto; }
-        .admin-tab { padding:10px 20px; border-radius:30px; border:1px solid #eee; background:transparent; font-weight:600; cursor:pointer; white-space:nowrap; }
+        .input { width:100%; padding:14px; border:1px solid #ddd; border-radius:8px; font-size:1rem; margin-bottom:12px; } /* Inputs maiores p/ mobile */
+        .admin-nav { padding:15px; background:white; border-bottom:1px solid #eee; display:flex; gap:10px; overflow-x:auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        .admin-tab { padding:8px 16px; border-radius:30px; border:1px solid #eee; background:transparent; font-weight:600; cursor:pointer; }
         .admin-tab.active { background:var(--accent); color:white; }
-        .checkbox-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #eee; }
+        .checkbox-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(90px, 1fr)); gap:8px; background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #eee; }
         .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; }
         .var-inputs.show { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
         
         /* MINI PROD ADMIN */
-        .mini-prod { display:flex; align-items:center; gap:15px; padding:15px; border-bottom:1px solid #eee; background: #fff; margin-bottom: 5px; border-radius: 8px; }
+        .mini-prod { display:flex; align-items:center; gap:12px; padding:12px; border-bottom:1px solid #eee; background: #fff; margin-bottom: 5px; border-radius: 8px; }
         .mini-prod img { width:50px; height:50px; border-radius:8px; object-fit:cover; border: 1px solid #eee; }
-        .stock-info { font-size: 0.9rem; color: #666; margin-top: 4px; }
+        .stock-info { font-size: 0.8rem; color: #666; margin-top: 2px; }
         .stock-warn { color: #e74c3c; font-weight: bold; }
-        .btn-mini-edit { background: var(--accent); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; border: none; }
+        .btn-mini-edit { background: var(--accent); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; border: none; }
         
         /* UI */
-        .var-btn { padding:10px; border:1px solid #eee; border-radius:8px; background:white; margin:5px; cursor:pointer; }
-        .var-btn.selected { background:var(--accent); color:white; }
+        .var-btn { padding:12px; border:1px solid #eee; border-radius:8px; background:white; margin:4px; cursor:pointer; font-size: 0.9rem; }
+        .var-btn.selected { background:var(--accent); color:white; border-color: var(--accent); }
         .var-btn.disabled { opacity:0.5; cursor:not-allowed; }
-        .btn-mp, .btn-whats { width:100%; padding:14px; border-radius:12px; border:none; font-weight:bold; margin-top:10px; color:white; display:flex; align-items:center; justify-content:center; gap:10px; }
+        .btn-mp, .btn-whats { width:100%; padding:16px; border-radius:12px; border:none; font-weight:bold; margin-top:10px; color:white; display:flex; align-items:center; justify-content:center; gap:10px; font-size: 1rem; }
         .btn-mp { background:#009EE3; } .btn-whats { background:#25D366; }
         .btn-addr-trigger { width:100%; padding:15px; border:2px dashed var(--accent); background:none; border-radius:12px; color:var(--accent); font-weight:bold; cursor:pointer; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:10px; }
         .btn-addr-trigger.filled { border-style:solid; border-color:#27ae60; background:#eafff0; color:#27ae60; }
-        .color-dot { width: 15px; height: 15px; border-radius: 50%; display: inline-block; border: 1px solid #ddd; margin-right:5px; }
+        .color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; border: 1px solid #ddd; margin-right:5px; }
         
-        .client-order { border:1px solid #eee; padding:20px; border-radius:12px; margin-bottom:15px; background:#fff; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
-        .track-container { margin-top: 20px; position: relative; padding-top: 20px; padding-bottom: 20px; }
+        .client-order { border:1px solid #eee; padding:15px; border-radius:12px; margin-bottom:12px; background:#fff; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .track-container { margin-top: 15px; position: relative; padding-top: 20px; padding-bottom: 20px; }
         .track-line { height: 4px; background: #eee; border-radius: 2px; position: relative; }
         .track-fill { height: 100%; background: #27ae60; border-radius: 2px; transition: width 1s ease; width: 0%; }
         .truck-icon { position: absolute; top: 0; transform: translateX(-50%); font-size: 1.5rem; color: #2c3e50; transition: left 1s ease; left: 0%; background: white; padding: 0 5px; }
-        .track-steps { display: flex; justify-content: space-between; font-size: 0.7rem; color: #aaa; margin-top: 10px; font-weight: bold; text-transform: uppercase; }
+        .track-steps { display: flex; justify-content: space-between; font-size: 0.65rem; color: #aaa; margin-top: 8px; font-weight: bold; text-transform: uppercase; }
         .track-steps span.active { color: #27ae60; }
 
         .order-card { background: white; border: 1px solid #eee; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; font-weight: bold; color: var(--accent); }
+        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; font-weight: bold; color: var(--accent); font-size: 0.9rem; }
 
         .carousel-wrapper { overflow: hidden; white-space: nowrap; padding: 10px 0; }
         .carousel-track { display: inline-flex; gap: 15px; animation: scrollPromo 20s linear infinite; }
-        .promo-card { width: 250px; background: white; border: 1px solid #eee; border-radius: 12px; padding: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; white-space: normal; }
-        .promo-card img { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; }
+        .promo-card { width: 220px; background: white; border: 1px solid #eee; border-radius: 12px; padding: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; white-space: normal; }
+        .promo-card img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
         @keyframes scrollPromo { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
         footer { background: #222; color: #888; text-align: center; padding: 40px 20px; margin-top: auto; }
-        footer button { color: #ddd; text-decoration: none; font-size: 0.8rem; font-weight: bold; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; transition: 0.3s; cursor: pointer; background: transparent; }
+        footer button { color: #ddd; text-decoration: none; font-size: 0.9rem; font-weight: bold; border: 1px solid #444; padding: 10px 20px; border-radius: 20px; transition: 0.3s; cursor: pointer; background: transparent; }
         footer button:hover { background: #444; color: white; }
 
         #address-modal { z-index: 10005; background: rgba(0,0,0,0.9); }
 
-        @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} }
+        /* MEDIA QUERIES PARA MOBILE */
+        @media(max-width:768px){ 
+            .box{grid-template-columns:1fr; border-radius: 0; height: 100%; max-height: 100vh; } 
+            .hero { padding-top: 90px; }
+            .hero h1 { font-size: 2rem; }
+            .admin-nav { justify-content: flex-start; }
+            .grid { gap: 10px; }
+            .var-inputs.show { grid-template-columns: 1fr; } /* Inputs do admin empilhados */
+        }
     </style>
 </head>
 <body>
@@ -144,7 +149,7 @@
 
     <div class="header-floating">
         <button class="login-btn-header" onclick="auth.checkProfile()">
-            <i class="fas fa-user-circle"></i> Login / Cadastro
+            <i class="fas fa-user-circle"></i> Login
         </button>
         <button class="icon-btn" onclick="app.toggleCart()">
             <i class="fas fa-shopping-bag"></i><span class="badge" id="cart-count">0</span>
@@ -171,11 +176,11 @@
     <footer>
         <p class="brand-font">&copy; 2025 2A Modas e Perfumes.</p>
         <br>
-        <button onclick="admin.checkAdmin()">Área Administrativa</button>
+        <button onclick="admin.checkAdmin()">Acessar Área Administrativa</button>
     </footer>
 
     <div id="promo-modal" class="overlay">
-        <div class="box single-col" style="background:var(--bg); overflow:hidden;">
+        <div class="box single-col" style="background:var(--bg); overflow:hidden; height:auto; max-height:80vh;">
             <div style="padding:20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee;">
                 <h3>🔥 Ofertas Especiais</h3>
                 <button onclick="app.closeModal('promo-modal')" style="border:none; background:none; font-size:1.5rem;">&times;</button>
@@ -186,13 +191,13 @@
 
     <div id="product-modal" class="overlay">
         <div class="box">
-            <img id="m-img" style="width:100%; height:100%; object-fit:cover; background:#f0f0f0;">
-            <div style="padding:40px; position:relative;">
-                <button onclick="app.closeModal('product-modal')" style="position:absolute; top:20px; right:20px; border:none; background:none; font-size:1.5rem; color:#999;">&times;</button>
+            <img id="m-img" style="width:100%; height:300px; object-fit:cover; background:#f0f0f0;">
+            <div style="padding:25px; position:relative; overflow-y: auto;">
+                <button onclick="app.closeModal('product-modal')" style="position:absolute; top:15px; right:15px; border:none; background:white; width:40px; height:40px; border-radius:50%; box-shadow:0 2px 10px rgba(0,0,0,0.1); font-size:1.5rem; color:#999;">&times;</button>
                 <small id="m-cat" style="color:var(--primary); font-weight:700; text-transform:uppercase;">Categoria</small>
-                <h2 id="m-title" style="margin:10px 0;"></h2>
+                <h2 id="m-title" style="margin:5px 0 15px;"></h2>
                 <h3 id="m-price" style="color:var(--accent); margin-bottom:15px;"></h3>
-                <p id="m-desc" style="color:#666; margin-bottom:20px;"></p>
+                <p id="m-desc" style="color:#666; margin-bottom:20px; font-size:0.95rem;"></p>
                 <div style="margin-bottom:20px; color:#27ae60; font-weight:600;"><i class="fas fa-truck"></i> Prazo de entrega: 03 a 05 dias úteis</div>
                 <div id="m-vars" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:30px;"></div>
                 <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
@@ -203,14 +208,14 @@
                         <button onclick="app.updQty(1)" style="padding:10px 15px; border:none; background:white;">+</button>
                     </div>
                 </div>
-                <button onclick="app.addCart()" style="width:100%; background:var(--accent); color:white; padding:18px; border-radius:12px; border:none; font-weight:bold;">Adicionar à Sacola</button>
+                <button onclick="app.addCart()" style="width:100%; background:var(--accent); color:white; padding:18px; border-radius:12px; border:none; font-weight:bold; font-size:1rem;">Adicionar à Sacola</button>
             </div>
         </div>
     </div>
 
-    <div id="address-modal" class="overlay" style="justify-content:flex-start; padding-left:20px; z-index:10001;">
-        <div class="box single-col" style="width:100%; max-width:400px; height:auto;">
-            <div style="padding:20px;">
+    <div id="address-modal" class="overlay" style="justify-content:flex-start; padding-left:0; z-index:10001; align-items: flex-end;">
+        <div class="box single-col" style="width:100%; max-width:100%; height:auto; border-radius: 20px 20px 0 0;">
+            <div style="padding:25px;">
                 <h3>📍 Onde entregar?</h3>
                 <div id="saved-addresses-list" style="margin-bottom:20px; max-height:200px; overflow-y:auto;"></div>
                 <div style="background:#f9f9f9; padding:15px; border-radius:10px;">
@@ -225,27 +230,27 @@
                         <option value="Trabalho">Trabalho</option>
                         <option value="Outro">Outro</option>
                     </select>
-                    <button onclick="app.addNewAddress()" style="width:100%; background:var(--primary); color:white; padding:10px; border-radius:8px; border:none;">Salvar</button>
+                    <button onclick="app.addNewAddress()" style="width:100%; background:var(--primary); color:white; padding:15px; border-radius:12px; border:none; font-weight:bold;">Salvar Endereço</button>
                 </div>
-                <button onclick="app.closeModal('address-modal')" style="width:100%; margin-top:10px; background:none; border:none; color:#666;">Fechar</button>
+                <button onclick="app.closeModal('address-modal')" style="width:100%; margin-top:15px; padding:15px; background:none; border:none; color:#666; font-size:1rem;">Fechar</button>
             </div>
         </div>
     </div>
 
     <div id="client-modal" class="overlay">
         <div class="box single-col" style="max-width:600px;">
-            <div style="padding:30px;">
+            <div style="padding:25px; height: 100%; overflow-y: auto;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                     <h2>Minha Conta</h2>
                     <button onclick="app.closeModal('client-modal')" style="border:none; background:none; font-size:1.5rem;">&times;</button>
                 </div>
-                <div style="background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:20px;">
+                <div style="background:#f9f9f9; padding:20px; border-radius:12px; margin-bottom:20px;">
                     <h4>Meus Dados</h4>
-                    <p id="client-info-txt" style="color:#666; font-size:0.9rem; line-height:1.6;"></p>
-                    <button onclick="auth.logout()" style="margin-top:10px; border:1px solid #ccc; background:white; padding:5px 15px; border-radius:20px; font-size:0.8rem;">Sair</button>
+                    <p id="client-info-txt" style="color:#666; font-size:0.95rem; line-height:1.6; margin-bottom:15px;"></p>
+                    <button onclick="auth.logout()" style="border:1px solid #ccc; background:white; padding:8px 20px; border-radius:20px; font-size:0.9rem;">Sair da Conta</button>
                 </div>
                 <h3>Meus Pedidos</h3>
-                <div id="client-orders-list" style="max-height:400px; overflow-y:auto; margin-top:10px;"></div>
+                <div id="client-orders-list" style="padding-bottom: 20px;"></div>
             </div>
         </div>
     </div>
@@ -270,7 +275,7 @@
             <button id="btn-address-trigger" onclick="app.openAddressModal()" class="btn-addr-trigger">
                 <i class="fas fa-map-marker-alt"></i> Cadastrar local de entrega
             </button>
-            <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:15px; font-size:1.1rem;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:15px; font-size:1.2rem;">
                 <span>Total</span> <span id="cart-total">R$ 0.00</span>
             </div>
             <button onclick="app.checkout('whatsapp')" class="btn-whats btn-pulse"><i class="fab fa-whatsapp"></i> Falar Via WhatsApp</button>
@@ -279,20 +284,20 @@
     </div>
 
     <div id="auth-modal" class="overlay" style="z-index:10002;">
-        <div class="box single-col" style="padding:40px; text-align:center; max-width:400px;">
+        <div class="box single-col" style="padding:30px; text-align:center; max-width:400px; height: auto;">
             <h2 id="auth-title" style="margin-bottom:20px;">Acesso</h2>
             <div id="form-login">
                 <input type="email" id="l-email" class="input" placeholder="E-mail">
                 <input type="password" id="l-pass" class="input" placeholder="Senha">
-                <button onclick="auth.login()" style="width:100%; background:var(--accent); color:white; padding:12px; border-radius:8px; border:none; font-weight:bold;">Entrar</button>
-                <p style="margin-top:15px; font-size:0.9rem;">Não tem conta? <a href="#" onclick="auth.toggle('register')">Cadastre-se</a></p>
+                <button onclick="auth.login()" style="width:100%; background:var(--accent); color:white; padding:15px; border-radius:8px; border:none; font-weight:bold; font-size:1rem;">Entrar</button>
+                <p style="margin-top:20px; font-size:0.9rem;">Não tem conta? <a href="#" onclick="auth.toggle('register')" style="color:var(--primary); font-weight:bold;">Cadastre-se</a></p>
             </div>
             <div id="form-register" style="display:none;">
                 <input type="text" id="r-name" class="input" placeholder="Nome">
                 <input type="email" id="r-email" class="input" placeholder="E-mail">
                 <input type="password" id="r-pass" class="input" placeholder="Senha">
-                <button onclick="auth.register()" style="width:100%; background:var(--primary); color:white; padding:12px; border-radius:8px; border:none; font-weight:bold;">Cadastrar</button>
-                <p style="margin-top:15px; font-size:0.9rem;"><a href="#" onclick="auth.toggle('login')">Voltar</a></p>
+                <button onclick="auth.register()" style="width:100%; background:var(--primary); color:white; padding:15px; border-radius:8px; border:none; font-weight:bold; font-size:1rem;">Cadastrar</button>
+                <p style="margin-top:20px; font-size:0.9rem;"><a href="#" onclick="auth.toggle('login')" style="color:var(--accent);">Voltar</a></p>
             </div>
             <button onclick="app.closeModal('auth-modal')" style="position:absolute; top:15px; right:15px; border:none; background:none; font-size:1.5rem;">&times;</button>
         </div>
@@ -301,65 +306,65 @@
     <div id="admin-modal" class="overlay" style="z-index:2001; background:#f4f6f9; align-items:flex-start; padding:0;">
         <div class="box" style="max-width:100%; height:100%; border-radius:0; padding:0; display:flex; flex-direction:column;">
             <div class="admin-nav">
-                <h3 style="margin-right:20px;">Admin 2A</h3>
+                <h3 style="margin-right:20px; align-self: center;">Admin</h3>
                 <button onclick="admin.tab('dash')" class="admin-tab active">Dashboard</button>
                 <button onclick="admin.tab('orders')" class="admin-tab">Pedidos</button>
                 <button onclick="admin.tab('prod')" class="admin-tab">Produtos</button>
                 <button onclick="app.closeModal('admin-modal')" style="background:#e74c3c; color:white; border:none; padding:8px 20px; border-radius:20px; margin-left:auto;">Sair</button>
             </div>
-            <div style="flex:1; overflow-y:auto; padding:30px; width:100%; max-width:1200px; margin:0 auto;">
+            <div style="flex:1; overflow-y:auto; padding:20px; width:100%; max-width:1200px; margin:0 auto;">
                 
                 <div id="tab-dash">
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-bottom:30px;">
-                        <div style="background:white; padding:20px; border-radius:12px; text-align:center;">
-                            <div style="color:#27ae60; font-weight:bold;">LUCRO PREVISTO</div>
-                            <div class="stat-val" id="st-profit" style="font-size:1.5rem; font-weight:bold;">R$ 0.00</div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:15px; margin-bottom:30px;">
+                        <div style="background:white; padding:20px; border-radius:12px; text-align:center; box-shadow:var(--shadow);">
+                            <div style="color:#27ae60; font-weight:bold; font-size:0.8rem;">LUCRO PREVISTO</div>
+                            <div class="stat-val" id="st-profit" style="font-size:1.2rem; font-weight:bold;">R$ 0.00</div>
                         </div>
-                        <div style="background:white; padding:20px; border-radius:12px; text-align:center;">
-                            <div style="color:#e74c3c; font-weight:bold;">CUSTO ESTOQUE</div>
-                            <div class="stat-val" id="st-cost" style="font-size:1.5rem; font-weight:bold;">R$ 0.00</div>
+                        <div style="background:white; padding:20px; border-radius:12px; text-align:center; box-shadow:var(--shadow);">
+                            <div style="color:#e74c3c; font-weight:bold; font-size:0.8rem;">CUSTO ESTOQUE</div>
+                            <div class="stat-val" id="st-cost" style="font-size:1.2rem; font-weight:bold;">R$ 0.00</div>
                         </div>
-                        <div style="background:white; padding:20px; border-radius:12px; text-align:center;">
-                            <div style="color:#2980b9; font-weight:bold;">VENDA TOTAL</div>
-                            <div class="stat-val" id="st-rev" style="font-size:1.5rem; font-weight:bold;">R$ 0.00</div>
+                        <div style="background:white; padding:20px; border-radius:12px; text-align:center; box-shadow:var(--shadow);">
+                            <div style="color:#2980b9; font-weight:bold; font-size:0.8rem;">VENDA POTENCIAL</div>
+                            <div class="stat-val" id="st-rev" style="font-size:1.2rem; font-weight:bold;">R$ 0.00</div>
                         </div>
                     </div>
-                    <div style="background:white; padding:20px; border-radius:12px;">
+                    <div style="background:white; padding:20px; border-radius:12px; box-shadow:var(--shadow);">
                         <h4>Estoque & Produtos</h4>
                         <div id="mini-prod-list" style="margin-top:15px;"></div>
                     </div>
                 </div>
 
                 <div id="tab-orders" style="display:none;">
-                    <div style="background:white; padding:20px; border-radius:12px;">
-                        <h3>Histórico de Compras (Clientes)</h3>
+                    <div style="background:white; padding:20px; border-radius:12px; box-shadow:var(--shadow);">
+                        <h3>Histórico de Compras</h3>
                         <div id="orders-list"></div>
                     </div>
                 </div>
 
                 <div id="tab-prod" style="display:none;">
-                    <div style="background:white; padding:25px; border-radius:12px; margin-bottom:20px;">
+                    <div style="background:white; padding:25px; border-radius:12px; margin-bottom:20px; box-shadow:var(--shadow);">
                         <h3>Cadastro</h3>
                         <input type="hidden" id="edit-id">
                         <input type="text" id="f-name" class="input" placeholder="Nome">
-                        <div style="display:flex; gap:10px;">
-                            <select id="f-cat" class="input"><option value="feminino">Feminino</option><option value="infantil">Infantil</option><option value="perfumes">Perfumes</option></select>
-                            <input type="number" id="f-cost" class="input" placeholder="Custo Global (Opcional)">
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <select id="f-cat" class="input" style="flex:1;"><option value="feminino">Feminino</option><option value="infantil">Infantil</option><option value="perfumes">Perfumes</option></select>
+                            <input type="number" id="f-cost" class="input" placeholder="Custo Global (Opcional)" style="flex:1;">
                         </div>
-                        <label><input type="checkbox" id="f-promo"> Promoção?</label>
-                        <input type="file" id="f-file" class="input" style="margin-top:10px;">
-                        <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
+                        <label style="display:flex; align-items:center; gap:10px; margin-bottom:10px;"><input type="checkbox" id="f-promo"> Produto em Promoção?</label>
+                        <input type="file" id="f-file" class="input">
+                        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
                         
-                        <label style="font-weight:bold;">Definir Variações (Custo/Preço por item):</label>
+                        <label style="font-weight:bold; display:block; margin-bottom:10px;">Variações (Cores e Tamanhos):</label>
                         <div class="checkbox-grid" id="color-checks"></div>
                         <div class="checkbox-grid" id="volume-checks"></div>
                         <div id="active-vars-area"></div>
-                        <textarea id="f-desc" class="input" rows="3" placeholder="Descrição" style="margin-top:10px;"></textarea>
-                        <button onclick="admin.save()" id="btn-save" style="width:100%; background:var(--primary); color:white; padding:15px; border-radius:8px; border:none; margin-top:15px;">Salvar</button>
-                        <button onclick="admin.clear()" style="width:100%; padding:10px; background:none; border:none; color:#666;">Limpar</button>
+                        <textarea id="f-desc" class="input" rows="3" placeholder="Descrição detalhada"></textarea>
+                        <button onclick="admin.save()" id="btn-save" style="width:100%; background:var(--primary); color:white; padding:15px; border-radius:8px; border:none; margin-top:15px; font-weight:bold;">Salvar Produto</button>
+                        <button onclick="admin.clear()" style="width:100%; padding:15px; background:none; border:none; color:#666;">Limpar Campos</button>
                     </div>
-                    <div style="background:white; padding:25px; border-radius:12px; overflow-y:auto; max-height:80vh;">
-                        <h3>Lista</h3>
+                    <div style="background:white; padding:25px; border-radius:12px; box-shadow:var(--shadow);">
+                        <h3>Lista de Produtos</h3>
                         <div id="admin-list"></div>
                     </div>
                 </div>
@@ -368,7 +373,6 @@
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO (COLE SUAS CHAVES) ---
         const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
         const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
@@ -402,7 +406,7 @@
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                     const minP = (vars && vars.length) ? Math.min(...vars.map(v => parseFloat(v.price))) : 0;
                     const isPromo = p.is_promo ? '<span class="tag-promo">OFERTA</span>' : '';
-                    div.innerHTML += `<div class="card" onclick="app.openModal('${p.id}')">${isPromo}<img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/300'"><div class="card-info"><span style="font-size:0.8rem;color:#999;text-transform:uppercase;">${p.category}</span><div style="font-weight:bold;margin:5px 0;">${p.name}</div><div style="color:var(--primary);font-weight:bold;">A partir R$ ${minP.toFixed(2)}</div><span class="tag-delivery">🚚 03 a 05 dias úteis</span></div></div>`;
+                    div.innerHTML += `<div class="card" onclick="app.openModal('${p.id}')">${isPromo}<img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/300'"><div class="card-info"><div style="font-size:0.8rem;color:#999;text-transform:uppercase;">${p.category}</div><div style="font-weight:bold;margin:5px 0;">${p.name}</div><div style="color:var(--primary);font-weight:bold;">A partir R$ ${minP.toFixed(2)}</div><span class="tag-delivery">🚚 03 a 05 dias</span></div></div>`;
                 });
             },
             openPromoModal: () => {
@@ -479,12 +483,24 @@
             cQty: (idx,n) => { state.cart[idx].qty+=n; if(state.cart[idx].qty<1) state.cart[idx].qty=1; app.renderCart(); },
             toggleCart: () => document.querySelector('.sidebar').classList.toggle('open'),
             
-            // ADDRESS
+            // ADDRESS & PERSISTENCE
             openAddressModal: () => {
                 const list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
                 const div = document.getElementById('saved-addresses-list'); div.innerHTML="";
+                if(list.length === 0) div.innerHTML = "<small style='color:#666'>Nenhum endereço salvo.</small>";
                 list.forEach((a,i) => {
-                    div.innerHTML += `<div style="border:1px solid #eee; padding:10px; margin-bottom:5px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;"><div onclick="app.setAddr(${i})" style="cursor:pointer; flex:1;"><b>${a.type || 'Endereço'}</b>: ${a.street}<br><small>${a.name}</small></div><div><i class="fas fa-edit" onclick="app.editAddress(${i})" style="color:blue; margin-right:10px; cursor:pointer;"></i><i class="fas fa-trash" onclick="app.delAddress(${i})" style="color:red; cursor:pointer;"></i></div></div>`;
+                    div.innerHTML += `
+                    <div style="border:1px solid #eee; padding:12px; margin-bottom:8px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; background:#fff;">
+                        <div onclick="app.setAddr(${i})" style="cursor:pointer; flex:1;">
+                            <strong style="color:var(--accent)">${a.type || 'Casa'}</strong><br>
+                            <span style="font-size:0.9rem">${a.street}</span><br>
+                            <small style="color:#999">${a.name}</small>
+                        </div>
+                        <div style="display:flex; gap:15px;">
+                            <i class="fas fa-edit" onclick="app.editAddress(${i})" style="color:#3498db; cursor:pointer; font-size:1.1rem;"></i>
+                            <i class="fas fa-trash" onclick="app.delAddress(${i})" style="color:#e74c3c; cursor:pointer; font-size:1.1rem;"></i>
+                        </div>
+                    </div>`;
                 });
                 app.showModal('address-modal');
             },
@@ -495,7 +511,7 @@
                 const list = JSON.parse(localStorage.getItem('2a_addrs') || '[]'); list.push(a);
                 localStorage.setItem('2a_addrs', JSON.stringify(list));
                 
-                // --- ATUALIZA NO SUPABASE SE LOGADO ---
+                // SAVE TO DB IF LOGGED IN
                 if(state.user) {
                     sb.from('customers').update({ address: list }).eq('id', state.user.id).then();
                 }
@@ -507,8 +523,6 @@
                 const list = JSON.parse(localStorage.getItem('2a_addrs'));
                 list.splice(i, 1);
                 localStorage.setItem('2a_addrs', JSON.stringify(list));
-                
-                // --- ATUALIZA NO SUPABASE SE LOGADO ---
                 if(state.user) {
                     sb.from('customers').update({ address: list }).eq('id', state.user.id).then();
                 }
@@ -521,6 +535,7 @@
                 document.getElementById('addr-phone').value = safeVal(a.phone);
                 document.getElementById('addr-street').value = safeVal(a.street);
                 document.getElementById('addr-ref').value = safeVal(a.ref);
+                document.getElementById('addr-type').value = safeVal(a.type || 'Casa');
                 app.delAddress(i); 
             },
             setAddr: (i) => {
@@ -530,7 +545,7 @@
             },
             updateUI: () => {
                 const btn = document.getElementById('btn-address-trigger');
-                if(btn && state.address) { btn.classList.add('filled'); btn.innerHTML = `📍 Entrega: ${state.address.street}`; }
+                if(btn && state.address) { btn.classList.add('filled'); btn.innerHTML = `📍 Entrega: <b>${state.address.type}</b><br><small>${state.address.street}</small>`; }
                 const authArea = document.getElementById('cart-auth-area');
                 if(authArea) {
                     if(state.user) authArea.innerHTML = `<small style="color:#27ae60"><i class="fas fa-check-circle"></i> Olá, ${state.user.name}</small>`;
@@ -584,7 +599,6 @@
             sendEmails: async (order) => {
                 if(!state.user || !state.user.email) return;
                 
-                // Formata resumo para o e-mail
                 const itemsTxt = state.cart.map(i => `${i.qty}x ${i.name} (${i.variant}) - R$ ${i.price.toFixed(2)}`).join('\n');
                 const total = state.cart.reduce((a,b)=>a+(b.price*b.qty),0).toFixed(2);
                 
@@ -596,9 +610,7 @@
                 };
 
                 if(window.emailjs) {
-                    // Envia Cliente
                     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENTE, templateParams);
-                    // Envia Admin
                     const adminParams = {...templateParams, to_email: 'erickveraosilva@gmail.com', to_name: 'Admin 2A'};
                     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, adminParams);
                 }
@@ -673,7 +685,6 @@
                     if(data.address && Array.isArray(data.address)) {
                         localStorage.setItem('2a_addrs', JSON.stringify(data.address));
                     } else {
-                        // Se não tiver nada no banco, garante array vazio ou mantém local
                         if(!localStorage.getItem('2a_addrs')) localStorage.setItem('2a_addrs', '[]');
                     }
 
@@ -854,7 +865,7 @@
                         state.cart = JSON.parse(sc); 
                         const orderData = await app.registerOrder(Date.now().toString(), `Mercado Pago (ID: ${paymentId || 'Auto'})`); 
                         await app.updateStockDatabase();
-                        await app.sendEmails(orderData); // Envia e-mail
+                        await app.sendEmails(orderData); // Envia e-mail de confirmação pós-pagamento
                         localStorage.removeItem('2a_cart');
                         window.history.replaceState({}, document.title, window.location.pathname);
                         alert("Pagamento Confirmado! Seu pedido já está sendo separado.");
