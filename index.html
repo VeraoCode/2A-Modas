@@ -693,20 +693,21 @@
                 if(!state.address) { app.openAddressModal(); return alert("Selecione entrega"); }
 
                 const btn = document.querySelector(method === 'whatsapp' ? '.btn-whats' : '.btn-mp');
+                const btnOriginalText = btn.innerText;
                 
                 try {
-                    if(btn) btn.innerText = "Processando...";
+                    btn.innerText = "Registrando...";
                     
                     const newOrderId = Date.now().toString();
                     const statusInicial = method === 'whatsapp' ? 'Pendente (WhatsApp)' : 'Pendente (Mercado Pago)';
                     
-                    // 1. GRAVA NO BANCO (CRÍTICO: JSON.STRINGIFY NOS ITENS)
+                    // 1. TENTA GRAVAR NO BANCO
                     const orderData = await app.registerOrder(newOrderId, method === 'whatsapp' ? 'WhatsApp/Dinheiro' : 'Mercado Pago', statusInicial);
                     
-                    // 2. BAIXA ESTOQUE
+                    // 2. TENTA ATUALIZAR ESTOQUE
                     await app.updateStockDatabase();
 
-                    // 3. ENVIA EMAILS
+                    // 3. TENTA ENVIAR EMAILS
                     await app.sendEmails(orderData);
 
                     // 4. REDIRECIONA
@@ -716,43 +717,52 @@
                     else {
                         localStorage.setItem('2a_cart', JSON.stringify(state.cart));
                         const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
+                        
                         const res = await fetch(GOOGLE_CLOUD_URL, {
                             method:'POST', headers:{'Content-Type':'application/json'}, 
                             body:JSON.stringify({items, buyer: { email: state.user.email, name: state.user.name }, address: state.address})
                         });
                         const data = await res.json();
                         if(data.init_point) window.location.href = data.init_point;
-                        else throw new Error("Erro ao gerar link de pagamento");
+                        else throw new Error("Erro ao gerar link de pagamento no servidor.");
                     }
 
                 } catch(e) {
-                    console.error(e);
-                    alert("Houve um erro ao registrar o pedido. Tente novamente ou contate o suporte.");
-                    if(btn) btn.innerText = method === 'whatsapp' ? "Falar Via WhatsApp" : "Via Pix/Cartão/Débito"; 
+                    console.error("ERRO CHECKOUT:", e);
+                    // AQUI O ERRO SERÁ MOSTRADO NA TELA PARA VOCÊ SABER O QUE É
+                    alert("ERRO: " + (e.message || e.error_description || JSON.stringify(e)));
+                    btn.innerText = btnOriginalText;
                 }
             },
             
             registerOrder: async (oid, method, status = 'Pendente') => {
-                if(!sb) throw new Error("Banco de dados offline");
+                if(!sb) throw new Error("Banco de dados desconectado.");
                 
                 const total = state.cart.reduce((a,b)=>a+(b.price*b.qty),0);
                 
+                // Prepara objeto simples para garantir compatibilidade
                 const order = {
-                    id: oid,
+                    id: oid.toString(),
                     customer_name: state.user.name,
                     customer_email: state.user.email,
-                    customer_id: state.user.id.toString(), // Converte ID para string para evitar erros
+                    customer_id: String(state.user.id), 
                     total: total,
-                    items: JSON.stringify(state.cart), // JSON STRINGIFY É CRUCIAL
-                    address: JSON.stringify(state.address), // JSON STRINGIFY É CRUCIAL
+                    items: JSON.stringify(state.cart), // Converte array para texto
+                    address: JSON.stringify(state.address), // Converte objeto para texto
                     date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
                     method: method,
                     status: status
                 };
                 
-                // Tenta inserir e CAPTURA O ERRO se houver
-                const { error } = await sb.from('orders').insert([order]);
-                if(error) throw error; // Lança o erro para o bloco catch do checkout
+                console.log("Enviando pedido para Supabase:", order);
+
+                const { data, error } = await sb.from('orders').insert([order]).select();
+                
+                if(error) {
+                    console.error("Supabase Erro:", error);
+                    // Lança o erro com a mensagem detalhada do banco
+                    throw new Error(`Erro no Banco de Dados: ${error.message} (Detalhe: ${error.details || ''})`);
+                }
                 
                 return order; 
             },
@@ -996,3 +1006,4 @@
     </script>
 </body>
 </html>
+
