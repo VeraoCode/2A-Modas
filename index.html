@@ -6,7 +6,8 @@
     <title>2A Modas e Perfumes | Loja Oficial</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script> <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -79,6 +80,12 @@
         .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .input-cep-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
 
+        /* FILTER BAR (DATE) */
+        .filter-bar { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border: 1px solid #eee; }
+        .filter-bar input[type="date"] { padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
+        .btn-filter { padding: 8px 15px; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: bold; }
+        .btn-clear-hist { background: var(--danger); margin-left: auto; }
+
         /* MODERN TOGGLE SWITCH */
         .toggle-switch { position: relative; display: inline-block; width: 60px; height: 30px; margin-right: 10px; vertical-align: middle; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
@@ -99,26 +106,17 @@
         .track-container { margin-top: 25px; position: relative; padding: 15px 0; }
         .track-line-bg { height: 6px; background: #e0e0e0; border-radius: 3px; position: absolute; top: 50%; left: 0; width: 100%; transform: translateY(-50%); z-index: 1; }
         .track-fill { height: 6px; background: linear-gradient(90deg, #2ecc71, #27ae60); border-radius: 3px; position: absolute; top: 50%; left: 0; transform: translateY(-50%); z-index: 2; transition: width 1s ease; }
-        
-        /* Status Cancelado */
         .track-fill.cancelled { background: var(--danger) !important; width: 100% !important; }
         .truck-icon.cancelled { color: var(--danger) !important; left: 100% !important; animation: none; transform: translateX(-50%) translateY(-3px); }
-        
         .track-steps { display: flex; justify-content: space-between; position: relative; z-index: 3; }
         .track-step { text-align: center; width: 33.33%; position: relative; }
         .dot { width: 16px; height: 16px; background: #ccc; border-radius: 50%; display: block; margin: 0 auto 8px; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.3s; }
         .track-step.active .dot { background: #27ae60; transform: scale(1.2); }
         .track-step.cancelled-dot .dot { background: var(--danger); transform: scale(1.2); }
-        
         .track-step span { font-size: 0.7rem; color: #999; font-weight: 700; text-transform: uppercase; display: block; transition: 0.3s; }
         .track-step.active span { color: #27ae60; }
         .track-step.cancelled-dot span { color: var(--danger); }
-
-        .truck-icon { 
-            position: absolute; top: -20px; z-index: 4; font-size: 1.4rem; color: #2c3e50; 
-            transition: left 1s ease; transform: translateX(-50%); 
-            animation: bounceTruck 1s infinite alternate;
-        }
+        .truck-icon { position: absolute; top: -20px; z-index: 4; font-size: 1.4rem; color: #2c3e50; transition: left 1s ease; transform: translateX(-50%); animation: bounceTruck 1s infinite alternate; }
         @keyframes bounceTruck { from { transform: translateX(-50%) translateY(0); } to { transform: translateX(-50%) translateY(-3px); } }
 
         /* Admin - Modern Order Card */
@@ -131,21 +129,21 @@
         .oc-val { font-size: 0.95rem; color: #333; font-weight: 600; line-height: 1.4; }
         .oc-items-box { grid-column: span 2; background: #fdfdfd; border: 1px dashed #ddd; border-radius: 8px; padding: 15px; font-size: 0.9rem; color: #555; }
         
-        .status-selector { 
-            padding: 8px 15px; border-radius: 20px; border: none; font-weight: bold; font-size: 0.85rem; cursor: pointer; appearance: none; outline: none; text-align: center; width: 100%; transition: 0.3s;
-        }
+        .status-selector { padding: 8px 15px; border-radius: 20px; border: none; font-weight: bold; font-size: 0.85rem; cursor: pointer; appearance: none; outline: none; text-align: center; width: 100%; transition: 0.3s; }
         .st-pendente { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .st-enviado { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
         .st-entregue { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .st-cancelado { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-        .admin-contact-btn {
-            display: inline-flex; align-items: center; gap: 6px; 
-            background: #25D366; color: white; padding: 6px 12px; 
-            border-radius: 6px; text-decoration: none; font-size: 0.8rem; 
-            font-weight: bold; margin-top: 5px; transition: 0.3s;
-        }
+        .admin-contact-btn { display: inline-flex; align-items: center; gap: 6px; background: #25D366; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: bold; margin-top: 5px; transition: 0.3s; }
         .admin-contact-btn:hover { background: #128C7E; transform: translateY(-2px); }
+
+        /* FINANCE TAB STYLES */
+        .fin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .fin-card { background: white; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #eee; }
+        .fin-val { font-size: 1.5rem; font-weight: 800; margin-top: 5px; }
+        .fin-prod-row { display: flex; align-items: center; gap: 15px; padding: 10px; border-bottom: 1px solid #eee; }
+        .fin-prod-row img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
 
         /* MODERN CHECKBOXES */
         .checkbox-section-title { font-weight:bold; margin-bottom:10px; display:block; color:var(--accent); font-size:0.95rem; }
@@ -318,7 +316,16 @@
                     <p id="client-info-txt" style="color:#666; font-size:0.9rem; line-height:1.6;"></p>
                     <button onclick="auth.logout()" style="margin-top:10px; border:1px solid #ccc; background:white; padding:5px 15px; border-radius:20px; font-size:0.8rem;">Sair</button>
                 </div>
-                <h3>Meus Pedidos</h3>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Meus Pedidos</h3>
+                    <div style="display:flex; gap:5px; font-size:0.8rem;">
+                        <input type="date" id="client-date-start" onchange="auth.loadClientOrders()">
+                        <input type="date" id="client-date-end" onchange="auth.loadClientOrders()">
+                    </div>
+                </div>
+                <small style="color:#999; display:block; margin-bottom:10px;">Exibindo últimos 30 dias por padrão.</small>
+                
                 <div id="client-orders-list" style="max-height:400px; overflow-y:auto; margin-top:10px;"></div>
             </div>
         </div>
@@ -389,6 +396,7 @@
                 <h3 style="margin-right:20px; align-self:center;">Admin 2A</h3>
                 <button onclick="admin.tab('dash')" class="admin-tab active">Dashboard</button>
                 <button onclick="admin.tab('orders')" class="admin-tab">Pedidos</button>
+                <button onclick="admin.tab('fin')" class="admin-tab">Financeiro</button>
                 <button onclick="admin.tab('prod')" class="admin-tab">Produtos</button>
                 <button onclick="app.closeModal('admin-modal')" style="background:var(--danger); color:white; border:none; padding:8px 20px; border-radius:20px; margin-left:auto; font-weight:bold;">Sair</button>
             </div>
@@ -417,9 +425,47 @@
 
                 <div id="tab-orders" style="display:none;">
                     <div style="background:white; padding:20px; border-radius:12px;">
-                        <h3>Histórico de Pedidos</h3>
-                        <p style="color:#777; font-size:0.9rem; margin-bottom:15px;">Acompanhe todos os pedidos em tempo real.</p>
+                        <h3>Acompanhar Pedidos</h3>
+                        <div class="filter-bar">
+                            <label>De:</label> <input type="date" id="order-start">
+                            <label>Até:</label> <input type="date" id="order-end">
+                            <button class="btn-filter" onclick="admin.renderOrders()">Filtrar</button>
+                            <button class="btn-filter btn-clear-hist" onclick="admin.clearHistory()">Limpar Concluídos</button>
+                        </div>
                         <div id="orders-list"></div>
+                    </div>
+                </div>
+
+                <div id="tab-fin" style="display:none;">
+                    <div style="background:white; padding:20px; border-radius:12px; margin-bottom:20px;">
+                        <h3>Relatório Financeiro</h3>
+                        <div class="filter-bar">
+                            <label>De:</label> <input type="date" id="fin-start">
+                            <label>Até:</label> <input type="date" id="fin-end">
+                            <button class="btn-filter" onclick="admin.renderFinance()">Gerar Relatório</button>
+                        </div>
+                        
+                        <div class="fin-stats">
+                            <div class="fin-card" style="border-color:var(--info)">
+                                <small>VENDAS TOTAIS</small>
+                                <div id="fin-total-rev" class="fin-val" style="color:var(--info)">R$ 0.00</div>
+                            </div>
+                            <div class="fin-card" style="border-color:var(--danger)">
+                                <small>CUSTO PRODUTOS</small>
+                                <div id="fin-total-cost" class="fin-val" style="color:var(--danger)">R$ 0.00</div>
+                            </div>
+                            <div class="fin-card" style="border-color:var(--success)">
+                                <small>LUCRO LÍQUIDO</small>
+                                <div id="fin-total-profit" class="fin-val" style="color:var(--success)">R$ 0.00</div>
+                            </div>
+                        </div>
+
+                        <div style="height:300px; margin-bottom:30px;">
+                            <canvas id="finChart"></canvas>
+                        </div>
+
+                        <h4>Desempenho por Produto</h4>
+                        <div id="fin-prod-list" style="margin-top:15px; border:1px solid #eee; border-radius:8px;"></div>
                     </div>
                 </div>
 
@@ -462,21 +508,8 @@
     </div>
 
     <script>
-        setTimeout(() => {
-            const loader = document.getElementById('loading-screen');
-            if(loader && loader.style.display !== 'none') {
-                console.warn("Forçando carregamento...");
-                loader.style.opacity = '0';
-                setTimeout(() => loader.style.display = 'none', 500);
-            }
-        }, 4000);
-
-        window.onerror = function(msg) {
-            console.error("Erro Global:", msg);
-            const sb = document.getElementById('status-bar');
-            if(sb) { sb.style.display='flex'; sb.className='err'; sb.innerHTML = `⚠️ Erro: ${msg}`; }
-            return false;
-        };
+        setTimeout(() => { const l = document.getElementById('loading-screen'); if(l) l.style.display='none'; }, 4000);
+        window.onerror = function(msg) { const sb = document.getElementById('status-bar'); if(sb) { sb.style.display='flex'; sb.className='err'; sb.innerHTML = `⚠️ Erro: ${msg}`; } return false; };
 
         const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
@@ -486,10 +519,9 @@
         const EMAILJS_TEMPLATE_CLIENTE = 'template_rwf0bay';
         const EMAILJS_TEMPLATE_ADMIN = 'template_rwf0bay';
 
-        let sb = null;
-        try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.error("Erro Supabase:", e); }
+        let sb = null; try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.error(e); }
 
-        const state = { products: [], cart: [], current: null, var: null, qty: 1, user: null, address: null };
+        const state = { products: [], cart: [], current: null, var: null, qty: 1, user: null, address: null, finChart: null };
         const PRESETS_VOL = ['25ml','50ml','75ml','100ml','200ml','P','M','G','GG','Unico'];
         const COLOR_MAP = { 'Preto': '#000000', 'Branco': '#ffffff', 'Vermelho': '#e74c3c', 'Azul': '#3498db', 'Rosa': '#e91e63', 'Verde': '#2ecc71', 'Nude': '#e3c0a5', 'Estampado': 'linear-gradient(45deg, red, blue)', 'Bege': '#f5f5dc', 'Amarelo': '#f1c40f', 'Cinza': '#95a5a6' };
         
@@ -691,7 +723,7 @@
                 const order = {
                     id: oid.toString(), customer_name: state.user.name, customer_email: state.user.email, customer_id: String(state.user.id), 
                     total: total, items: JSON.stringify(state.cart), address: JSON.stringify(state.address), date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
-                    method: method, status: status
+                    method: method, status: status, created_at: new Date().toISOString()
                 };
                 const { data, error } = await sb.from('orders').insert([order]).select();
                 if(error) throw new Error(`Erro no Banco: ${error.message}`);
@@ -746,7 +778,13 @@
         const auth = {
             checkProfile: () => { 
                 if(state.user) { 
-                    app.showModal('client-modal'); auth.loadClientOrders();
+                    app.showModal('client-modal'); 
+                    // DEFAULT 30 DAYS
+                    const today = new Date();
+                    const prior = new Date(new Date().setDate(today.getDate() - 30));
+                    document.getElementById('client-date-end').valueAsDate = today;
+                    document.getElementById('client-date-start').valueAsDate = prior;
+                    auth.loadClientOrders();
                     document.getElementById('client-info-txt').innerHTML = `<strong>${safeVal(state.user.name)}</strong><br>${safeVal(state.user.email)}`;
                 } else app.showModal('auth-modal'); 
             },
@@ -771,9 +809,18 @@
             loadClientOrders: async () => {
                 if(!state.user || !state.user.email) return;
                 if(sb) {
-                    const { data } = await sb.from('orders').select('*').eq('customer_email', state.user.email).order('id', {ascending: false});
+                    let query = sb.from('orders').select('*').eq('customer_email', state.user.email).order('created_at', {ascending: false});
+                    
+                    const start = document.getElementById('client-date-start').value;
+                    const end = document.getElementById('client-date-end').value;
+                    
+                    if(start && end) {
+                        query = query.gte('created_at', new Date(start).toISOString()).lte('created_at', new Date(end).toISOString());
+                    }
+
+                    const { data } = await query;
                     const div = document.getElementById('client-orders-list'); div.innerHTML = "";
-                    if(!data || data.length === 0) { div.innerHTML = "Sem pedidos."; return; }
+                    if(!data || data.length === 0) { div.innerHTML = "Sem pedidos no período."; return; }
                     data.forEach(o => {
                         let pct = 10;
                         let isCancelled = o.status === 'Cancelado';
@@ -841,7 +888,7 @@
             tab: (t) => { 
                 document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
                 document.querySelector(`.admin-tab[onclick*='${t}']`).classList.add('active');
-                ['dash','prod','orders'].forEach(i => document.getElementById(`tab-${i}`).style.display = i===t ? 'block' : 'none');
+                ['dash','prod','orders','fin'].forEach(i => document.getElementById(`tab-${i}`).style.display = i===t ? 'block' : 'none');
             },
             save: async () => {
                 if(!sb) return;
@@ -914,7 +961,12 @@
             },
             renderOrders: async () => {
                 if(!sb) return;
-                const { data } = await sb.from('orders').select('*').order('id', {ascending:false});
+                let query = sb.from('orders').select('*').order('created_at', {ascending:false});
+                const start = document.getElementById('order-start').value;
+                const end = document.getElementById('order-end').value;
+                if(start && end) query = query.gte('created_at', new Date(start).toISOString()).lte('created_at', new Date(end).toISOString());
+
+                const { data } = await query;
                 const div = document.getElementById('orders-list'); div.innerHTML="";
                 if(data) data.forEach(o => {
                     const iList = typeof o.items==='string'?JSON.parse(o.items):o.items;
@@ -922,7 +974,7 @@
                     
                     const addr = JSON.parse(o.address || '{}');
                     const phoneRaw = addr.phone || '';
-                    const phoneClean = phoneRaw.replace(/\D/g, ''); // Limpa para link do WhatsApp
+                    const phoneClean = phoneRaw.replace(/\D/g, ''); 
 
                     let stClass = 'st-pendente';
                     if(o.status.includes('Enviado')) stClass = 'st-enviado';
@@ -952,6 +1004,87 @@
                             <div class="oc-items-box">${itemsHtml}</div>
                         </div>
                     </div>`;
+                });
+            },
+            clearHistory: async () => {
+                if(!confirm("Apagar pedidos Entregues/Cancelados desse período?")) return;
+                const start = document.getElementById('order-start').value;
+                const end = document.getElementById('order-end').value;
+                if(!start || !end) return alert("Selecione um período.");
+                
+                await sb.from('orders').delete()
+                    .or('status.eq.Entregue,status.eq.Cancelado')
+                    .gte('created_at', new Date(start).toISOString())
+                    .lte('created_at', new Date(end).toISOString());
+                
+                alert("Limpo!"); admin.renderOrders();
+            },
+            renderFinance: async () => {
+                const start = document.getElementById('fin-start').value;
+                const end = document.getElementById('fin-end').value;
+                if(!start || !end) return alert("Selecione data inicial e final.");
+
+                const { data: orders } = await sb.from('orders').select('*')
+                    .neq('status', 'Cancelado') // Ignore cancelled
+                    .gte('created_at', new Date(start).toISOString())
+                    .lte('created_at', new Date(end).toISOString());
+
+                let totalRev = 0, totalCost = 0;
+                const productStats = {}; // { prodName: { qty: 0, rev: 0, img: '' } }
+
+                orders.forEach(o => {
+                    const items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
+                    items.forEach(i => {
+                        const lineTotal = i.price * i.qty;
+                        totalRev += lineTotal;
+                        
+                        // Find cost from product database (approximation since items don't store historical cost)
+                        const prodRef = state.products.find(p => p.name === i.name);
+                        let unitCost = 0;
+                        if(prodRef) {
+                            const vars = typeof prodRef.variations === 'string' ? JSON.parse(prodRef.variations) : prodRef.variations;
+                            const variant = vars.find(v => v.name === i.variant);
+                            unitCost = variant ? (parseFloat(variant.cost)||0) : (parseFloat(prodRef.cost_price)||0);
+                        }
+                        totalCost += (unitCost * i.qty);
+
+                        // Agregate Product Data
+                        const key = `${i.name} (${i.variant})`;
+                        if(!productStats[key]) productStats[key] = { qty: 0, rev: 0, img: i.image };
+                        productStats[key].qty += i.qty;
+                        productStats[key].rev += lineTotal;
+                    });
+                });
+
+                document.getElementById('fin-total-rev').innerText = `R$ ${totalRev.toFixed(2)}`;
+                document.getElementById('fin-total-cost').innerText = `R$ ${totalCost.toFixed(2)}`;
+                document.getElementById('fin-total-profit').innerText = `R$ ${(totalRev - totalCost).toFixed(2)}`;
+
+                // Render List
+                const listDiv = document.getElementById('fin-prod-list'); listDiv.innerHTML = "";
+                Object.entries(productStats).sort((a,b) => b[1].rev - a[1].rev).forEach(([name, s]) => {
+                    listDiv.innerHTML += `
+                    <div class="fin-prod-row">
+                        <img src="${s.img || 'https://via.placeholder.com/50'}">
+                        <div style="flex:1"><strong>${name}</strong><br><small>${s.qty} vendidos</small></div>
+                        <div style="font-weight:bold; color:var(--success)">R$ ${s.rev.toFixed(2)}</div>
+                    </div>`;
+                });
+
+                // Render Chart
+                if(state.finChart) state.finChart.destroy();
+                const ctx = document.getElementById('finChart').getContext('2d');
+                state.finChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Receita', 'Custo', 'Lucro'],
+                        datasets: [{
+                            label: 'Valores (R$)',
+                            data: [totalRev, totalCost, totalRev - totalCost],
+                            backgroundColor: ['#3498db', '#e74c3c', '#27ae60']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
                 });
             },
             updateStatus: async (id, val) => { if(sb) await sb.from('orders').update({status: val}).eq('id', id); alert("Status atualizado!"); admin.renderOrders(); },
