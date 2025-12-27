@@ -6,6 +6,7 @@
     <title>2A Modas e Perfumes | Loja Oficial</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
@@ -80,7 +81,7 @@
         .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .input-cep-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
 
-        /* MODERN FILTERS & BUTTONS */
+        /* FILTER BAR (DATE) */
         .filter-wrapper { 
             background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 25px; 
             border: 1px solid #eee; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; 
@@ -100,7 +101,7 @@
         .btn-clear-hist { background: #fff5f5; color: var(--danger); border: 1px solid #ffcccc; margin-left: auto; }
         .btn-clear-hist:hover { background: var(--danger); color: white; border-color: var(--danger); }
 
-        /* FINANCE CARDS (NO CHART) */
+        /* FINANCE CARDS */
         .fin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .fin-card-modern { background: white; border-radius: 12px; padding: 20px; border: 1px solid #eee; position: relative; overflow: hidden; }
         .fin-card-modern::after { content:''; position:absolute; top:0; right:0; width:5px; height:100%; background: #ccc; }
@@ -165,6 +166,23 @@
         .st-cancelado { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .admin-contact-btn { display: inline-flex; align-items: center; gap: 6px; background: #25D366; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: bold; margin-top: 5px; transition: 0.3s; }
         .admin-contact-btn:hover { background: #128C7E; transform: translateY(-2px); }
+
+        /* CAROUSEL CARDS COMPACT */
+        .carousel-wrapper { overflow-x: auto; white-space: nowrap; padding: 10px 0; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .carousel-wrapper::-webkit-scrollbar { display: none; }
+        .carousel-track { display: inline-flex; gap: 10px; animation: scrollPromo 20s linear infinite; }
+        .carousel-track:hover { animation-play-state: paused; }
+        
+        .promo-card { 
+            min-width: 140px; width: 140px; 
+            background: white; border: 1px solid #eee; border-radius: 12px; 
+            padding: 10px; cursor: pointer; display: flex; flex-direction: column; 
+            align-items: center; text-align: center; white-space: normal;
+            transition: 0.3s;
+        }
+        .promo-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: var(--primary); }
+        .promo-card img { width: 100%; height: 100px; border-radius: 8px; object-fit: cover; margin-bottom: 8px; }
+        @keyframes scrollPromo { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
         /* MODERN CHECKBOXES */
         .checkbox-section-title { font-weight:bold; margin-bottom:10px; display:block; color:var(--accent); font-size:0.95rem; }
@@ -410,7 +428,7 @@
             <i class="fas fa-lock"></i>
             <h2>Área Restrita</h2>
             <p style="margin-bottom:20px; color:#666;">Acesso administrativo</p>
-            <input type="password" id="admin-pass" class="input" placeholder="Digite a senha de acesso" style="text-align:center; font-size:1.2rem;">
+            <input type="password" id="admin-pass" class="input" placeholder="Digite a senha de acesso" style="text-align:center; font-size:1.2rem;" onkeydown="if(event.key==='Enter') admin.verifyLogin()">
             <button onclick="admin.verifyLogin()" style="width:100%; background:var(--accent); color:white; padding:12px; border-radius:8px; border:none; font-weight:bold; margin-bottom:10px;">Entrar</button>
             <button onclick="app.closeModal('admin-auth-modal')" style="background:none; border:none; color:#999; text-decoration:underline;">Cancelar</button>
         </div>
@@ -820,7 +838,7 @@
             checkProfile: () => { 
                 if(state.user) { 
                     app.showModal('client-modal'); 
-                    // DEFAULT 30 DAYS FOR CLIENT
+                    // Set default dates for client
                     const today = new Date();
                     const prior = new Date(new Date().setDate(today.getDate() - 30));
                     document.getElementById('client-date-end').valueAsDate = today;
@@ -911,7 +929,20 @@
             verifyLogin: () => {
                 if(document.getElementById('admin-pass').value === "123") {
                     app.closeModal('admin-auth-modal');
-                    setTimeout(() => { app.showModal('admin-modal'); admin.renderList(); admin.renderOrders(); admin.updateStats(); }, 100);
+                    setTimeout(() => { 
+                        app.showModal('admin-modal'); 
+                        
+                        // Set Default Dates for Admin (Last 30 Days)
+                        const today = new Date();
+                        const prior = new Date(new Date().setDate(today.getDate() - 30));
+                        
+                        document.getElementById('order-end').valueAsDate = today;
+                        document.getElementById('order-start').valueAsDate = prior;
+                        document.getElementById('fin-end').valueAsDate = today;
+                        document.getElementById('fin-start').valueAsDate = prior;
+
+                        admin.renderList(); admin.renderOrders(); admin.updateStats(); 
+                    }, 100);
                 } else alert("Senha incorreta");
             },
             initCheckboxes: () => {
@@ -1158,18 +1189,6 @@
             if(window.emailjs) emailjs.init(EMAILJS_PUBLIC_KEY);
             const u = localStorage.getItem('2a_user'); if(u) state.user=JSON.parse(u);
             const a = localStorage.getItem('2a_active_addr'); if(a) state.address=JSON.parse(a);
-            
-            // Set Default Dates (Last 30 Days)
-            const setLast30Days = (startId, endId) => {
-                const end = new Date();
-                const start = new Date();
-                start.setDate(end.getDate() - 30);
-                document.getElementById(endId).valueAsDate = end;
-                document.getElementById(startId).valueAsDate = start;
-            };
-            
-            setLast30Days('order-start', 'order-end');
-            setLast30Days('fin-start', 'fin-end');
             
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('status') === 'approved' && localStorage.getItem('2a_cart')) {
