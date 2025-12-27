@@ -6,7 +6,7 @@
     <title>2A Modas e Perfumes | Loja Oficial</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script> <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -95,13 +95,12 @@
         .admin-tab:hover { background: #f0f0f0; color: var(--accent); }
         .admin-tab.active { background:var(--accent); color:white; border-color: var(--accent); box-shadow: 0 4px 10px rgba(44,62,80,0.2); }
         
-        /* NEW: TRACKING & ORDER CARD DESIGN */
-        /* Cliente - Caminhão Animado */
+        /* TRACKING & ORDER CARD DESIGN */
         .track-container { margin-top: 25px; position: relative; padding: 15px 0; }
         .track-line-bg { height: 6px; background: #e0e0e0; border-radius: 3px; position: absolute; top: 50%; left: 0; width: 100%; transform: translateY(-50%); z-index: 1; }
         .track-fill { height: 6px; background: linear-gradient(90deg, #2ecc71, #27ae60); border-radius: 3px; position: absolute; top: 50%; left: 0; transform: translateY(-50%); z-index: 2; transition: width 1s ease; }
         
-        /* Status Cancelado (Vermelho) */
+        /* Status Cancelado */
         .track-fill.cancelled { background: var(--danger) !important; width: 100% !important; }
         .truck-icon.cancelled { color: var(--danger) !important; left: 100% !important; animation: none; transform: translateX(-50%) translateY(-3px); }
         
@@ -182,17 +181,6 @@
         .btn-addr-trigger { width:100%; padding:15px; border:2px dashed var(--accent); background:none; border-radius:12px; color:var(--accent); font-weight:bold; cursor:pointer; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:10px; }
         .btn-addr-trigger.filled { border-style:solid; border-color:#27ae60; background:#eafff0; color:#27ae60; }
         .color-dot { width: 15px; height: 15px; border-radius: 50%; display: inline-block; border: 1px solid #ddd; margin-right:5px; }
-        
-        /* CART ITEM */
-        .cart-item { display:grid; grid-template-columns: 70px 1fr auto; gap:15px; align-items:center; padding:20px 0; border-bottom:1px solid #f5f5f5; }
-        .cart-thumb { width:70px; height:70px; border-radius:10px; object-fit:cover; background:#f9f9f9; }
-        .qty-controls { display:flex; align-items:center; background:#f4f4f4; border-radius:25px; padding:3px; width:fit-content; margin-top:8px; }
-        .qty-btn { width:28px; height:28px; border-radius:50%; border:none; background:white; color:var(--accent); font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; }
-        .qty-btn:hover { background:var(--primary); color:white; }
-        .qty-val { padding:0 12px; font-size:0.9rem; font-weight:600; min-width:30px; text-align:center; }
-        .btn-remove { width:35px; height:35px; border-radius:50%; border:1px solid #ffecec; background:#fff5f5; color:var(--danger); display:flex; align-items:center; justify-content:center; transition:0.3s; }
-        .btn-remove:hover { background:var(--danger); color:white; border-color:var(--danger); }
-
         .client-order { border:1px solid #eee; padding:20px; border-radius:12px; margin-bottom:15px; background:#fff; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
 
         footer { background: #222; color: #888; text-align: center; padding: 40px 20px; margin-top: auto; }
@@ -816,6 +804,15 @@
                                 <div class="track-steps">${trackStepsHTML}</div>
                             </div>
                         </div>`;
+                        
+                        if(o.status === 'Entregue') {
+                            const celebrated = JSON.parse(localStorage.getItem('2a_celebrated') || '[]');
+                            if(!celebrated.includes(o.id)) {
+                                confetti({ particleCount: 150, spread: 180, origin: { y: 0.6 } });
+                                celebrated.push(o.id);
+                                localStorage.setItem('2a_celebrated', JSON.stringify(celebrated));
+                            }
+                        }
                     });
                 }
             }
