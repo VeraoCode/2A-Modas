@@ -6,7 +6,7 @@
     <title>2A Modas e Perfumes | Loja Oficial</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -80,11 +80,41 @@
         .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .input-cep-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
 
-        /* FILTER BAR (DATE) */
-        .filter-bar { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border: 1px solid #eee; }
-        .filter-bar input[type="date"] { padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
-        .btn-filter { padding: 8px 15px; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: bold; }
-        .btn-clear-hist { background: var(--danger); margin-left: auto; }
+        /* MODERN FILTERS & BUTTONS */
+        .filter-wrapper { 
+            background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 25px; 
+            border: 1px solid #eee; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+        .date-group { display: flex; align-items: center; gap: 5px; background: #f9f9f9; padding: 5px 10px; border-radius: 8px; border: 1px solid #eee; }
+        .date-group label { font-size: 0.8rem; font-weight: bold; color: #777; }
+        .input-date-modern { 
+            border: none; background: transparent; font-family: inherit; color: var(--accent); 
+            font-weight: 600; font-size: 0.9rem; cursor: pointer; outline: none;
+        }
+        .btn-filter-action {
+            background: var(--accent); color: white; padding: 8px 20px; border-radius: 8px; border: none;
+            font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 0.9rem;
+        }
+        .btn-filter-action:hover { background: var(--accent-light); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(44,62,80,0.2); }
+        .btn-clear-hist { background: #fff5f5; color: var(--danger); border: 1px solid #ffcccc; margin-left: auto; }
+        .btn-clear-hist:hover { background: var(--danger); color: white; border-color: var(--danger); }
+
+        /* FINANCE CARDS (NO CHART) */
+        .fin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .fin-card-modern { background: white; border-radius: 12px; padding: 20px; border: 1px solid #eee; position: relative; overflow: hidden; }
+        .fin-card-modern::after { content:''; position:absolute; top:0; right:0; width:5px; height:100%; background: #ccc; }
+        .fin-card-modern.rev::after { background: var(--info); }
+        .fin-card-modern.cost::after { background: var(--danger); }
+        .fin-card-modern.profit::after { background: var(--success); }
+        .fin-card-modern.margin::after { background: var(--warning); }
+        
+        .fin-label { font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: bold; letter-spacing: 0.5px; }
+        .fin-val-big { font-size: 1.6rem; font-weight: 800; color: var(--accent); margin-top: 5px; }
+        .fin-prod-row { display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid #f5f5f5; background: white; transition: 0.2s; }
+        .fin-prod-row:hover { background: #fafafa; }
+        .fin-prod-row img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; }
+        .margin-badge { font-size: 0.75rem; background: #e0f7fa; color: #006064; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-left: 10px; }
 
         /* MODERN TOGGLE SWITCH */
         .toggle-switch { position: relative; display: inline-block; width: 60px; height: 30px; margin-right: 10px; vertical-align: middle; }
@@ -128,22 +158,13 @@
         .oc-section label { display: block; font-size: 0.7rem; text-transform: uppercase; color: #aaa; font-weight: bold; margin-bottom: 5px; }
         .oc-val { font-size: 0.95rem; color: #333; font-weight: 600; line-height: 1.4; }
         .oc-items-box { grid-column: span 2; background: #fdfdfd; border: 1px dashed #ddd; border-radius: 8px; padding: 15px; font-size: 0.9rem; color: #555; }
-        
         .status-selector { padding: 8px 15px; border-radius: 20px; border: none; font-weight: bold; font-size: 0.85rem; cursor: pointer; appearance: none; outline: none; text-align: center; width: 100%; transition: 0.3s; }
         .st-pendente { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .st-enviado { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
         .st-entregue { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .st-cancelado { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-
         .admin-contact-btn { display: inline-flex; align-items: center; gap: 6px; background: #25D366; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: bold; margin-top: 5px; transition: 0.3s; }
         .admin-contact-btn:hover { background: #128C7E; transform: translateY(-2px); }
-
-        /* FINANCE TAB STYLES */
-        .fin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .fin-card { background: white; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #eee; }
-        .fin-val { font-size: 1.5rem; font-weight: 800; margin-top: 5px; }
-        .fin-prod-row { display: flex; align-items: center; gap: 15px; padding: 10px; border-bottom: 1px solid #eee; }
-        .fin-prod-row img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
 
         /* MODERN CHECKBOXES */
         .checkbox-section-title { font-weight:bold; margin-bottom:10px; display:block; color:var(--accent); font-size:0.95rem; }
@@ -317,14 +338,19 @@
                     <button onclick="auth.logout()" style="margin-top:10px; border:1px solid #ccc; background:white; padding:5px 15px; border-radius:20px; font-size:0.8rem;">Sair</button>
                 </div>
                 
-                <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <h3>Meus Pedidos</h3>
-                    <div style="display:flex; gap:5px; font-size:0.8rem;">
-                        <input type="date" id="client-date-start" onchange="auth.loadClientOrders()">
-                        <input type="date" id="client-date-end" onchange="auth.loadClientOrders()">
+                </div>
+                <div class="filter-wrapper">
+                    <div class="date-group">
+                        <label>De:</label>
+                        <input type="date" id="client-date-start" class="input-date-modern" onchange="auth.loadClientOrders()">
+                    </div>
+                    <div class="date-group">
+                        <label>Até:</label>
+                        <input type="date" id="client-date-end" class="input-date-modern" onchange="auth.loadClientOrders()">
                     </div>
                 </div>
-                <small style="color:#999; display:block; margin-bottom:10px;">Exibindo últimos 30 dias por padrão.</small>
                 
                 <div id="client-orders-list" style="max-height:400px; overflow-y:auto; margin-top:10px;"></div>
             </div>
@@ -426,12 +452,20 @@
                 <div id="tab-orders" style="display:none;">
                     <div style="background:white; padding:20px; border-radius:12px;">
                         <h3>Acompanhar Pedidos</h3>
-                        <div class="filter-bar">
-                            <label>De:</label> <input type="date" id="order-start">
-                            <label>Até:</label> <input type="date" id="order-end">
-                            <button class="btn-filter" onclick="admin.renderOrders()">Filtrar</button>
-                            <button class="btn-filter btn-clear-hist" onclick="admin.clearHistory()">Limpar Concluídos</button>
+                        
+                        <div class="filter-wrapper">
+                            <div class="date-group">
+                                <label>De:</label>
+                                <input type="date" id="order-start" class="input-date-modern">
+                            </div>
+                            <div class="date-group">
+                                <label>Até:</label>
+                                <input type="date" id="order-end" class="input-date-modern">
+                            </div>
+                            <button class="btn-filter-action" onclick="admin.renderOrders()"><i class="fas fa-filter"></i> Filtrar</button>
+                            <button class="btn-filter-action btn-clear-hist" onclick="admin.clearHistory()"><i class="fas fa-trash"></i> Limpar Concluídos</button>
                         </div>
+
                         <div id="orders-list"></div>
                     </div>
                 </div>
@@ -439,29 +473,36 @@
                 <div id="tab-fin" style="display:none;">
                     <div style="background:white; padding:20px; border-radius:12px; margin-bottom:20px;">
                         <h3>Relatório Financeiro</h3>
-                        <div class="filter-bar">
-                            <label>De:</label> <input type="date" id="fin-start">
-                            <label>Até:</label> <input type="date" id="fin-end">
-                            <button class="btn-filter" onclick="admin.renderFinance()">Gerar Relatório</button>
+                        
+                        <div class="filter-wrapper">
+                            <div class="date-group">
+                                <label>De:</label>
+                                <input type="date" id="fin-start" class="input-date-modern">
+                            </div>
+                            <div class="date-group">
+                                <label>Até:</label>
+                                <input type="date" id="fin-end" class="input-date-modern">
+                            </div>
+                            <button class="btn-filter-action" onclick="admin.renderFinance()"><i class="fas fa-sync-alt"></i> Atualizar Relatório</button>
                         </div>
                         
-                        <div class="fin-stats">
-                            <div class="fin-card" style="border-color:var(--info)">
-                                <small>VENDAS TOTAIS</small>
-                                <div id="fin-total-rev" class="fin-val" style="color:var(--info)">R$ 0.00</div>
+                        <div class="fin-grid">
+                            <div class="fin-card-modern rev">
+                                <div class="fin-label">Vendas Totais</div>
+                                <div id="fin-total-rev" class="fin-val-big">R$ 0.00</div>
                             </div>
-                            <div class="fin-card" style="border-color:var(--danger)">
-                                <small>CUSTO PRODUTOS</small>
-                                <div id="fin-total-cost" class="fin-val" style="color:var(--danger)">R$ 0.00</div>
+                            <div class="fin-card-modern cost">
+                                <div class="fin-label">Custo Produtos</div>
+                                <div id="fin-total-cost" class="fin-val-big">R$ 0.00</div>
                             </div>
-                            <div class="fin-card" style="border-color:var(--success)">
-                                <small>LUCRO LÍQUIDO</small>
-                                <div id="fin-total-profit" class="fin-val" style="color:var(--success)">R$ 0.00</div>
+                            <div class="fin-card-modern profit">
+                                <div class="fin-label">Lucro Líquido</div>
+                                <div id="fin-total-profit" class="fin-val-big">R$ 0.00</div>
                             </div>
-                        </div>
-
-                        <div style="height:300px; margin-bottom:30px;">
-                            <canvas id="finChart"></canvas>
+                            <div class="fin-card-modern margin">
+                                <div class="fin-label">Margem Geral</div>
+                                <div id="fin-total-margin" class="fin-val-big">0%</div>
+                            </div>
                         </div>
 
                         <h4>Desempenho por Produto</h4>
@@ -521,7 +562,7 @@
 
         let sb = null; try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.error(e); }
 
-        const state = { products: [], cart: [], current: null, var: null, qty: 1, user: null, address: null, finChart: null };
+        const state = { products: [], cart: [], current: null, var: null, qty: 1, user: null, address: null };
         const PRESETS_VOL = ['25ml','50ml','75ml','100ml','200ml','P','M','G','GG','Unico'];
         const COLOR_MAP = { 'Preto': '#000000', 'Branco': '#ffffff', 'Vermelho': '#e74c3c', 'Azul': '#3498db', 'Rosa': '#e91e63', 'Verde': '#2ecc71', 'Nude': '#e3c0a5', 'Estampado': 'linear-gradient(45deg, red, blue)', 'Bege': '#f5f5dc', 'Amarelo': '#f1c40f', 'Cinza': '#95a5a6' };
         
@@ -779,7 +820,7 @@
             checkProfile: () => { 
                 if(state.user) { 
                     app.showModal('client-modal'); 
-                    // DEFAULT 30 DAYS
+                    // DEFAULT 30 DAYS FOR CLIENT
                     const today = new Date();
                     const prior = new Date(new Date().setDate(today.getDate() - 30));
                     document.getElementById('client-date-end').valueAsDate = today;
@@ -1025,12 +1066,12 @@
                 if(!start || !end) return alert("Selecione data inicial e final.");
 
                 const { data: orders } = await sb.from('orders').select('*')
-                    .neq('status', 'Cancelado') // Ignore cancelled
+                    .neq('status', 'Cancelado')
                     .gte('created_at', new Date(start).toISOString())
                     .lte('created_at', new Date(end).toISOString());
 
                 let totalRev = 0, totalCost = 0;
-                const productStats = {}; // { prodName: { qty: 0, rev: 0, img: '' } }
+                const productStats = {}; 
 
                 orders.forEach(o => {
                     const items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
@@ -1038,7 +1079,6 @@
                         const lineTotal = i.price * i.qty;
                         totalRev += lineTotal;
                         
-                        // Find cost from product database (approximation since items don't store historical cost)
                         const prodRef = state.products.find(p => p.name === i.name);
                         let unitCost = 0;
                         if(prodRef) {
@@ -1048,43 +1088,41 @@
                         }
                         totalCost += (unitCost * i.qty);
 
-                        // Agregate Product Data
                         const key = `${i.name} (${i.variant})`;
-                        if(!productStats[key]) productStats[key] = { qty: 0, rev: 0, img: i.image };
+                        if(!productStats[key]) productStats[key] = { qty: 0, rev: 0, cost: 0, img: i.image };
                         productStats[key].qty += i.qty;
                         productStats[key].rev += lineTotal;
+                        productStats[key].cost += (unitCost * i.qty);
                     });
                 });
 
+                const totalProfit = totalRev - totalCost;
+                const totalMargin = totalRev > 0 ? ((totalProfit / totalRev) * 100).toFixed(1) : 0;
+
                 document.getElementById('fin-total-rev').innerText = `R$ ${totalRev.toFixed(2)}`;
                 document.getElementById('fin-total-cost').innerText = `R$ ${totalCost.toFixed(2)}`;
-                document.getElementById('fin-total-profit').innerText = `R$ ${(totalRev - totalCost).toFixed(2)}`;
+                document.getElementById('fin-total-profit').innerText = `R$ ${totalProfit.toFixed(2)}`;
+                document.getElementById('fin-total-margin').innerText = `${totalMargin}%`;
 
                 // Render List
                 const listDiv = document.getElementById('fin-prod-list'); listDiv.innerHTML = "";
                 Object.entries(productStats).sort((a,b) => b[1].rev - a[1].rev).forEach(([name, s]) => {
+                    const itemProfit = s.rev - s.cost;
+                    const itemMargin = s.rev > 0 ? ((itemProfit / s.rev) * 100).toFixed(1) : 0;
+                    
                     listDiv.innerHTML += `
                     <div class="fin-prod-row">
                         <img src="${s.img || 'https://via.placeholder.com/50'}">
-                        <div style="flex:1"><strong>${name}</strong><br><small>${s.qty} vendidos</small></div>
-                        <div style="font-weight:bold; color:var(--success)">R$ ${s.rev.toFixed(2)}</div>
+                        <div style="flex:1">
+                            <strong>${name}</strong>
+                            <br><small>${s.qty} vendidos</small>
+                            <span class="margin-badge"><i class="fas fa-chart-line"></i> ${itemMargin}% Lucro</span>
+                        </div>
+                        <div style="text-align:right">
+                            <div style="font-weight:bold; color:var(--success)">+ R$ ${s.rev.toFixed(2)}</div>
+                            <small style="color:var(--danger)">- R$ ${s.cost.toFixed(2)}</small>
+                        </div>
                     </div>`;
-                });
-
-                // Render Chart
-                if(state.finChart) state.finChart.destroy();
-                const ctx = document.getElementById('finChart').getContext('2d');
-                state.finChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Receita', 'Custo', 'Lucro'],
-                        datasets: [{
-                            label: 'Valores (R$)',
-                            data: [totalRev, totalCost, totalRev - totalCost],
-                            backgroundColor: ['#3498db', '#e74c3c', '#27ae60']
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false }
                 });
             },
             updateStatus: async (id, val) => { if(sb) await sb.from('orders').update({status: val}).eq('id', id); alert("Status atualizado!"); admin.renderOrders(); },
@@ -1120,6 +1158,18 @@
             if(window.emailjs) emailjs.init(EMAILJS_PUBLIC_KEY);
             const u = localStorage.getItem('2a_user'); if(u) state.user=JSON.parse(u);
             const a = localStorage.getItem('2a_active_addr'); if(a) state.address=JSON.parse(a);
+            
+            // Set Default Dates (Last 30 Days)
+            const setLast30Days = (startId, endId) => {
+                const end = new Date();
+                const start = new Date();
+                start.setDate(end.getDate() - 30);
+                document.getElementById(endId).valueAsDate = end;
+                document.getElementById(startId).valueAsDate = start;
+            };
+            
+            setLast30Days('order-start', 'order-end');
+            setLast30Days('fin-start', 'fin-end');
             
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('status') === 'approved' && localStorage.getItem('2a_cart')) {
