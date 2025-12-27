@@ -17,6 +17,7 @@
             --accent: #2c3e50; --accent-light: #34495e;
             --bg: #f8f9fa; --white: #ffffff;
             --radius: 12px; --shadow: 0 10px 40px rgba(0,0,0,0.08);
+            --success: #27ae60; --danger: #e74c3c; --gray: #95a5a6;
         }
         * { margin:0; padding:0; box-sizing:border-box; outline:none; font-family:'Plus Jakarta Sans', sans-serif; }
         body { background: var(--bg); color: var(--accent); overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh; }
@@ -28,7 +29,7 @@
         /* LOADING & STATUS */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
         #status-bar { position:fixed; top:0; left:0; width:100%; height:auto; min-height:30px; background:#222; color:white; font-size:0.8rem; display:none; align-items:center; justify-content:center; z-index:99999; font-weight:600; padding:5px; text-align:center; }
-        .ok { background:#27ae60 !important; } .err { background:#c0392b !important; }
+        .ok { background:var(--success) !important; } .err { background:var(--danger) !important; }
 
         /* HEADER */
         .header-floating { position: fixed; top: 30px; right: 5%; z-index: 1000; display:flex; gap:10px; align-items: center; }
@@ -80,8 +81,8 @@
         .qty-btn { width:28px; height:28px; border-radius:50%; border:none; background:white; color:var(--accent); font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; }
         .qty-btn:hover { background:var(--primary); color:white; }
         .qty-val { padding:0 12px; font-size:0.9rem; font-weight:600; min-width:30px; text-align:center; }
-        .btn-remove { width:35px; height:35px; border-radius:50%; border:1px solid #ffecec; background:#fff5f5; color:#e74c3c; display:flex; align-items:center; justify-content:center; transition:0.3s; }
-        .btn-remove:hover { background:#e74c3c; color:white; border-color:#e74c3c; }
+        .btn-remove { width:35px; height:35px; border-radius:50%; border:1px solid #ffecec; background:#fff5f5; color:var(--danger); display:flex; align-items:center; justify-content:center; transition:0.3s; }
+        .btn-remove:hover { background:var(--danger); color:white; border-color:var(--danger); }
         
         /* ADMIN/FORMS */
         .input { width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; margin-bottom:10px; background: #fafafa; }
@@ -89,45 +90,33 @@
         .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .input-cep-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
 
+        /* MODERN TOGGLE SWITCH */
+        .toggle-switch { position: relative; display: inline-block; width: 60px; height: 30px; margin-right: 10px; vertical-align: middle; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--primary); }
+        input:focus + .slider { box-shadow: 0 0 1px var(--primary); }
+        input:checked + .slider:before { transform: translateX(30px); }
+        .toggle-label { font-weight: bold; vertical-align: middle; color: var(--accent); }
+
         /* ADMIN INTERACTIVE */
         .admin-nav { padding:20px; background:white; border-bottom:1px solid #eee; display:flex; gap:10px; overflow-x:auto; }
         .admin-tab { padding:10px 20px; border-radius:30px; border:1px solid #eee; background:transparent; font-weight:600; cursor:pointer; white-space:nowrap; color: #777; transition: all 0.3s ease; }
         .admin-tab:hover { background: #f0f0f0; color: var(--accent); }
         .admin-tab.active { background:var(--accent); color:white; border-color: var(--accent); box-shadow: 0 4px 10px rgba(44,62,80,0.2); }
         
-        /* --- MODERN CHECKBOXES (VISUAL UPDATE) --- */
+        /* MODERN CHECKBOXES (VISUAL UPDATE) */
         .checkbox-section-title { font-weight:bold; margin-bottom:10px; display:block; color:var(--accent); font-size:0.95rem; }
         .modern-checkbox-grid { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
-        
-        /* Hide Default Checkbox */
         .hidden-check { display: none; }
-
-        /* Color Options (Bolinhas) */
-        .color-option-label { 
-            width: 45px; height: 45px; border-radius: 50%; cursor: pointer; 
-            border: 2px solid #eee; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            display:flex; align-items:center; justify-content:center; position: relative;
-        }
+        .color-option-label { width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: 2px solid #eee; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display:flex; align-items:center; justify-content:center; position: relative; }
         .color-option-label:hover { transform: scale(1.1); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .hidden-check:checked + .color-option-label { 
-            border-color: var(--accent); transform: scale(1.15); box-shadow: 0 5px 15px rgba(0,0,0,0.15); 
-        }
-        .hidden-check:checked + .color-option-label::after {
-            content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; 
-            color: white; font-size: 1.2rem; text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        }
-
-        /* Size/Volume Options (Pílulas) */
-        .vol-option-label {
-            padding: 8px 18px; border: 1px solid #ddd; border-radius: 30px; 
-            cursor: pointer; font-weight: 600; color: #777; background: white;
-            transition: all 0.3s ease; font-size: 0.9rem;
-        }
+        .hidden-check:checked + .color-option-label { border-color: var(--accent); transform: scale(1.15); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+        .hidden-check:checked + .color-option-label::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: white; font-size: 1.2rem; text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+        .vol-option-label { padding: 8px 18px; border: 1px solid #ddd; border-radius: 30px; cursor: pointer; font-weight: 600; color: #777; background: white; transition: all 0.3s ease; font-size: 0.9rem; }
         .vol-option-label:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
-        .hidden-check:checked + .vol-option-label {
-            background: var(--accent); color: white; border-color: var(--accent);
-            transform: translateY(-2px); box-shadow: 0 4px 10px rgba(44,62,80,0.2);
-        }
+        .hidden-check:checked + .vol-option-label { background: var(--accent); color: white; border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(44,62,80,0.2); }
 
         .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
         .var-inputs.show { display:grid; grid-template-columns:1fr 1fr; gap:10px; animation: slideDown 0.3s ease; }
@@ -138,7 +127,9 @@
         .mini-prod:hover { background: #f8f8f8; transform: translateX(5px); }
         .mini-prod img { width:50px; height:50px; border-radius:8px; object-fit:cover; border: 1px solid #eee; }
         .stock-info { font-size: 0.9rem; color: #666; margin-top: 4px; }
-        .stock-warn { color: #e74c3c; font-weight: bold; }
+        .stock-warn { color: var(--danger); font-weight: bold; }
+        .tag-soldout { background: #e0e0e0; color: #777; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+        .mini-prod.sold-out { opacity: 0.7; grayscale: 0.8; }
         .btn-mini-edit { background: var(--accent); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; border: none; transition: 0.3s; }
         .btn-mini-edit:hover { background: var(--accent-light); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         
@@ -431,11 +422,25 @@
                             <select id="f-cat" class="input"><option value="feminino">Feminino</option><option value="infantil">Infantil</option><option value="perfumes">Perfumes</option></select>
                             <input type="number" id="f-cost" class="input" placeholder="Custo Global (Opcional)">
                         </div>
-                        <label><input type="checkbox" id="f-promo"> Promoção?</label>
+                        
+                        <div class="input-row">
+                            <input type="number" id="f-price-global" class="input" placeholder="Preço de Venda Global (Se não houver variações)">
+                            <input type="number" id="f-stock-global" class="input" placeholder="Estoque Geral">
+                        </div>
+
+                        <div style="margin: 15px 0; display:flex; align-items:center;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="f-promo">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="toggle-label">Ativar Promoção?</span>
+                        </div>
+
                         <input type="file" id="f-file" class="input" style="margin-top:10px;">
                         <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
                         
                         <label style="font-weight:bold; display:block; margin-bottom:15px; font-size:1.1rem;">Selecione Variações (Cores e Tamanhos):</label>
+                        <small style="display:block; margin-bottom:10px; color:#666;">Se não selecionar nada, será usado o Preço/Estoque Global acima.</small>
                         
                         <span class="checkbox-section-title">🎨 Cores Disponíveis</span>
                         <div class="modern-checkbox-grid" id="color-checks"></div>
@@ -694,7 +699,7 @@
                 }
             },
 
-            // CHECKOUT & EMAILS
+            // CHECKOUT & EMAILS (ATUALIZADO PARA REGISTRO IMEDIATO)
             checkout: async (method) => {
                 if(!state.cart.length) return alert("Carrinho vazio");
                 if(!state.user) {
@@ -706,21 +711,29 @@
                 const btn = document.querySelector(method === 'whatsapp' ? '.btn-whats' : '.btn-mp');
                 
                 try {
-                    if(btn) btn.innerText = "Registrando pedido...";
+                    if(btn) btn.innerText = "Registrando...";
                     
+                    // 1. GERA ID ÚNICO
+                    const newOrderId = Date.now().toString();
+
+                    // 2. REGISTRA PEDIDO NO SUPABASE (IMEDIATO)
+                    const statusInicial = method === 'whatsapp' ? 'Pendente (WhatsApp)' : 'Pendente (Mercado Pago)';
+                    const orderData = await app.registerOrder(newOrderId, method === 'whatsapp' ? 'WhatsApp/Dinheiro' : 'Mercado Pago', statusInicial);
+                    
+                    // 3. ATUALIZA ESTOQUE NO SUPABASE
+                    await app.updateStockDatabase();
+
+                    // 4. ENVIA E-MAILS (CLIENTE + ADMIN)
+                    await app.sendEmails(orderData);
+
+                    // 5. REDIRECIONA
                     if(method === 'whatsapp') { 
-                        const newOrderId = Date.now().toString();
-                        const orderData = await app.registerOrder(newOrderId, 'WhatsApp / Combinar', 'Pendente (WhatsApp)'); 
-                        await app.updateStockDatabase(); 
-                        await app.sendEmails(orderData); 
                         app.sendPaidOrder('Dinheiro/Combinar'); 
                     } 
                     else {
-                        const newOrderId = Date.now().toString();
-                        const orderData = await app.registerOrder(newOrderId, 'Mercado Pago (Pendente)', 'Pendente');
                         localStorage.setItem('2a_cart', JSON.stringify(state.cart));
                         const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
-                        await app.sendEmails(orderData);
+                        
                         const res = await fetch(GOOGLE_CLOUD_URL, {
                             method:'POST', headers:{'Content-Type':'application/json'}, 
                             body:JSON.stringify({items, buyer: { email: state.user.email, name: state.user.name }, address: state.address})
@@ -729,13 +742,10 @@
                         if(data.init_point) window.location.href = data.init_point;
                         else throw new Error("Falha ao gerar link");
                     }
+
                 } catch(e) {
                     console.error(e);
-                    if(method === 'mercadopago') {
-                        if(confirm("Erro de conexão. Finalizar pelo WhatsApp?")) app.sendPaidOrder('Erro MP - Finalizado Whats');
-                    } else {
-                        alert("Erro ao abrir WhatsApp. Tente novamente.");
-                    }
+                    alert("Erro ao processar. Se o problema persistir, chame no WhatsApp.");
                     if(btn) btn.innerText = method === 'whatsapp' ? "Falar Via WhatsApp" : "Via Pix/Cartão/Débito"; 
                 }
             },
@@ -744,14 +754,18 @@
                 const itemsTxt = state.cart.map(i => `${i.qty}x ${i.name} (${i.variant}) - R$ ${i.price.toFixed(2)}`).join('\n');
                 const total = state.cart.reduce((a,b)=>a+(b.price*b.qty),0).toFixed(2);
                 const fullAddr = state.address ? `${state.address.street}, ${state.address.number} - ${state.address.city}/${state.address.uf}` : 'N/A';
+                
                 const templateParams = {
                     to_name: state.user.name,
                     to_email: state.user.email,
-                    message: `\nITENS:\n${itemsTxt}\n\nTOTAL: R$ ${total}\n\nENDEREÇO:\n${fullAddr}`,
+                    message: `\nITENS:\n${itemsTxt}\n\nTOTAL: R$ ${total}\n\nENDEREÇO:\n${fullAddr}\n\nSeu pedido foi registrado e em breve será preparado!`,
                     admin_email: 'erickveraosilva@gmail.com' 
                 };
+
                 if(window.emailjs) {
+                    // Envia para o cliente
                     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENTE, templateParams);
+                    // Envia cópia para o admin
                     const adminParams = {...templateParams, to_email: 'erickveraosilva@gmail.com', to_name: 'Admin 2A'};
                     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, adminParams);
                 }
@@ -864,7 +878,6 @@
                 const p = document.getElementById('admin-pass').value;
                 if(p === "123") { // SENHA SIMPLES DO ADMIN
                     app.closeModal('admin-auth-modal');
-                    // Pequeno delay para garantir a troca visual suave
                     setTimeout(() => {
                         app.showModal('admin-modal');
                         admin.renderList();
@@ -880,8 +893,6 @@
                 const vDiv = document.getElementById('volume-checks');
                 if(!cDiv || !vDiv) return;
                 cDiv.innerHTML = ""; vDiv.innerHTML = "";
-                
-                // GERA BOLINHAS DE COR
                 Object.keys(COLOR_MAP).forEach(c => { 
                     cDiv.innerHTML += `
                     <label>
@@ -889,8 +900,6 @@
                         <span class="color-option-label" style="background:${COLOR_MAP[c]}" title="${c}"></span>
                     </label>`; 
                 });
-                
-                // GERA BOTÕES DE TAMANHO
                 PRESETS_VOL.forEach(v => {
                     vDiv.innerHTML += `
                     <label>
@@ -932,6 +941,16 @@
                         const p = d.querySelector('.v-price').value, s = d.querySelector('.v-stock').value;
                         if(p && s) vars.push({ name: d.querySelector('.v-name').value, cost: cost, price: p, stock: s });
                     });
+
+                    // LÓGICA DE PRODUTO SIMPLES (SEM VARIAÇÃO ESPECÍFICA)
+                    if(vars.length === 0) {
+                        const gPrice = document.getElementById('f-price-global').value;
+                        const gStock = document.getElementById('f-stock-global').value;
+                        const gCost = document.getElementById('f-cost').value || 0;
+                        if(!gPrice || !gStock) throw new Error("Preencha as variações OU o Preço/Estoque Global.");
+                        vars.push({ name: 'Padrão', price: gPrice, stock: gStock, cost: gCost });
+                    }
+
                     const file = document.getElementById('f-file').files[0];
                     let imgUrl = null;
                     if(file) {
@@ -968,15 +987,21 @@
                 if(vars) {
                     const checks = document.querySelectorAll('input[type="checkbox"]');
                     vars.forEach(v => {
-                        checks.forEach(cb => {
-                            if(cb.value === v.name) {
-                                cb.checked = true; admin.toggleInput(cb);
-                                setTimeout(() => {
-                                    const div = document.getElementById(`grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`);
-                                    if(div) { div.querySelector('.v-cost').value = safeVal(v.cost || p.cost_price); div.querySelector('.v-price').value = safeVal(v.price); div.querySelector('.v-stock').value = safeVal(v.stock); }
-                                }, 50);
-                            }
-                        });
+                        if(v.name !== 'Padrão') {
+                            checks.forEach(cb => {
+                                if(cb.value === v.name) {
+                                    cb.checked = true; admin.toggleInput(cb);
+                                    setTimeout(() => {
+                                        const div = document.getElementById(`grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`);
+                                        if(div) { div.querySelector('.v-cost').value = safeVal(v.cost || p.cost_price); div.querySelector('.v-price').value = safeVal(v.price); div.querySelector('.v-stock').value = safeVal(v.stock); }
+                                    }, 50);
+                                }
+                            });
+                        } else {
+                            // Carrega valores globais se for produto simples
+                            document.getElementById('f-price-global').value = v.price;
+                            document.getElementById('f-stock-global').value = v.stock;
+                        }
                     });
                 }
                 alert("Edição carregada.");
@@ -986,6 +1011,7 @@
                 if(!soft) document.getElementById('edit-id').value=""; 
                 document.getElementById('f-name').value=""; document.getElementById('f-desc').value=""; 
                 document.getElementById('f-cost').value=""; document.getElementById('f-file').value=""; 
+                document.getElementById('f-price-global').value=""; document.getElementById('f-stock-global').value="";
                 document.getElementById('active-vars-area').innerHTML="";
                 document.querySelectorAll('.hidden-check').forEach(c => c.checked=false);
             },
@@ -994,7 +1020,11 @@
                 state.products.forEach(p => {
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                     let stock = 0; if(vars) vars.forEach(v => stock += parseInt(v.stock||0));
-                    div.innerHTML += `<div class="mini-prod"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/50'"> <div style="flex:1"><strong>${p.name}</strong><div class="stock-info">Estoque: <span class="${stock<5?'stock-warn':''}">${stock}</span></div></div><div><button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-mini-edit"><i class="fas fa-edit"></i> Editar</button> <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none; margin-left:10px;"><i class="fas fa-trash"></i></button></div></div>`;
+                    
+                    const soldOutClass = stock === 0 ? 'sold-out' : '';
+                    const stockDisplay = stock === 0 ? '<span class="tag-soldout">ESGOTADO</span>' : `<span class="stock-info">Estoque: ${stock}</span>`;
+
+                    div.innerHTML += `<div class="mini-prod ${soldOutClass}"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/50'"> <div style="flex:1"><strong>${p.name}</strong><br>${stockDisplay}</div><div><button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-mini-edit"><i class="fas fa-edit"></i> Editar</button> <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none; margin-left:10px;"><i class="fas fa-trash"></i></button></div></div>`;
                 });
             },
             renderOrders: async () => {
@@ -1029,7 +1059,9 @@
                                 pRev += (parseFloat(v.price||0) * q); stock += q;
                             });
                         }
-                        miniList += `<div class="mini-prod"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/50'"> <div style="flex:1"><strong>${p.name}</strong><br><span class="stock-info ${stock === 0 ? 'stock-warn' : ''}">${stock === 0 ? 'ESGOTADO' : 'Estoque: ' + stock}</span></div><button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-mini-edit">Editar</button></div>`;
+                        const soldOutClass = stock === 0 ? 'sold-out' : '';
+                        const stockDisplay = stock === 0 ? '<span class="tag-soldout">ESGOTADO</span>' : `<span class="stock-info">Estoque: ${stock}</span>`;
+                        miniList += `<div class="mini-prod ${soldOutClass}"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/50'"> <div style="flex:1"><strong>${p.name}</strong><br>${stockDisplay}</div><button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-mini-edit">Editar</button></div>`;
                     });
                     document.getElementById('st-cost').innerText = `R$ ${cost.toFixed(2)}`;
                     document.getElementById('st-rev').innerText = `R$ ${rev.toFixed(2)}`;
