@@ -95,8 +95,41 @@
         .admin-tab:hover { background: #f0f0f0; color: var(--accent); }
         .admin-tab.active { background:var(--accent); color:white; border-color: var(--accent); box-shadow: 0 4px 10px rgba(44,62,80,0.2); }
         
-        .checkbox-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:15px; border:1px solid #eee; }
-        .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; }
+        /* --- MODERN CHECKBOXES (VISUAL UPDATE) --- */
+        .checkbox-section-title { font-weight:bold; margin-bottom:10px; display:block; color:var(--accent); font-size:0.95rem; }
+        .modern-checkbox-grid { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+        
+        /* Hide Default Checkbox */
+        .hidden-check { display: none; }
+
+        /* Color Options (Bolinhas) */
+        .color-option-label { 
+            width: 45px; height: 45px; border-radius: 50%; cursor: pointer; 
+            border: 2px solid #eee; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            display:flex; align-items:center; justify-content:center; position: relative;
+        }
+        .color-option-label:hover { transform: scale(1.1); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .hidden-check:checked + .color-option-label { 
+            border-color: var(--accent); transform: scale(1.15); box-shadow: 0 5px 15px rgba(0,0,0,0.15); 
+        }
+        .hidden-check:checked + .color-option-label::after {
+            content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; 
+            color: white; font-size: 1.2rem; text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        /* Size/Volume Options (Pílulas) */
+        .vol-option-label {
+            padding: 8px 18px; border: 1px solid #ddd; border-radius: 30px; 
+            cursor: pointer; font-weight: 600; color: #777; background: white;
+            transition: all 0.3s ease; font-size: 0.9rem;
+        }
+        .vol-option-label:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+        .hidden-check:checked + .vol-option-label {
+            background: var(--accent); color: white; border-color: var(--accent);
+            transform: translateY(-2px); box-shadow: 0 4px 10px rgba(44,62,80,0.2);
+        }
+
+        .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
         .var-inputs.show { display:grid; grid-template-columns:1fr 1fr; gap:10px; animation: slideDown 0.3s ease; }
         @keyframes slideDown { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
         
@@ -402,10 +435,16 @@
                         <input type="file" id="f-file" class="input" style="margin-top:10px;">
                         <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
                         
-                        <label style="font-weight:bold;">Definir Variações (Custo/Preço por item):</label>
-                        <div class="checkbox-grid" id="color-checks"></div>
-                        <div class="checkbox-grid" id="volume-checks"></div>
+                        <label style="font-weight:bold; display:block; margin-bottom:15px; font-size:1.1rem;">Selecione Variações (Cores e Tamanhos):</label>
+                        
+                        <span class="checkbox-section-title">🎨 Cores Disponíveis</span>
+                        <div class="modern-checkbox-grid" id="color-checks"></div>
+                        
+                        <span class="checkbox-section-title">📏 Tamanhos / Volumes</span>
+                        <div class="modern-checkbox-grid" id="volume-checks"></div>
+                        
                         <div id="active-vars-area"></div>
+                        
                         <textarea id="f-desc" class="input" rows="3" placeholder="Descrição Detalhada" style="margin-top:10px;"></textarea>
                         <button onclick="admin.save()" id="btn-save" style="width:100%; background:var(--primary); color:white; padding:15px; border-radius:8px; border:none; margin-top:15px; font-weight:bold;">Salvar Produto</button>
                         <button onclick="admin.clear()" style="width:100%; padding:10px; background:none; border:none; color:#666;">Limpar Formulário</button>
@@ -421,7 +460,6 @@
 
     <script>
         // --- SEGURANÇA CONTRA LOOP INFINITO ---
-        // Se a loja não carregar em 4 segundos, força a liberação da tela.
         setTimeout(() => {
             const loader = document.getElementById('loading-screen');
             if(loader && loader.style.display !== 'none') {
@@ -439,7 +477,7 @@
             return false;
         };
 
-        // --- CONFIGURAÇÃO (ATENÇÃO: SUBSTITUA PELAS SUAS CHAVES REAIS SE O ERRO PERSISTIR) ---
+        // --- CONFIGURAÇÃO ---
         const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
         const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
@@ -450,7 +488,6 @@
         const EMAILJS_TEMPLATE_CLIENTE = 'template_rwf0bay';
         const EMAILJS_TEMPLATE_ADMIN = 'template_rwf0bay';
 
-        // Inicialização Segura do Supabase
         let sb = null;
         try {
             if(typeof supabase !== 'undefined') {
@@ -584,7 +621,6 @@
                 const list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
                 const div = document.getElementById('saved-addresses-list'); div.innerHTML="";
                 list.forEach((a,i) => {
-                    // Formata a exibição do endereço
                     const fullAddr = `${a.street}, ${a.number} - ${a.bairro}, ${a.city}/${a.uf}`;
                     div.innerHTML += `<div style="border:1px solid #eee; padding:10px; margin-bottom:5px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;"><div onclick="app.setAddr(${i})" style="cursor:pointer; flex:1;"><b>${a.type || 'Endereço'}</b>: ${fullAddr}<br><small>${a.name} (${a.phone})</small></div><div><i class="fas fa-edit" onclick="app.editAddress(${i})" style="color:blue; margin-right:10px; cursor:pointer;"></i><i class="fas fa-trash" onclick="app.delAddress(${i})" style="color:red; cursor:pointer;"></i></div></div>`;
                 });
@@ -624,13 +660,11 @@
                 const list = JSON.parse(localStorage.getItem('2a_addrs'));
                 const a = list[i];
                 const setVal = (id, v) => document.getElementById(id).value = safeVal(v);
-                
                 setVal('addr-name', a.name); setVal('addr-phone', a.phone);
                 setVal('addr-cep', a.cep); setVal('addr-street', a.street);
                 setVal('addr-num', a.number); setVal('addr-bairro', a.bairro);
                 setVal('addr-city', a.city); setVal('addr-uf', a.uf);
                 setVal('addr-ref', a.ref);
-                
                 app.delAddress(i); 
             },
             setAddr: (i) => {
@@ -649,8 +683,6 @@
                     if(state.user) authArea.innerHTML = `<small style="color:#27ae60"><i class="fas fa-check-circle"></i> Olá, ${state.user.name}</small>`;
                     else authArea.innerHTML = `<button onclick="app.showModal('auth-modal')" style="width:100%; padding:10px; background:#f0f0f0; border:none; border-radius:8px; color:#555; font-weight:bold;"><i class="fas fa-user-circle"></i> Login / Cadastro</button>`;
                 }
-
-                // ATUALIZAR BOTÃO DO HEADER
                 const headerBtn = document.querySelector('.login-btn-header');
                 if(headerBtn) {
                     if(state.user) {
@@ -665,7 +697,6 @@
             // CHECKOUT & EMAILS
             checkout: async (method) => {
                 if(!state.cart.length) return alert("Carrinho vazio");
-                // Exige login para persistência no histórico
                 if(!state.user) {
                     alert("Por favor, faça Login ou Cadastre-se para podermos acompanhar seu pedido.");
                     app.showModal('auth-modal'); return;
@@ -678,31 +709,23 @@
                     if(btn) btn.innerText = "Registrando pedido...";
                     
                     if(method === 'whatsapp') { 
-                        // 1. Registra no banco como pendente (WhatsApp)
                         const newOrderId = Date.now().toString();
-                        // Status diferente para o admin saber que foi via whats
                         const orderData = await app.registerOrder(newOrderId, 'WhatsApp / Combinar', 'Pendente (WhatsApp)'); 
                         await app.updateStockDatabase(); 
                         await app.sendEmails(orderData); 
-                        
-                        // 2. Redireciona para o WhatsApp
                         app.sendPaidOrder('Dinheiro/Combinar'); 
                     } 
                     else {
                         const newOrderId = Date.now().toString();
                         const orderData = await app.registerOrder(newOrderId, 'Mercado Pago (Pendente)', 'Pendente');
-                        
                         localStorage.setItem('2a_cart', JSON.stringify(state.cart));
                         const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
-                        
                         await app.sendEmails(orderData);
-
                         const res = await fetch(GOOGLE_CLOUD_URL, {
                             method:'POST', headers:{'Content-Type':'application/json'}, 
                             body:JSON.stringify({items, buyer: { email: state.user.email, name: state.user.name }, address: state.address})
                         });
                         const data = await res.json();
-                        
                         if(data.init_point) window.location.href = data.init_point;
                         else throw new Error("Falha ao gerar link");
                     }
@@ -718,18 +741,15 @@
             },
             sendEmails: async (order) => {
                 if(!state.user || !state.user.email) return;
-                
                 const itemsTxt = state.cart.map(i => `${i.qty}x ${i.name} (${i.variant}) - R$ ${i.price.toFixed(2)}`).join('\n');
                 const total = state.cart.reduce((a,b)=>a+(b.price*b.qty),0).toFixed(2);
                 const fullAddr = state.address ? `${state.address.street}, ${state.address.number} - ${state.address.city}/${state.address.uf}` : 'N/A';
-                
                 const templateParams = {
                     to_name: state.user.name,
                     to_email: state.user.email,
                     message: `\nITENS:\n${itemsTxt}\n\nTOTAL: R$ ${total}\n\nENDEREÇO:\n${fullAddr}`,
                     admin_email: 'erickveraosilva@gmail.com' 
                 };
-
                 if(window.emailjs) {
                     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENTE, templateParams);
                     const adminParams = {...templateParams, to_email: 'erickveraosilva@gmail.com', to_name: 'Admin 2A'};
@@ -860,13 +880,38 @@
                 const vDiv = document.getElementById('volume-checks');
                 if(!cDiv || !vDiv) return;
                 cDiv.innerHTML = ""; vDiv.innerHTML = "";
-                Object.keys(COLOR_MAP).forEach(c => { cDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${c}" onchange="admin.toggleInput(this)"> <span class="color-dot" style="background:${COLOR_MAP[c]}"></span> ${c}</label>`; });
-                PRESETS_VOL.forEach(v => vDiv.innerHTML += `<label class="check-label"><input type="checkbox" value="${v}" onchange="admin.toggleInput(this)"> ${v}</label>`);
+                
+                // GERA BOLINHAS DE COR
+                Object.keys(COLOR_MAP).forEach(c => { 
+                    cDiv.innerHTML += `
+                    <label>
+                        <input type="checkbox" class="hidden-check" value="${c}" onchange="admin.toggleInput(this)"> 
+                        <span class="color-option-label" style="background:${COLOR_MAP[c]}" title="${c}"></span>
+                    </label>`; 
+                });
+                
+                // GERA BOTÕES DE TAMANHO
+                PRESETS_VOL.forEach(v => {
+                    vDiv.innerHTML += `
+                    <label>
+                        <input type="checkbox" class="hidden-check" value="${v}" onchange="admin.toggleInput(this)"> 
+                        <span class="vol-option-label">${v}</span>
+                    </label>`;
+                });
             },
             toggleInput: (cb) => {
                 const id = `grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`;
                 const area = document.getElementById('active-vars-area');
-                if(cb.checked) area.innerHTML += `<div id="${id}" class="var-inputs show"><strong style="grid-column:span 2">${cb.value}</strong><input type="hidden" class="v-name" value="${cb.value}"><input type="number" class="input v-cost" placeholder="Custo (R$)"><input type="number" class="input v-price" placeholder="Venda (R$)"><input type="number" class="input v-stock" placeholder="Estoque"></div>`;
+                if(cb.checked) {
+                    area.innerHTML += `
+                    <div id="${id}" class="var-inputs show">
+                        <strong style="grid-column:span 2; color:var(--accent); text-transform:uppercase; font-size:0.9rem;">${cb.value}</strong>
+                        <input type="hidden" class="v-name" value="${cb.value}">
+                        <input type="number" class="input v-cost" placeholder="Custo (R$)">
+                        <input type="number" class="input v-price" placeholder="Preço de Venda (R$)">
+                        <input type="number" class="input v-stock" placeholder="Qtd Estoque" style="grid-column:span 2">
+                    </div>`;
+                }
                 else document.getElementById(id)?.remove();
             },
             tab: (t) => { 
@@ -942,7 +987,7 @@
                 document.getElementById('f-name').value=""; document.getElementById('f-desc').value=""; 
                 document.getElementById('f-cost').value=""; document.getElementById('f-file').value=""; 
                 document.getElementById('active-vars-area').innerHTML="";
-                document.querySelectorAll('.checkbox-grid input').forEach(c => c.checked=false);
+                document.querySelectorAll('.hidden-check').forEach(c => c.checked=false);
             },
             renderList: () => {
                 const div = document.getElementById('admin-list'); div.innerHTML="";
@@ -1035,4 +1080,3 @@
     </script>
 </body>
 </html>
-
