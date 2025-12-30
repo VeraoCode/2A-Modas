@@ -86,24 +86,37 @@
         .input-cep-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
 
         /* COMPACT DATE PICKER */
-        .flatpickr-input { background: white !important; border: 1px solid #ddd !important; border-radius: 8px !important; padding: 6px 12px !important; font-weight: 600 !important; color: var(--accent) !important; cursor: pointer; text-align: center; width: 100%; font-size: 0.85rem !important; }
-        .compact-date { max-width: 140px; }
+        .flatpickr-input { background: white !important; border: 1px solid #ddd !important; border-radius: 8px !important; padding: 8px 12px !important; font-weight: 600 !important; color: var(--accent) !important; cursor: pointer; text-align: center; width: 100%; font-size: 0.9rem !important; }
+        .compact-date { max-width: 150px; }
 
-        /* CHIP FILTERS (MODERN FILTERS) */
+        /* CHIP FILTERS */
         .chip-container { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
         .chip { padding: 6px 14px; border-radius: 20px; border: 1px solid #eee; background: white; color: #666; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
         .chip:hover { background: #f5f5f5; transform: translateY(-2px); }
         .chip.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 10px rgba(44,62,80,0.2); }
         .chip-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
         
-        /* FILTER BAR */
+        /* FILTER BAR ALIGNMENT FIXED */
         .filter-wrapper { 
-            background: #fff; padding: 10px 15px; border-radius: 12px; margin-bottom: 25px; 
-            border: 1px solid #eee; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; 
+            background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 25px; 
+            border: 1px solid #eee; display: flex; align-items: flex-end; gap: 15px; flex-wrap: wrap; 
             box-shadow: 0 2px 10px rgba(0,0,0,0.03);
         }
-        .date-group { display: flex; align-items: center; gap: 8px; }
-        .date-group label { font-size: 0.8rem; font-weight: bold; color: #555; white-space: nowrap; }
+        .date-group { display: flex; flex-direction: column; gap: 5px; }
+        .date-group label { font-size: 0.75rem; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* MODERN BUTTONS */
+        .btn-modern {
+            background: var(--accent); color: white; padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(44,62,80,0.1); cursor: pointer; font-size: 0.9rem;
+        }
+        .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(44,62,80,0.2); background: var(--accent-light); }
+        .btn-modern.outline { background: transparent; border: 1px solid #ccc; color: #555; box-shadow: none; }
+        .btn-modern.outline:hover { background: #f5f5f5; border-color: #bbb; }
+        .btn-modern.small { padding: 6px 12px; font-size: 0.8rem; }
+        .btn-modern.success { background: var(--success); }
+        .btn-modern.success:hover { background: #219150; }
 
         /* FINANCE CARDS */
         .fin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
@@ -121,7 +134,7 @@
         .fin-prod-row img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; }
         .margin-badge { font-size: 0.75rem; background: #e0f7fa; color: #006064; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-left: 10px; }
 
-        /* DEBT CARD (CONTROLE DE PAGAMENTOS) */
+        /* DEBT CARD */
         .debt-card { border: 1px solid #eee; background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 15px; position: relative; border-left: 5px solid var(--warning); box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: 0.3s; }
         .debt-card.overdue { border-left-color: var(--danger); background: #fff5f5; }
         .debt-card.paid { border-left-color: var(--success); background: #f0fff4; opacity: 0.8; }
@@ -213,14 +226,14 @@
         .payment-box { grid-column: span 2; background: #fffaf0; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-top: 10px; }
         
         /* DYNAMIC INSTALLMENT ROWS */
-        .gen-installments-area { display: none; margin-top: 10px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
-        .inst-gen-row { display: grid; grid-template-columns: 30px 1fr 1fr auto; gap: 5px; align-items: center; margin-bottom: 5px; font-size: 0.85rem; }
-        .inst-gen-row input { padding: 5px; border: 1px solid #ddd; border-radius: 4px; }
+        .gen-installments-area { display: none; margin-top: 15px; background: white; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+        .inst-gen-row { display: grid; grid-template-columns: 30px 1fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 0.85rem; }
+        .inst-gen-row input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
 
         .admin-contact-btn { display: inline-flex; align-items: center; gap: 6px; background: #25D366; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: bold; margin-top: 5px; transition: 0.3s; }
         .admin-contact-btn:hover { background: #128C7E; transform: translateY(-2px); }
 
-        /* CAROUSEL CARDS COMPACT */
+        /* CAROUSEL & PRODUCT CARDS */
         .carousel-wrapper { overflow-x: auto; white-space: nowrap; padding: 10px 0; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .carousel-wrapper::-webkit-scrollbar { display: none; }
         .carousel-track { display: inline-flex; gap: 10px; animation: scrollPromo 20s linear infinite; }
@@ -229,17 +242,6 @@
         .promo-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: var(--primary); }
         .promo-card img { width: 100%; height: 100px; border-radius: 8px; object-fit: cover; margin-bottom: 8px; }
         @keyframes scrollPromo { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-
-        /* MODERN CHECKBOXES */
-        .checkbox-section-title { font-weight:bold; margin-bottom:10px; display:block; color:var(--accent); font-size:0.95rem; }
-        .modern-checkbox-grid { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
-        .hidden-check { display: none; }
-        .color-option-label { width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: 2px solid #eee; transition: all 0.3s; display:flex; align-items:center; justify-content:center; }
-        .color-option-label:hover { transform: scale(1.1); }
-        .hidden-check:checked + .color-option-label { border-color: var(--accent); transform: scale(1.15); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
-        .hidden-check:checked + .color-option-label::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: white; }
-        .vol-option-label { padding: 8px 18px; border: 1px solid #ddd; border-radius: 30px; cursor: pointer; font-weight: 600; color: #777; background: white; transition: 0.3s; font-size: 0.9rem; }
-        .hidden-check:checked + .vol-option-label { background: var(--accent); color: white; border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(44,62,80,0.2); }
 
         /* UI ELEMENTS */
         .var-inputs { display:none; background:white; border:1px solid #eee; padding:15px; border-radius:8px; margin-top:10px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
@@ -268,8 +270,11 @@
 
         /* DASHBOARD GRID */
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
-        .dash-card { background: white; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; border: 1px solid #eee; }
+        .dash-card { background: white; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; border: 1px solid #eee; position:relative; }
         .dash-card img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+        .dash-card.sold-out { background: #f9f9f9; border-color: #eee; }
+        .dash-card.sold-out img { filter: grayscale(100%); opacity: 0.5; }
+        .tag-dashboard-sold { position: absolute; top: 10px; right: 10px; background: #ccc; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
 
         footer { background: #222; color: #888; text-align: center; padding: 40px 20px; margin-top: auto; }
         footer button { color: #ddd; text-decoration: none; font-size: 0.8rem; font-weight: bold; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; transition: 0.3s; cursor: pointer; background: transparent; }
@@ -280,7 +285,7 @@
         #admin-auth-modal h2 { margin-bottom: 20px; color: var(--accent); }
         #admin-auth-modal i { font-size: 3rem; color: var(--accent); margin-bottom: 20px; }
 
-        @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} .oc-body { grid-template-columns: 1fr; } .filter-wrapper { flex-direction: column; align-items: stretch; } }
+        @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} .oc-body { grid-template-columns: 1fr; } .filter-wrapper { justify-content: flex-start; } }
     </style>
 </head>
 <body>
@@ -489,7 +494,7 @@
         <div class="box" style="max-width:100%; height:100%; border-radius:0; padding:0; display:flex; flex-direction:column;">
             <div class="admin-nav">
                 <h3 style="margin-right:20px; align-self:center;">Admin 2A</h3>
-                <button onclick="admin.tab('dash')" class="admin-tab active">Dashboard</button>
+                <button onclick="admin.tab('dash')" class="admin-tab active">Estoque</button>
                 <button onclick="admin.tab('orders')" class="admin-tab">Pedidos</button>
                 <button onclick="admin.tab('pay')" class="admin-tab">Financeiro</button>
                 <button onclick="admin.tab('prod')" class="admin-tab">Produtos</button>
@@ -531,7 +536,7 @@
                                 <label>Até:</label>
                                 <input type="text" id="order-end" class="flatpickr-input compact-date">
                             </div>
-                            </div>
+                        </div>
 
                         <div class="chip-container" id="order-filters">
                             <button class="chip active" onclick="admin.filterOrders('all', this)"><span class="chip-dot" style="background:#555"></span> Todos</button>
@@ -548,7 +553,7 @@
                 <div id="tab-pay" style="display:none;">
                     <div style="background:white; padding:20px; border-radius:12px;">
                         <h3>Balanço Financeiro & Pagamentos</h3>
-                        <p style="color:#666; font-size:0.9rem; margin-bottom:20px;">Gerencie o fluxo de caixa e fiados.</p>
+                        <p style="color:#666; font-size:0.9rem; margin-bottom:20px;">Gerencie o fluxo de caixa.</p>
 
                         <div class="filter-wrapper" style="background: #e8f5e9; border: 1px solid #c8e6c9;">
                             <div class="date-group">
@@ -575,17 +580,16 @@
                                 <div id="fin-total-profit" class="fin-val-big">R$ 0.00</div>
                             </div>
                             <div class="fin-card-modern">
-                                <div class="fin-label">A Receber (Fiado)</div>
+                                <div class="fin-label">A Receber</div>
                                 <div id="fin-total-missing" class="fin-val-big" style="color:var(--danger)">R$ 0.00</div>
                             </div>
                         </div>
                         
                          <div class="chip-container" id="pay-filters">
                             <button class="chip active" onclick="admin.filterPayments('all', this)">Todos</button>
-                            <button class="chip" onclick="admin.filterPayments('Pendente', this)">Pendente</button>
+                            <button class="chip" onclick="admin.filterPayments('A_pagar', this)">À pagar</button>
                             <button class="chip" onclick="admin.filterPayments('Pago', this)">Pago</button>
                             <button class="chip" onclick="admin.filterPayments('Parcelado', this)">Parcelado</button>
-                            <button class="chip" onclick="admin.filterPayments('Fiado', this)">Fiado</button>
                         </div>
 
                         <div id="pay-list"></div>
@@ -1016,7 +1020,6 @@
                         const today = new Date();
                         const prior = new Date(new Date().setDate(today.getDate() - 30));
                         
-                        // FLATPICKR DATE SET & CONFIG AUTO FILTER
                         const setDateAndBind = (id, date, callback) => {
                             const el = document.getElementById(id);
                             if(el && el._flatpickr) {
@@ -1108,7 +1111,7 @@
                         });
                     }
                 });
-                alert("Editando...");
+                admin.tab('prod'); // Auto switch to product tab
             },
             del: async (id) => { if(confirm("Excluir?")) { if(sb) await sb.from('products').delete().eq('id', id); await app.load(); admin.renderList(); } },
             clear: (soft=false) => { 
@@ -1138,7 +1141,6 @@
             renderOrders: async (useCache = false) => {
                 if(!sb) return;
                 
-                // Fetch only if not cached or date changed (implied by call context)
                 if(!useCache || !state.adminOrders.length) {
                     let query = sb.from('orders').select('*').order('created_at', {ascending:false});
                     const startStr = document.getElementById('order-start').value;
@@ -1186,8 +1188,9 @@
                     if(o.status === 'Cancelado') stClass = 'st-cancelado';
 
                     const payStatus = o.payment_status || 'Pendente';
-                    const isOwing = payStatus === 'Parcelado' || payStatus === 'Fiado';
-                    const showPayDetails = isOwing ? 'block' : 'none';
+                    // Tratamento para exibir "À pagar" se for Pendente ou o novo valor A_pagar
+                    const isOwing = payStatus === 'Parcelado' || payStatus === 'Pendente' || payStatus === 'A_pagar';
+                    const showPayDetails = (payStatus === 'Parcelado') ? 'block' : 'none';
 
                     div.innerHTML += `
                     <div class="order-card-modern">
@@ -1213,20 +1216,19 @@
                             <div class="payment-box">
                                 <label style="font-weight:bold; color:var(--accent);">Financeiro:</label>
                                 <select onchange="admin.togglePaymentDetails(this, '${o.id}', ${o.total})" class="input" style="margin-top:5px;">
-                                    <option value="Pendente" ${payStatus==='Pendente'?'selected':''}>Pendente</option>
+                                    <option value="A_pagar" ${(payStatus==='Pendente' || payStatus==='A_pagar')?'selected':''}>À pagar</option>
                                     <option value="Pago" ${payStatus==='Pago'?'selected':''}>Pago</option>
                                     <option value="Parcelado" ${payStatus==='Parcelado'?'selected':''}>Parcelado</option>
-                                    <option value="Fiado" ${payStatus==='Fiado'?'selected':''}>Fiado</option>
                                 </select>
                                 
                                 <div id="pay-det-${o.id}" class="gen-installments-area" style="display:${showPayDetails}">
                                     <div style="display:flex; gap:10px; margin-bottom:10px;">
-                                        <input type="number" id="inst-n-${o.id}" class="input" placeholder="Qtd Parcelas" style="margin:0;">
-                                        <button onclick="admin.genInstallments('${o.id}', ${o.total})" class="btn-filter-action" style="padding:5px 15px;">Gerar</button>
+                                        <input type="number" id="inst-n-${o.id}" class="input" placeholder="Qtd" style="margin:0; width:60px;">
+                                        <button onclick="admin.genInstallments('${o.id}', ${o.total})" class="btn-modern outline small"><i class="fas fa-magic"></i> Gerar Parcelas</button>
                                     </div>
                                     <div id="inst-list-${o.id}"></div>
                                 </div>
-                                <button onclick="admin.updatePaymentStatus('${o.id}')" class="btn-filter-action" style="width:100%; justify-content:center; margin-top:5px;">Salvar Financeiro</button>
+                                <button onclick="admin.updatePaymentStatus('${o.id}')" class="btn-modern success" style="width:100%; margin-top:5px;"><i class="fas fa-save"></i> Salvar Financeiro</button>
                             </div>
 
                             <div class="oc-items-box">${itemsHtml}</div>
@@ -1246,7 +1248,7 @@
             },
             togglePaymentDetails: (sel, id, total) => {
                 const div = document.getElementById(`pay-det-${id}`);
-                if(div) div.style.display = (sel.value === 'Parcelado' || sel.value === 'Fiado') ? 'block' : 'none';
+                if(div) div.style.display = (sel.value === 'Parcelado') ? 'block' : 'none';
             },
             genInstallments: (id, total) => {
                 const n = parseInt(document.getElementById(`inst-n-${id}`).value);
@@ -1281,7 +1283,7 @@
                 const status = row.querySelector('select').value;
                 
                 let installmentsJson = null;
-                if(status === 'Parcelado' || status === 'Fiado') {
+                if(status === 'Parcelado') {
                     const list = document.getElementById(`inst-list-${id}`);
                     const rows = list.querySelectorAll('.inst-gen-row');
                     const arr = [];
@@ -1317,7 +1319,12 @@
                 
                 let filtered = data;
                 if(state.filterPay !== 'all') {
-                    filtered = data.filter(o => o.payment_status === state.filterPay);
+                    // Mapeia visual "A_pagar" para incluir legado "Pendente"
+                    if(state.filterPay === 'A_pagar') {
+                        filtered = data.filter(o => o.payment_status === 'Pendente' || o.payment_status === 'A_pagar');
+                    } else {
+                        filtered = data.filter(o => o.payment_status === state.filterPay);
+                    }
                 }
 
                 if(filtered.length === 0) { div.innerHTML = "<p>Nenhum registro encontrado para este filtro.</p>"; return; }
@@ -1342,13 +1349,25 @@
 
                     const remaining = Math.max(0, o.total - totalPaid);
                     const isOverdue = nextDue && nextDue < today && !isPaidStatus;
-                    const prodList = JSON.parse(o.items).map(x=>x.name).join(', ');
+                    const isPending = o.payment_status === 'Pendente' || o.payment_status === 'A_pagar';
+
+                    // Parse products properly for list view
+                    const prodList = JSON.parse(o.items).map(i => `
+                        <div class="order-prod-row">
+                            <img src="${i.image || 'https://via.placeholder.com/50'}" onerror="this.src='https://via.placeholder.com/50'">
+                            <div class="order-prod-info">
+                                <div class="order-prod-name">${i.name}</div>
+                                <div class="order-prod-var">${i.variant}</div>
+                            </div>
+                            <div class="order-prod-qty">x${i.qty}</div>
+                        </div>
+                    `).join('');
 
                     div.innerHTML += `
                     <div class="debt-card ${isOverdue ? 'overdue' : ''} ${isPaidStatus ? 'paid' : ''}">
                         <div class="debt-header">
                             <span class="debt-client">${o.customer_name}</span>
-                            <span class="debt-badge">${o.payment_status}</span>
+                            <span class="debt-badge">${o.payment_status === 'Pendente' ? 'À pagar' : o.payment_status.replace('_', ' ')}</span>
                         </div>
                         <div class="debt-val-box">
                             <div class="debt-total">Total: R$ ${o.total.toFixed(2)}</div>
@@ -1356,13 +1375,21 @@
                         </div>
                         <div class="debt-info" style="color:${isOverdue?'var(--danger)':'#555'}">
                             ${isPaidStatus ? '<i class="fas fa-check-circle" style="color:var(--success)"></i> Totalmente Pago' : 
-                            `Próx Vencimento: <strong>${nextDue ? nextDue.split('-').reverse().join('/') : '---'}</strong>`}
+                            (nextDue ? `Próx Vencimento: <strong>${nextDue.split('-').reverse().join('/')}</strong>` : '')}
                         </div>
-                        <small style="color:#777">${prodList}</small>
                         
+                        <div class="oc-items-box" style="margin: 10px 0; background: #fff;">${prodList}</div>
+                        
+                        ${isPending ? `
+                            <button onclick="admin.markAsPaidFull('${o.id}')" class="btn-modern success" style="width:100%; margin-top:5px;">
+                                <i class="fas fa-check-double"></i> Confirmar Pagamento Total
+                            </button>
+                        ` : ''}
+
                         ${(items.length > 0 && !isPaidStatus) ? `
-                        <br>
-                        <button onclick="admin.expandInstallments('${o.id}')" style="margin-top:10px; font-size:0.8rem; text-decoration:underline; border:none; background:none; color:blue;">Ver/Baixar Parcelas</button>
+                        <button onclick="admin.expandInstallments('${o.id}')" class="btn-modern outline small" style="width:100%; margin-top:10px;">
+                            <i class="fas fa-list-ol"></i> Ver Detalhes / Parcelas
+                        </button>
                         
                         <div id="inst-manage-${o.id}" class="installment-list">
                             ${items.map((i, idx) => `
@@ -1403,6 +1430,13 @@
                     }
                 }
             },
+            markAsPaidFull: async (id) => {
+                if(confirm("Confirmar o recebimento TOTAL deste pedido?")) {
+                    await sb.from('orders').update({ payment_status: 'Pago', installments: null }).eq('id', id);
+                    admin.renderPayments();
+                    admin.renderOrders(); // Refresh orders list too just in case
+                }
+            },
             renderFinance: async () => {
                 const startStr = document.getElementById('fin-start').value;
                 const endStr = document.getElementById('fin-end').value;
@@ -1422,11 +1456,8 @@
                 let totalCostSold = 0;
                 let totalMissing = 0;
 
-                // Loop orders to calculate totals
                 orders.forEach(o => {
                     totalRevenue += o.total;
-
-                    // Calculate Missing/Debt
                     let paid = 0;
                     if(o.payment_status === 'Pago') paid = o.total;
                     else if(o.installments) {
@@ -1437,13 +1468,11 @@
                     }
                     totalMissing += (o.total - paid);
 
-                    // Calculate Cost of Goods Sold
                     const items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
                     items.forEach(cartItem => {
                         const product = state.products.find(p => p.name === cartItem.name);
                         let itemCost = 0;
                         if(product) {
-                            // Try to find specific var cost, fallback to product cost
                             const vars = typeof product.variations === 'string' ? JSON.parse(product.variations) : product.variations;
                             const variant = vars.find(v => v.name === cartItem.variant);
                             if(variant && variant.cost) itemCost = parseFloat(variant.cost);
@@ -1460,7 +1489,7 @@
             },
             updateStatus: async (id, val) => { if(sb) await sb.from('orders').update({status: val}).eq('id', id); alert("Status atualizado!"); admin.renderOrders(); },
             
-            // NEW DASHBOARD STOCK LOGIC
+            // ESTOQUE (DASHBOARD) LOGIC
             updateStats: () => {
                 const grid = document.getElementById('dash-stock-grid');
                 if(!grid) return;
@@ -1473,7 +1502,7 @@
                 state.products.forEach(p => {
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations || '[]') : (p.variations || []);
                     let pStock = 0;
-                    let pValue = 0; // Stock * Price
+                    let pValue = 0; 
 
                     vars.forEach(v => {
                         const q = parseInt(v.stock||0);
@@ -1489,9 +1518,12 @@
                     });
 
                     // Render Card
-                    const color = pStock === 0 ? '#e74c3c' : (pStock < 5 ? '#f39c12' : '#27ae60');
+                    const isSoldOut = pStock === 0;
+                    const color = isSoldOut ? '#888' : (pStock < 5 ? '#f39c12' : '#27ae60');
+                    
                     grid.innerHTML += `
-                    <div class="dash-card">
+                    <div class="dash-card ${isSoldOut ? 'sold-out' : ''}">
+                        ${isSoldOut ? '<span class="tag-dashboard-sold">ESGOTADO</span>' : ''}
                         <img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/60'">
                         <div style="flex:1">
                             <strong style="font-size:0.95rem; display:block;">${p.name}</strong>
@@ -1500,9 +1532,12 @@
                                 <i class="fas fa-box"></i> ${pStock} un.
                             </div>
                         </div>
-                        <div style="text-align:right; font-size:0.85rem; color:#888;">
-                            Est. Venda:<br>
-                            <span style="color:var(--accent); font-weight:bold;">R$ ${pValue.toFixed(2)}</span>
+                        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;">
+                            <div style="text-align:right; font-size:0.8rem; color:#888;">
+                                Est. Venda:<br>
+                                <span style="color:var(--accent); font-weight:bold;">R$ ${pValue.toFixed(2)}</span>
+                            </div>
+                            <button class="btn-modern small outline" onclick="admin.edit('${p.id}')">Editar</button>
                         </div>
                     </div>`;
                 });
