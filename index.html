@@ -17,7 +17,7 @@
             --primary: #c48b78; --primary-dark: #a06b5a;
             --accent: #2c3e50; --accent-light: #34495e;
             --bg: #f8f9fa; --white: #ffffff;
-            --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; --info: #3498db;
+            --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; --info: #3498db; --purple: #9b59b6;
             --radius: 12px; --shadow: 0 10px 40px rgba(0,0,0,0.08);
         }
         * { margin:0; padding:0; box-sizing:border-box; outline:none; font-family:'Plus Jakarta Sans', sans-serif; }
@@ -82,24 +82,12 @@
         .input-cep-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
 
         /* FILTER BAR (DATE) */
-        .filter-wrapper { 
-            background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 25px; 
-            border: 1px solid #eee; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-        }
+        .filter-wrapper { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #eee; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         .date-group { display: flex; align-items: center; gap: 5px; background: #f9f9f9; padding: 5px 10px; border-radius: 8px; border: 1px solid #eee; }
         .date-group label { font-size: 0.8rem; font-weight: bold; color: #777; }
-        .input-date-modern { 
-            border: none; background: transparent; font-family: inherit; color: var(--accent); 
-            font-weight: 600; font-size: 0.9rem; cursor: pointer; outline: none;
-        }
-        .btn-filter-action {
-            background: var(--accent); color: white; padding: 8px 20px; border-radius: 8px; border: none;
-            font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 0.9rem;
-        }
+        .input-date-modern { border: none; background: transparent; font-family: inherit; color: var(--accent); font-weight: 600; font-size: 0.9rem; cursor: pointer; outline: none; }
+        .btn-filter-action { background: var(--accent); color: white; padding: 8px 20px; border-radius: 8px; border: none; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
         .btn-filter-action:hover { background: var(--accent-light); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(44,62,80,0.2); }
-        .btn-clear-hist { background: #fff5f5; color: var(--danger); border: 1px solid #ffcccc; margin-left: auto; }
-        .btn-clear-hist:hover { background: var(--danger); color: white; border-color: var(--danger); }
 
         /* FINANCE CARDS */
         .fin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
@@ -113,9 +101,18 @@
         .fin-label { font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: bold; letter-spacing: 0.5px; }
         .fin-val-big { font-size: 1.6rem; font-weight: 800; color: var(--accent); margin-top: 5px; }
         .fin-prod-row { display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid #f5f5f5; background: white; transition: 0.2s; }
-        .fin-prod-row:hover { background: #fafafa; }
         .fin-prod-row img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; }
         .margin-badge { font-size: 0.75rem; background: #e0f7fa; color: #006064; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-left: 10px; }
+
+        /* DEBT CARD (CONTROLE DE PAGAMENTOS) */
+        .debt-card { border: 1px solid #eee; background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 15px; position: relative; border-left: 5px solid var(--warning); }
+        .debt-card.overdue { border-left-color: var(--danger); background: #fff5f5; }
+        .debt-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .debt-client { font-size: 1.2rem; font-weight: 800; color: var(--accent); }
+        .debt-value { font-size: 1.2rem; font-weight: 800; color: var(--danger); }
+        .debt-info { font-size: 0.9rem; color: #555; margin-bottom: 5px; }
+        .debt-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; color: white; background: var(--warning); }
+        .debt-card.overdue .debt-badge { background: var(--danger); }
 
         /* MODERN TOGGLE SWITCH */
         .toggle-switch { position: relative; display: inline-block; width: 60px; height: 30px; margin-right: 10px; vertical-align: middle; }
@@ -159,11 +156,16 @@
         .oc-section label { display: block; font-size: 0.7rem; text-transform: uppercase; color: #aaa; font-weight: bold; margin-bottom: 5px; }
         .oc-val { font-size: 0.95rem; color: #333; font-weight: 600; line-height: 1.4; }
         .oc-items-box { grid-column: span 2; background: #fdfdfd; border: 1px dashed #ddd; border-radius: 8px; padding: 15px; font-size: 0.9rem; color: #555; }
+        
         .status-selector { padding: 8px 15px; border-radius: 20px; border: none; font-weight: bold; font-size: 0.85rem; cursor: pointer; appearance: none; outline: none; text-align: center; width: 100%; transition: 0.3s; }
         .st-pendente { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .st-enviado { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
         .st-entregue { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .st-cancelado { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .payment-box { grid-column: span 2; background: #fffaf0; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-top: 10px; }
+        .pay-details-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+
         .admin-contact-btn { display: inline-flex; align-items: center; gap: 6px; background: #25D366; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: bold; margin-top: 5px; transition: 0.3s; }
         .admin-contact-btn:hover { background: #128C7E; transform: translateY(-2px); }
 
@@ -172,14 +174,7 @@
         .carousel-wrapper::-webkit-scrollbar { display: none; }
         .carousel-track { display: inline-flex; gap: 10px; animation: scrollPromo 20s linear infinite; }
         .carousel-track:hover { animation-play-state: paused; }
-        
-        .promo-card { 
-            min-width: 140px; width: 140px; 
-            background: white; border: 1px solid #eee; border-radius: 12px; 
-            padding: 10px; cursor: pointer; display: flex; flex-direction: column; 
-            align-items: center; text-align: center; white-space: normal;
-            transition: 0.3s;
-        }
+        .promo-card { min-width: 140px; width: 140px; background: white; border: 1px solid #eee; border-radius: 12px; padding: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; text-align: center; white-space: normal; transition: 0.3s; }
         .promo-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: var(--primary); }
         .promo-card img { width: 100%; height: 100px; border-radius: 8px; object-fit: cover; margin-bottom: 8px; }
         @keyframes scrollPromo { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
@@ -440,6 +435,7 @@
                 <h3 style="margin-right:20px; align-self:center;">Admin 2A</h3>
                 <button onclick="admin.tab('dash')" class="admin-tab active">Dashboard</button>
                 <button onclick="admin.tab('orders')" class="admin-tab">Pedidos</button>
+                <button onclick="admin.tab('pay')" class="admin-tab">Pagamentos</button>
                 <button onclick="admin.tab('fin')" class="admin-tab">Financeiro</button>
                 <button onclick="admin.tab('prod')" class="admin-tab">Produtos</button>
                 <button onclick="app.closeModal('admin-modal')" style="background:var(--danger); color:white; border:none; padding:8px 20px; border-radius:20px; margin-left:auto; font-weight:bold;">Sair</button>
@@ -481,10 +477,17 @@
                                 <input type="date" id="order-end" class="input-date-modern">
                             </div>
                             <button class="btn-filter-action" onclick="admin.renderOrders()"><i class="fas fa-filter"></i> Filtrar</button>
-                            <button class="btn-filter-action btn-clear-hist" onclick="admin.clearHistory()"><i class="fas fa-trash"></i> Limpar Concluídos</button>
                         </div>
 
                         <div id="orders-list"></div>
+                    </div>
+                </div>
+
+                <div id="tab-pay" style="display:none;">
+                    <div style="background:white; padding:20px; border-radius:12px;">
+                        <h3>Controle de Pagamentos (A Pagar / Fiado)</h3>
+                        <p style="color:#666; font-size:0.9rem; margin-bottom:20px;">Listando apenas clientes com pendências.</p>
+                        <div id="pay-list"></div>
                     </div>
                 </div>
 
@@ -752,8 +755,9 @@
                     btn.innerText = "Registrando...";
                     const newOrderId = Date.now().toString();
                     const statusInicial = method === 'whatsapp' ? 'Pendente (WhatsApp)' : 'Pendente (Mercado Pago)';
+                    const payStatus = method === 'mercadopago' ? 'Pago' : 'Pendente';
                     
-                    const orderData = await app.registerOrder(newOrderId, method === 'whatsapp' ? 'WhatsApp/Dinheiro' : 'Mercado Pago', statusInicial);
+                    const orderData = await app.registerOrder(newOrderId, method === 'whatsapp' ? 'WhatsApp/Dinheiro' : 'Mercado Pago', statusInicial, payStatus);
                     await app.updateStockDatabase();
                     await app.sendEmails(orderData);
 
@@ -776,13 +780,13 @@
                 }
             },
             
-            registerOrder: async (oid, method, status = 'Pendente') => {
+            registerOrder: async (oid, method, status = 'Pendente', payStatus = 'Pendente') => {
                 if(!sb) throw new Error("Banco de dados desconectado.");
                 const total = state.cart.reduce((a,b)=>a+(b.price*b.qty),0);
                 const order = {
                     id: oid.toString(), customer_name: state.user.name, customer_email: state.user.email, customer_id: String(state.user.id), 
                     total: total, items: JSON.stringify(state.cart), address: JSON.stringify(state.address), date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
-                    method: method, status: status, created_at: new Date().toISOString()
+                    method: method, status: status, payment_status: payStatus, created_at: new Date().toISOString()
                 };
                 const { data, error } = await sb.from('orders').insert([order]).select();
                 if(error) throw new Error(`Erro no Banco: ${error.message}`);
@@ -838,7 +842,7 @@
             checkProfile: () => { 
                 if(state.user) { 
                     app.showModal('client-modal'); 
-                    // Set default dates for client
+                    // DEFAULT 30 DAYS FOR CLIENT
                     const today = new Date();
                     const prior = new Date(new Date().setDate(today.getDate() - 30));
                     document.getElementById('client-date-end').valueAsDate = today;
@@ -931,17 +935,13 @@
                     app.closeModal('admin-auth-modal');
                     setTimeout(() => { 
                         app.showModal('admin-modal'); 
-                        
-                        // Set Default Dates for Admin (Last 30 Days)
                         const today = new Date();
                         const prior = new Date(new Date().setDate(today.getDate() - 30));
-                        
                         document.getElementById('order-end').valueAsDate = today;
                         document.getElementById('order-start').valueAsDate = prior;
                         document.getElementById('fin-end').valueAsDate = today;
                         document.getElementById('fin-start').valueAsDate = prior;
-
-                        admin.renderList(); admin.renderOrders(); admin.updateStats(); 
+                        admin.renderList(); admin.renderOrders(); admin.updateStats(); admin.renderPayments();
                     }, 100);
                 } else alert("Senha incorreta");
             },
@@ -960,7 +960,7 @@
             tab: (t) => { 
                 document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
                 document.querySelector(`.admin-tab[onclick*='${t}']`).classList.add('active');
-                ['dash','prod','orders','fin'].forEach(i => document.getElementById(`tab-${i}`).style.display = i===t ? 'block' : 'none');
+                ['dash','prod','orders','fin','pay'].forEach(i => document.getElementById(`tab-${i}`).style.display = i===t ? 'block' : 'none');
             },
             save: async () => {
                 if(!sb) return;
@@ -1053,6 +1053,11 @@
                     if(o.status.includes('Entregue')) stClass = 'st-entregue';
                     if(o.status === 'Cancelado') stClass = 'st-cancelado';
 
+                    // Payment details
+                    const payStatus = o.payment_status || 'Pendente';
+                    const isOwing = payStatus === 'A Pagar' || payStatus === 'Fiado';
+                    const showPayDetails = isOwing ? 'block' : 'none';
+
                     div.innerHTML += `
                     <div class="order-card-modern">
                         <div class="oc-header"><span class="oc-id">Pedido #${o.id.slice(-6)}</span><span class="oc-date">${o.date}</span></div>
@@ -1062,10 +1067,10 @@
                                 <div class="oc-val">${o.customer_name}</div>
                                 <div style="font-size:0.8rem; color:#666;">${o.customer_email}</div>
                                 <div style="font-size:0.8rem; color:#666;">${phoneRaw}</div>
-                                ${phoneClean ? `<a href="https://wa.me/55${phoneClean}" target="_blank" class="admin-contact-btn"><i class="fab fa-whatsapp"></i> Contatar Cliente</a>` : ''}
+                                ${phoneClean ? `<a href="https://wa.me/55${phoneClean}" target="_blank" class="admin-contact-btn"><i class="fab fa-whatsapp"></i> Contatar</a>` : ''}
                             </div>
                             <div class="oc-section"><label>Total</label><div class="oc-val" style="color:var(--success)">R$ ${o.total.toFixed(2)}</div></div>
-                            <div class="oc-section"><label>Status Atual</label>
+                            <div class="oc-section"><label>Status Pedido</label>
                                 <select onchange="admin.updateStatus('${o.id}', this.value)" class="status-selector ${stClass}">
                                     <option value="Pendente" ${o.status.includes('Pendente')?'selected':''}>Pendente</option>
                                     <option value="Enviado" ${o.status==='Enviado'?'selected':''}>Enviado</option>
@@ -1073,23 +1078,68 @@
                                     <option value="Cancelado" ${o.status==='Cancelado'?'selected':''}>Cancelado</option>
                                 </select>
                             </div>
+                            
+                            <div class="payment-box">
+                                <label style="font-weight:bold; color:var(--accent);">Financeiro:</label>
+                                <select onchange="admin.togglePaymentDetails(this, '${o.id}')" class="input" style="margin-top:5px;">
+                                    <option value="Pendente" ${payStatus==='Pendente'?'selected':''}>Pendente</option>
+                                    <option value="Pago" ${payStatus==='Pago'?'selected':''}>Pago</option>
+                                    <option value="A Pagar" ${payStatus==='A Pagar'?'selected':''}>A Pagar</option>
+                                    <option value="Fiado" ${payStatus==='Fiado'?'selected':''}>Fiado</option>
+                                </select>
+                                
+                                <div id="pay-det-${o.id}" class="pay-details-inputs" style="display:${showPayDetails}">
+                                    <input type="text" id="inst-${o.id}" class="input" placeholder="Parcelas (Ex: 2x)" value="${o.installments || ''}">
+                                    <input type="date" id="due-${o.id}" class="input" value="${o.due_date || ''}">
+                                </div>
+                                <button onclick="admin.updatePaymentStatus('${o.id}')" class="btn-filter-action" style="width:100%; justify-content:center; margin-top:5px;">Salvar Financeiro</button>
+                            </div>
+
                             <div class="oc-items-box">${itemsHtml}</div>
                         </div>
                     </div>`;
                 });
             },
-            clearHistory: async () => {
-                if(!confirm("Apagar pedidos Entregues/Cancelados desse período?")) return;
-                const start = document.getElementById('order-start').value;
-                const end = document.getElementById('order-end').value;
-                if(!start || !end) return alert("Selecione um período.");
+            togglePaymentDetails: (sel, id) => {
+                const div = document.getElementById(`pay-det-${id}`);
+                div.style.display = (sel.value === 'A Pagar' || sel.value === 'Fiado') ? 'grid' : 'none';
+            },
+            updatePaymentStatus: async (id) => {
+                const row = document.querySelector(`#pay-det-${id}`).parentElement;
+                const status = row.querySelector('select').value;
+                const inst = document.getElementById(`inst-${id}`).value;
+                const due = document.getElementById(`due-${id}`).value;
                 
-                await sb.from('orders').delete()
-                    .or('status.eq.Entregue,status.eq.Cancelado')
-                    .gte('created_at', new Date(start).toISOString())
-                    .lte('created_at', new Date(end).toISOString());
+                await sb.from('orders').update({ payment_status: status, installments: inst, due_date: due }).eq('id', id);
+                alert("Financeiro atualizado!");
+                admin.renderPayments(); // Refresh payments tab if open
+            },
+            renderPayments: async () => {
+                const { data } = await sb.from('orders').select('*').or('payment_status.eq.A Pagar,payment_status.eq.Fiado').order('due_date', {ascending: true});
+                const div = document.getElementById('pay-list'); div.innerHTML = "";
                 
-                alert("Limpo!"); admin.renderOrders();
+                if(!data || data.length === 0) { div.innerHTML = "<p>Nenhum pagamento pendente.</p>"; return; }
+                
+                data.forEach(o => {
+                    const today = new Date().toISOString().split('T')[0];
+                    const isOverdue = o.due_date && o.due_date < today;
+                    const items = JSON.parse(o.items);
+                    const prodNames = items.map(i => i.name).join(', ');
+
+                    div.innerHTML += `
+                    <div class="debt-card ${isOverdue ? 'overdue' : ''}">
+                        <div class="debt-header">
+                            <span class="debt-client">${o.customer_name}</span>
+                            <span class="debt-badge">${o.payment_status}</span>
+                        </div>
+                        <div class="debt-value">R$ ${o.total.toFixed(2)}</div>
+                        <div class="debt-info">Vence em: <strong>${o.due_date ? o.due_date.split('-').reverse().join('/') : 'Sem data'}</strong></div>
+                        <div class="debt-info">Parcelas: ${o.installments || '1x'}</div>
+                        <small style="color:#777">${prodNames}</small>
+                        <br>
+                        <a href="#" onclick="admin.tab('orders')" style="font-size:0.8rem; text-decoration:underline;">Ver Pedido Completo</a>
+                    </div>`;
+                });
             },
             renderFinance: async () => {
                 const start = document.getElementById('fin-start').value;
@@ -1135,7 +1185,6 @@
                 document.getElementById('fin-total-profit').innerText = `R$ ${totalProfit.toFixed(2)}`;
                 document.getElementById('fin-total-margin').innerText = `${totalMargin}%`;
 
-                // Render List
                 const listDiv = document.getElementById('fin-prod-list'); listDiv.innerHTML = "";
                 Object.entries(productStats).sort((a,b) => b[1].rev - a[1].rev).forEach(([name, s]) => {
                     const itemProfit = s.rev - s.cost;
@@ -1193,7 +1242,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('status') === 'approved' && localStorage.getItem('2a_cart')) {
                 state.cart = JSON.parse(localStorage.getItem('2a_cart'));
-                await app.registerOrder(Date.now().toString(), 'Mercado Pago', 'Pendente (Pago)');
+                await app.registerOrder(Date.now().toString(), 'Mercado Pago', 'Pendente (Pago)', 'Pago');
                 await app.updateStockDatabase(); await app.sendEmails(state.cart);
                 localStorage.removeItem('2a_cart'); window.history.replaceState({}, document.title, window.location.pathname);
                 alert("Pagamento Confirmado!");
