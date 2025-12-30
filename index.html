@@ -67,12 +67,35 @@
         .tag-promo { position:absolute; top:10px; right:10px; background:#e91e63; color:white; padding:4px 10px; border-radius:20px; font-size:0.6rem; font-weight:bold; z-index: 2; }
         .tag-delivery { font-size: 0.7rem; color: #27ae60; display: block; margin-top: 5px; font-weight: 600; }
 
+        /* --- MODERN PRODUCT MODAL LAYOUT --- */
+        .product-modal-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; height: 100%; }
+        .pm-images { position: relative; background: #f4f4f4; border-radius: 16px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .pm-details { padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
+        
+        .carousel-main-container { width: 100%; height: 100%; min-height: 400px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .carousel-main-container img, .carousel-main-container video { width: 100%; height: 100%; object-fit: contain; transition: opacity 0.5s ease-in-out; }
+        .carousel-dots { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
+        .carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(0,0,0,0.3); cursor: pointer; transition: 0.3s; }
+        .carousel-dot.active { background: var(--accent); transform: scale(1.3); }
+
+        /* --- MODERN CHIPS FOR VARIATIONS --- */
+        .var-chip-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .var-chip {
+            padding: 8px 16px; border: 1px solid #eee; border-radius: 20px;
+            cursor: pointer; transition: all 0.2s; background: white; font-weight: 600; font-size: 0.9rem;
+            display: inline-flex; align-items: center; gap: 8px; color: #555;
+        }
+        .var-chip:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .var-chip.selected { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 10px rgba(44,62,80,0.3); }
+        .var-chip.disabled { opacity: 0.5; cursor: not-allowed; background: #f9f9f9; border-color: #eee; }
+        .color-circle { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+
         /* MODALS */
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
         .overlay.active { display:flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
-        .box { background:white; width:100%; max-width:900px; border-radius:20px; overflow:hidden; max-height:90vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-        .box.single-col { display:block; max-width:500px; grid-template-columns: 1fr; }
+        .box { background:white; width:100%; max-width:1000px; border-radius:24px; overflow:hidden; max-height:90vh; overflow-y:auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .box.single-col { display:block; max-width:500px; }
         
         /* SIDEBAR (SACOLA) */
         .sidebar { position:fixed; top:0; right:-500px; width:450px; height:100%; background:white; z-index:3000; padding:30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s; display:flex; flex-direction:column; }
@@ -189,12 +212,8 @@
         /* PRODUCT ROW AND THUMBNAILS FIX */
         .order-prod-row { display: flex; gap: 15px; align-items: center; padding: 10px 0; border-bottom: 1px dashed #eee; }
         .order-prod-row img { 
-            width: 60px; /* Largura Fixa */
-            height: 60px; /* Altura Fixa */
-            border-radius: 10px; 
-            object-fit: cover; /* Garante que a imagem preencha o quadrado sem distorcer */
-            border: 1px solid #eee; 
-            flex-shrink: 0; /* Impede que a imagem encolha */
+            width: 60px; height: 60px; border-radius: 10px; 
+            object-fit: cover; border: 1px solid #eee; flex-shrink: 0; 
         }
         .order-prod-info { flex: 1; }
         .order-prod-name { font-weight: bold; font-size: 0.95rem; color: var(--accent); }
@@ -203,13 +222,15 @@
 
         /* MINI PROD ADMIN LIST FIX */
         .mini-prod { display: flex; align-items: center; gap: 15px; padding: 10px; border-bottom: 1px solid #f0f0f0; }
-        .mini-prod img { 
-            width: 50px; 
-            height: 50px; 
-            border-radius: 8px; 
-            object-fit: cover; 
-            border: 1px solid #ddd; 
+        .mini-prod img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #ddd; }
+        
+        /* ADMIN CHIP EDIT BUTTON */
+        .btn-chip-edit {
+            background: #fff; border: 1px solid #ddd; padding: 6px 14px;
+            border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: #555;
+            display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.5px;
         }
+        .btn-chip-edit:hover { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
         /* MODERN TOGGLE SWITCH */
         .toggle-switch { position: relative; display: inline-block; width: 60px; height: 30px; margin-right: 10px; vertical-align: middle; }
@@ -262,20 +283,20 @@
         .st-entregue { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .st-cancelado { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-        /* --- ATUALIZAÇÃO: CAMINHÃO E TRACKING (Correção de Sobreposição) --- */
+        /* --- MODERN & CLEAN TRACKING --- */
         .track-container { position: relative; margin: 50px 0 30px; padding: 0 15px; }
-        .track-line-bg { width: 100%; height: 6px; background: #eee; border-radius: 3px; position: absolute; top: 0; left: 0; z-index: 1; }
-        .track-fill { height: 6px; background: var(--success); border-radius: 3px; position: absolute; top: 0; left: 0; z-index: 2; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .track-fill.cancelled { background: var(--danger); }
+        .track-line-bg { width: 100%; height: 4px; background: #eee; border-radius: 10px; position: absolute; top: 0; left: 0; z-index: 1; }
+        .track-fill { height: 4px; background: var(--success); border-radius: 10px; position: absolute; top: 0; left: 0; z-index: 2; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(39, 174, 96, 0.3); }
+        .track-fill.cancelled { background: var(--danger); box-shadow: 0 0 10px rgba(231, 76, 60, 0.3); }
         
-        .truck-icon-3d { position: absolute; top: -35px; z-index: 5; font-size: 2rem; color: var(--accent); transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); animation: drive 1s infinite alternate ease-in-out; }
-        @keyframes drive { from { transform: translateX(-50%) translateY(0) rotate(-2deg); } to { transform: translateX(-50%) translateY(-3px) rotate(2deg); } }
+        .truck-icon-3d { position: absolute; top: -35px; z-index: 5; font-size: 1.8rem; color: var(--accent); transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); animation: drive 1s infinite alternate ease-in-out; }
+        @keyframes drive { from { transform: translateX(-50%) translateY(0) rotate(-2deg); } to { transform: translateX(-50%) translateY(-2px) rotate(2deg); } }
 
-        .track-steps { display: flex; justify-content: space-between; position: relative; z-index: 3; margin-top: 20px; }
+        .track-steps { display: flex; justify-content: space-between; position: relative; z-index: 3; margin-top: 15px; }
         .track-step { text-align: center; position: relative; width: 33%; }
-        .track-step .dot { width: 14px; height: 14px; background: #ddd; border-radius: 50%; margin: -27px auto 10px; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.4s; }
-        .track-step.active .dot { background: var(--success); transform: scale(1.3); }
-        .track-step span { font-size: 0.7rem; font-weight: bold; color: #999; text-transform: uppercase; display: block; margin-top: 15px; }
+        .track-step .dot { width: 12px; height: 12px; background: #ddd; border-radius: 50%; margin: -23px auto 10px; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.4s; }
+        .track-step.active .dot { background: var(--success); transform: scale(1.2); }
+        .track-step span { font-size: 0.7rem; font-weight: 700; color: #bbb; text-transform: uppercase; display: block; margin-top: 15px; letter-spacing: 0.5px; }
         .track-step.active span { color: var(--success); }
         .cancelled-dot .dot { background: var(--danger) !important; }
         .cancelled-dot span { color: var(--danger) !important; }
@@ -320,7 +341,11 @@
         #admin-auth-modal h2 { margin-bottom: 20px; color: var(--accent); }
         #admin-auth-modal i { font-size: 3rem; color: var(--accent); margin-bottom: 20px; }
 
-        @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} .oc-body, .manual-order-grid { grid-template-columns: 1fr; } .filter-wrapper { justify-content: flex-start; } .inst-gen-row { grid-template-columns: 1fr 1fr !important; } .inst-gen-row span { grid-column: span 2; } .track-step span { font-size: 0.6rem; } }
+        @media(max-width:768px){ 
+            .box{grid-template-columns:1fr;} 
+            .product-modal-grid { display: block; overflow-y: auto; }
+            .sidebar{width:100%;} .hero{padding-top:80px;} .oc-body, .manual-order-grid { grid-template-columns: 1fr; } .filter-wrapper { justify-content: flex-start; } .inst-gen-row { grid-template-columns: 1fr 1fr !important; } .inst-gen-row span { grid-column: span 2; } .track-step span { font-size: 0.6rem; } 
+        }
     </style>
 </head>
 <body>
@@ -377,31 +402,42 @@
     </div>
 
     <div id="product-modal" class="overlay">
-        <div class="box">
-            <div id="m-media-area" style="width:100%; height:100%; background:#f9f9f9; display:flex; align-items:center; justify-content:center;"></div>
-            
-            <div style="padding:40px; position:relative;">
-                <button onclick="app.closeModal('product-modal')" style="position:absolute; top:20px; right:20px; border:none; background:none; font-size:1.5rem; color:#999;">×</button>
-                <small id="m-cat" style="color:var(--primary); font-weight:700; text-transform:uppercase;">Categoria</small>
-                <h2 id="m-title" style="margin:10px 0;"></h2>
-                <h3 id="m-price" style="color:var(--accent); margin-bottom:15px;"></h3>
-                <p id="m-desc" style="color:#666; margin-bottom:20px;"></p>
-                <div style="margin-bottom:20px; color:#27ae60; font-weight:600; background:#eafff0; padding:10px; border-radius:10px; display:inline-block;"><i class="fas fa-truck"></i> Prazo de entrega: 03 a 05 dias úteis</div>
+        <div class="box" style="padding: 20px; height: 85vh; max-height: 700px;">
+            <div class="product-modal-grid">
+                <div class="pm-images" id="m-media-area">
+                    </div>
                 
-                <div style="background: #fafafa; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 20px;">
-                    <label style="font-weight:bold; font-size:0.9rem; margin-bottom:10px; display:block;">Escolha uma opção:</label>
-                    <div id="m-vars" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
-                </div>
+                <div class="pm-details">
+                    <button onclick="app.closeModal('product-modal')" style="align-self: flex-end; border:none; background:none; font-size:1.5rem; color:#999; cursor: pointer; margin-bottom: 10px;">×</button>
+                    
+                    <small id="m-cat" style="color:var(--primary); font-weight:800; text-transform:uppercase; letter-spacing: 1px; font-size: 0.8rem;">Categoria</small>
+                    <h2 id="m-title" style="margin:5px 0 15px; font-size: 2rem; line-height: 1.1;"></h2>
+                    
+                    <h3 id="m-price" style="color:var(--accent); margin-bottom:15px; font-size: 1.8rem;"></h3>
+                    
+                    <div style="background:#f8f9fa; padding:15px; border-radius:12px; margin-bottom:20px;">
+                        <p id="m-desc" style="color:#666; font-size: 0.95rem; line-height: 1.6;"></p>
+                    </div>
 
-                <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
-                    <span style="font-weight:bold;">Qtd:</span>
-                    <div style="border:1px solid #ddd; border-radius:30px; display:flex; overflow:hidden;">
-                        <button onclick="app.updQty(-1)" style="padding:10px 15px; border:none; background:white;">-</button>
-                        <span id="m-qty" style="padding:10px 15px; font-weight:bold; background:white;">1</span>
-                        <button onclick="app.updQty(1)" style="padding:10px 15px; border:none; background:white;">+</button>
+                    <div style="margin-bottom:25px;">
+                        <label style="font-weight:bold; font-size:0.9rem; margin-bottom:10px; display:block; color: var(--accent);">Escolha uma opção:</label>
+                        <div id="m-vars" class="var-chip-container"></div>
+                    </div>
+
+                    <div style="margin-top: auto;">
+                        <div style="margin-bottom: 15px; color:#27ae60; font-weight:600; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-truck"></i> Entrega: 03 a 05 dias úteis
+                        </div>
+                        <div style="display:flex; gap:15px;">
+                            <div style="border:1px solid #ddd; border-radius:30px; display:flex; align-items: center; height: 50px;">
+                                <button onclick="app.updQty(-1)" style="padding:0 15px; border:none; background:transparent; font-size: 1.2rem;">-</button>
+                                <span id="m-qty" style="font-weight:bold; width: 20px; text-align: center;">1</span>
+                                <button onclick="app.updQty(1)" style="padding:0 15px; border:none; background:transparent; font-size: 1.2rem;">+</button>
+                            </div>
+                            <button onclick="app.addCart()" class="btn-modern" style="flex:1; height: 50px; font-size: 1.1rem;">Adicionar à Sacola</button>
+                        </div>
                     </div>
                 </div>
-                <button onclick="app.addCart()" class="btn-modern" style="width:100%; padding:15px;">Adicionar à Sacola</button>
             </div>
         </div>
     </div>
@@ -799,6 +835,8 @@
         const safeVal = (v) => (v === null || v === undefined || v === "null") ? "" : v;
         const setSafe = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = safeVal(val); };
 
+        let autoScrollInterval; // Variável global para controle do carrossel
+
         document.addEventListener('DOMContentLoaded', () => {
             flatpickr(".flatpickr-input", { dateFormat: "Y-m-d", locale: "pt", altInput: true, altFormat: "d/m/Y" });
         });
@@ -863,23 +901,29 @@
                 setSafe('m-title', p.name); setSafe('m-cat', p.category); setSafe('m-desc', p.description); setSafe('m-price', "Selecione...");
                 const vDiv = document.getElementById('m-vars'); vDiv.innerHTML = "";
                 const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+                
+                // CRIAÇÃO DOS CHIPS MODERNOS
                 if(vars) {
                     vars.forEach(v => {
-                        const btn = document.createElement('button');
-                        const hasStock = parseInt(v.stock)>0;
-                        btn.className = hasStock ? 'var-btn' : 'var-btn disabled';
+                        const hasStock = parseInt(v.stock) > 0;
+                        const chip = document.createElement('div');
+                        chip.className = `var-chip ${!hasStock ? 'disabled' : ''}`;
+                        
                         let dot = "";
-                        if(COLOR_MAP[v.name]) dot = `<span class="color-dot" style="background:${COLOR_MAP[v.name]}"></span>`;
-                        btn.innerHTML = `${dot}${v.name} - <b>R$ ${parseFloat(v.price).toFixed(2)}</b>`;
+                        if(COLOR_MAP[v.name]) dot = `<div class="color-circle" style="background:${COLOR_MAP[v.name]}"></div>`;
+                        
+                        chip.innerHTML = `${dot}<span>${v.name}</span><small style="opacity:0.8">R$ ${parseFloat(v.price).toFixed(2)}</small>`;
+                        
                         if(hasStock) {
-                            btn.onclick = () => {
+                            chip.onclick = () => {
                                 state.var = v;
                                 document.getElementById('m-price').innerText = `R$ ${parseFloat(v.price).toFixed(2)}`;
-                                Array.from(vDiv.children).forEach(b=>b.classList.remove('selected'));
-                                btn.classList.add('selected');
+                                // Remove selected from all siblings
+                                Array.from(vDiv.children).forEach(c => c.classList.remove('selected'));
+                                chip.classList.add('selected');
                             };
                         }
-                        vDiv.appendChild(btn);
+                        vDiv.appendChild(chip);
                     });
                 }
                 app.showModal('product-modal');
@@ -887,28 +931,73 @@
             renderCarousel: (media) => {
                 const area = document.getElementById('m-media-area');
                 if(!media.length) { area.innerHTML = ''; return; }
+                
                 const isVideo = (url) => url && url.match && url.match(/\.(mp4|webm)$/i);
-                const renderMain = (url) => isVideo(url) ? `<video src="${url}" controls autoplay muted loop></video>` : `<img src="${url}">`;
-                let html = `<div class="carousel-main-container" id="c-main">${renderMain(media[0])}</div>`;
+                
+                // Gera dots se houver mais de uma imagem
+                let dotsHtml = '';
                 if(media.length > 1) {
-                    html += `<div class="carousel-thumbnails">`;
-                    media.forEach((url, i) => {
-                        if(url) {
-                            html += isVideo(url) 
-                                ? `<video src="${url}" class="carousel-thumb ${i===0?'active':''}" onclick="app.swapMedia('${url}', this)"></video>`
-                                : `<img src="${url}" class="carousel-thumb ${i===0?'active':''}" onclick="app.swapMedia('${url}', this)">`;
-                        }
-                    });
-                    html += `</div>`;
+                    dotsHtml = `<div class="carousel-dots">${media.map((_, i) => `<div class="carousel-dot ${i===0?'active':''}" onclick="app.swapMedia('${media[i]}', this, ${i})"></div>`).join('')}</div>`;
                 }
+
+                // Renderiza a primeira imagem/video como main
+                const renderMain = (url) => isVideo(url) ? `<video src="${url}" controls autoplay muted loop></video>` : `<img src="${url}">`;
+                let html = `
+                    <div class="carousel-main-container" id="c-main" onmouseenter="clearInterval(autoScrollInterval)" onmouseleave="app.startAutoScroll()">
+                        ${renderMain(media[0])}
+                        ${dotsHtml}
+                    </div>
+                `;
+                
                 area.innerHTML = html;
+
+                // Inicia Auto Scroll se houver múltiplas imagens
+                if(media.length > 1) {
+                    app.currentMediaIndex = 0;
+                    app.currentMediaList = media;
+                    app.startAutoScroll();
+                } else {
+                    clearInterval(autoScrollInterval);
+                }
             },
-            swapMedia: (url, thumb) => {
+            startAutoScroll: () => {
+                if(app.currentMediaList && app.currentMediaList.length > 1) {
+                    clearInterval(autoScrollInterval);
+                    autoScrollInterval = setInterval(() => {
+                        let nextIndex = app.currentMediaIndex + 1;
+                        if(nextIndex >= app.currentMediaList.length) nextIndex = 0;
+                        
+                        const dots = document.querySelectorAll('.carousel-dot');
+                        if(dots[nextIndex]) app.swapMedia(app.currentMediaList[nextIndex], dots[nextIndex], nextIndex);
+                    }, 3000); // 3 segundos
+                }
+            },
+            swapMedia: (url, dot, index) => {
                 const isVideo = (u) => u.match(/\.(mp4|webm)$/i);
                 const main = document.getElementById('c-main');
-                main.innerHTML = isVideo(url) ? `<video src="${url}" controls autoplay></video>` : `<img src="${url}">`;
-                document.querySelectorAll('.carousel-thumb').forEach(t => t.classList.remove('active'));
-                thumb.classList.add('active');
+                
+                // Verifica se o elemento main tem imagem ou video filho para trocar o src
+                const imgEl = main.querySelector('img');
+                const vidEl = main.querySelector('video');
+                
+                if(isVideo(url)) {
+                    main.innerHTML = `<video src="${url}" controls autoplay muted loop></video>` + (main.querySelector('.carousel-dots')?.outerHTML || '');
+                } else {
+                    // Tenta reaproveitar a tag img para transição suave, ou recria
+                    if(imgEl) {
+                        imgEl.style.opacity = 0;
+                        setTimeout(() => { imgEl.src = url; imgEl.style.opacity = 1; }, 200);
+                    } else {
+                        main.innerHTML = `<img src="${url}">` + (main.querySelector('.carousel-dots')?.outerHTML || '');
+                    }
+                }
+
+                if(dot) {
+                    document.querySelectorAll('.carousel-dot').forEach(t => t.classList.remove('active'));
+                    dot.classList.add('active');
+                }
+                
+                if(typeof index !== 'undefined') app.currentMediaIndex = index;
             },
             updQty: (n) => { 
                 if (n > 0) {
@@ -1058,7 +1147,6 @@
                 if(error) throw new Error(`Erro no Banco: ${error.message}`);
                 return order; 
             },
-            // FUNÇÃO DE EMAIL ATUALIZADA PARA SER DINAMICA
             sendEmails: async (order, cartItems, recipientEmail) => {
                 if(!recipientEmail) return;
                 const itemsTxt = cartItems.map(i => `${i.qty}x ${i.name} (${i.variant}) - R$ ${i.price.toFixed(2)}`).join('\n');
@@ -1076,9 +1164,7 @@
                     admin_email: 'erickveraosilva@gmail.com' 
                 };
                 if(window.emailjs) {
-                    // Envia para o cliente
                     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENTE, templateParams);
-                    // Envia cópia para Admin
                     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, {...templateParams, to_email: 'erickveraosilva@gmail.com'});
                 }
             },
@@ -1105,7 +1191,12 @@
                 window.location.href = `https://wa.me/5567998951120?text=${encodeURIComponent(msg)}`;
             },
             showModal: (id) => { document.getElementById(id).classList.add('active'); history.pushState({modal:id}, null, ""); },
-            closeModal: (id) => { document.getElementById(id).classList.remove('active'); history.back(); },
+            closeModal: (id) => { 
+                document.getElementById(id).classList.remove('active'); 
+                history.back();
+                // Limpa auto scroll se fechar modal produto
+                if(id === 'product-modal') clearInterval(autoScrollInterval);
+            },
             filter: (cat, btn) => {
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
@@ -1373,18 +1464,30 @@
                 document.getElementById('active-vars-area').innerHTML="";
                 document.querySelectorAll('.hidden-check').forEach(c => c.checked=false);
             },
+            
+            // --- ATUALIZAÇÃO: RESET MELHORADO COM DOM CLEARING ---
             resetData: async () => {
                 if(confirm("ATENÇÃO: Isso apagará TODO o histórico de compras e vendas do sistema. Tem certeza?")) {
                     const confirmTxt = prompt("Digite 'DELETAR' para confirmar a limpeza total dos dados:");
                     if(confirmTxt === "DELETAR") {
                         if(sb) {
                             const { error } = await sb.from('orders').delete().neq('id', 0);
-                            if(!error) { alert("Histórico resetado com sucesso."); admin.renderOrders(); admin.renderPayments(); admin.renderFinance(); }
+                            if(!error) { 
+                                alert("Histórico resetado com sucesso.");
+                                // Limpa imediatamente a UI para não precisar de refresh
+                                state.adminOrders = [];
+                                document.getElementById('orders-list').innerHTML = '';
+                                document.getElementById('pay-list').innerHTML = '';
+                                admin.renderOrders(); 
+                                admin.renderPayments(); 
+                                admin.renderFinance(); 
+                            }
                             else alert("Erro ao resetar: " + error.message);
                         }
                     } else { alert("Ação cancelada."); }
                 }
             },
+            
             renderList: () => {
                 const div = document.getElementById('admin-list'); div.innerHTML="";
                 state.products.forEach(p => {
@@ -1393,7 +1496,17 @@
                     let mainImg = "https://via.placeholder.com/50";
                     try { const m = JSON.parse(p.image_url); if(Array.isArray(m)) mainImg = m[0]; else mainImg = p.image_url; } catch(e){}
                     const tag = stock === 0 ? '<span class="tag-soldout">ESGOTADO</span>' : `<span class="stock-info">Estoque: ${stock}</span>`;
-                    div.innerHTML += `<div class="mini-prod ${stock===0?'sold-out':''}"><img src="${mainImg}" onerror="this.src='https://via.placeholder.com/50'"> <div style="flex:1"><strong>${p.name}</strong><br>${tag}</div><div><button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-mini-edit">Editar</button> <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none; margin-left:10px;"><i class="fas fa-trash"></i></button></div></div>`;
+                    
+                    // --- ATUALIZAÇÃO: BOTÃO EDITAR COMO CHIP ---
+                    div.innerHTML += `
+                    <div class="mini-prod ${stock===0?'sold-out':''}">
+                        <img src="${mainImg}" onerror="this.src='https://via.placeholder.com/50'"> 
+                        <div style="flex:1"><strong>${p.name}</strong><br>${tag}</div>
+                        <div>
+                            <button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-chip-edit"><i class="fas fa-pen"></i> Editar</button> 
+                            <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none; margin-left:10px;"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`;
                 });
             },
             filterOrders: (status, btn) => {
@@ -1402,65 +1515,39 @@
                 btn.classList.add('active');
                 admin.renderOrders(true);
             },
-            // --- NOVO: POPULAR SELECT DE PRODUTOS ---
             populateManualProdSelect: () => {
                 const sel = document.getElementById('m-prod-select');
                 sel.innerHTML = '<option value="">Selecione um produto do estoque...</option>';
                 state.products.forEach(p => {
                     const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
                     vars.forEach(v => {
-                        // Cria value combinando ID e Variacao
                         sel.innerHTML += `<option value="${p.id}|${v.name}|${v.price}|${p.name}">${p.name} - ${v.name} (R$ ${parseFloat(v.price).toFixed(2)}) - Est: ${v.stock}</option>`;
                     });
                 });
             },
-
-            // --- VARIÁVEL PARA O CARRINHO MANUAL ---
             manualCart: [],
-
             addManualItem: () => {
                 const val = document.getElementById('m-prod-select').value;
                 const qty = parseInt(document.getElementById('m-prod-qty').value);
                 if(!val || qty < 1) return alert("Selecione produto e quantidade.");
-                
                 const [pid, vname, price, pname] = val.split('|');
-                
-                admin.manualCart.push({
-                    name: pname,
-                    variant: vname,
-                    price: parseFloat(price),
-                    qty: qty,
-                    image: "https://via.placeholder.com/50?text=Manual", 
-                    is_stock: true, 
-                    pid: pid
-                });
+                admin.manualCart.push({ name: pname, variant: vname, price: parseFloat(price), qty: qty, image: "https://via.placeholder.com/50?text=Manual", is_stock: true, pid: pid });
                 admin.renderManualCart();
                 document.getElementById('m-prod-select').value = "";
             },
-
             addCustomItem: () => {
                 const name = document.getElementById('m-custom-item').value;
                 const price = parseFloat(document.getElementById('m-custom-price').value);
                 if(!name || !price) return alert("Preencha nome e valor.");
-                
-                admin.manualCart.push({
-                    name: name,
-                    variant: "Avulso",
-                    price: price,
-                    qty: 1,
-                    image: "https://via.placeholder.com/50?text=Avulso",
-                    is_stock: false
-                });
+                admin.manualCart.push({ name: name, variant: "Avulso", price: price, qty: 1, image: "https://via.placeholder.com/50?text=Avulso", is_stock: false });
                 admin.renderManualCart();
                 document.getElementById('m-custom-item').value=""; document.getElementById('m-custom-price').value="";
             },
-
             renderManualCart: () => {
                 const div = document.getElementById('manual-cart-list');
                 div.innerHTML = "";
                 let total = 0;
                 if(admin.manualCart.length === 0) div.innerHTML = '<div style="padding:15px; text-align:center; color:#999;">Nenhum item adicionado</div>';
-                
                 admin.manualCart.forEach((i, idx) => {
                     total += i.price * i.qty;
                     div.innerHTML += `
@@ -1474,47 +1561,31 @@
                 });
                 document.getElementById('m-total-display').innerText = `R$ ${total.toFixed(2)}`;
             },
-
             saveManualOrder: async () => {
                 if(admin.manualCart.length === 0) return alert("Adicione itens.");
                 const name = document.getElementById('m-client-name').value || "Cliente Balcão";
                 const email = document.getElementById('m-client-email').value || "manual@admin.com";
                 const phone = document.getElementById('m-client-phone').value || "";
-                
                 const street = document.getElementById('m-client-street').value;
                 const num = document.getElementById('m-client-num').value;
                 const bairro = document.getElementById('m-client-bairro').value;
                 const city = document.getElementById('m-client-city').value;
-                
                 const method = document.getElementById('m-payment-method').value;
                 const pStatus = document.getElementById('m-payment-status').value;
-                
-                const addressObj = {
-                    street: street, number: num, bairro: bairro, city: city, uf: 'MS', phone: phone
-                };
-
+                const addressObj = { street: street, number: num, bairro: bairro, city: city, uf: 'MS', phone: phone };
                 const total = admin.manualCart.reduce((a,b)=>a+(b.price*b.qty),0);
                 
                 const order = {
-                    id: Date.now().toString(),
-                    customer_name: name,
-                    customer_email: email, 
-                    customer_id: "0", 
-                    total: total,
-                    items: JSON.stringify(admin.manualCart),
-                    address: JSON.stringify(addressObj),
+                    id: Date.now().toString(), customer_name: name, customer_email: email, customer_id: "0", 
+                    total: total, items: JSON.stringify(admin.manualCart), address: JSON.stringify(addressObj),
                     date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
-                    method: `Manual (${method})`,
-                    status: pStatus === 'Pago' ? 'Entregue' : 'Pendente', 
-                    payment_status: pStatus,
-                    created_at: new Date().toISOString()
+                    method: `Manual (${method})`, status: pStatus === 'Pago' ? 'Entregue' : 'Pendente', 
+                    payment_status: pStatus, created_at: new Date().toISOString()
                 };
 
                 if(sb) {
                     const { error } = await sb.from('orders').insert([order]);
                     if(error) return alert("Erro ao salvar: " + error.message);
-                    
-                    // Baixar Estoque
                     for (const item of admin.manualCart) {
                         if(item.is_stock) {
                             const { data: prod } = await sb.from('products').select('*').eq('id', item.pid).single();
@@ -1528,50 +1599,33 @@
                             }
                         }
                     }
-                    
-                    // Envia email para o cliente se fornecido
-                    if(email && email.includes('@')) {
-                        app.sendEmails(order, admin.manualCart, email);
-                    }
-
+                    if(email && email.includes('@')) { app.sendEmails(order, admin.manualCart, email); }
                     alert("Pedido Manual Salvo!");
                     admin.manualCart = []; admin.renderManualCart();
-                    // Limpar campos
                     ['m-client-name','m-client-email','m-client-phone','m-client-cep','m-client-street','m-client-num','m-client-bairro'].forEach(id => document.getElementById(id).value="");
-                    
                     admin.tab('orders'); admin.renderOrders();
                 }
             },
-
-            // --- NOVA FUNÇÃO: PAGAMENTO PARCIAL EM PEDIDO 'A PAGAR' ---
             registerPartialOnPending: async (id, total) => {
                 const val = prompt(`Valor total é R$ ${total.toFixed(2)}. Quanto o cliente pagou de entrada/sinal?`);
                 if(val && !isNaN(val)) {
                     const paid = parseFloat(val);
                     const rest = total - paid;
-                    
                     if(paid >= total) return alert("Valor igual ou maior que o total. Use a opção 'Marcar como Pago'.");
                     if(paid <= 0) return alert("Valor inválido.");
-
-                    // Cria estrutura de parcelas: 1ª Paga (Hoje), 2ª Pendente (30 dias)
                     const today = new Date().toISOString().split('T')[0];
                     const nextMonth = new Date(); nextMonth.setDate(nextMonth.getDate() + 30);
-                    
                     const installments = [
-                        { date: today, amount: paid.toFixed(2), paid: true }, // Entrada PAGA
-                        { date: nextMonth.toISOString().split('T')[0], amount: rest.toFixed(2), paid: false } // Resto A PAGAR
+                        { date: today, amount: paid.toFixed(2), paid: true },
+                        { date: nextMonth.toISOString().split('T')[0], amount: rest.toFixed(2), paid: false }
                     ];
-
                     await sb.from('orders').update({
-                        payment_status: 'Parcelado', // Muda status para Parcelado para ativar a logica de parcelas
-                        installments: JSON.stringify(installments)
+                        payment_status: 'Parcelado', installments: JSON.stringify(installments)
                     }).eq('id', id);
-
                     alert(`Pagamento de R$ ${paid.toFixed(2)} registrado! Restam R$ ${rest.toFixed(2)}.`);
                     admin.renderOrders(); admin.renderPayments();
                 }
             },
-
             renderOrders: async (useCache = false) => {
                 if(!sb) return;
                 if(!useCache || !state.adminOrders.length) {
@@ -1590,31 +1644,23 @@
                 let filtered = state.adminOrders;
                 if(state.filterStatus !== 'all') filtered = filtered.filter(o => o.status.includes(state.filterStatus));
                 if(filtered.length === 0) { div.innerHTML = "<p>Nenhum pedido encontrado.</p>"; return; }
-                
                 filtered.forEach(o => {
                     const iList = typeof o.items==='string'?JSON.parse(o.items):o.items;
                     const itemsHtml = iList.map(i => `<div class="order-prod-row"><img src="${i.image||'https://via.placeholder.com/50'}" onerror="this.src='https://via.placeholder.com/50'"><div class="order-prod-info"><div class="order-prod-name">${i.name}</div><div class="order-prod-var">${i.variant}</div></div><div class="order-prod-qty">x${i.qty}</div></div>`).join('');
                     const addr = JSON.parse(o.address || '{}');
                     const phoneRaw = addr.phone || '';
                     const phoneClean = phoneRaw.replace(/\D/g, ''); 
-                    
-                    // LÓGICA DE ENDEREÇO E MAPS
                     const fullAddrString = `${addr.street || ''}, ${addr.number || ''} - ${addr.bairro || ''}, ${addr.city || ''}`;
                     const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddrString)}`;
-
                     let stClass = 'st-pendente';
                     if(o.status.includes('Enviado')) stClass = 'st-enviado';
                     if(o.status.includes('Entregue')) stClass = 'st-entregue';
                     if(o.status === 'Cancelado') stClass = 'st-cancelado';
-                    
                     const payStatus = o.payment_status || 'Pendente';
                     const showPayDetails = (payStatus === 'Parcelado') ? 'block' : 'none';
-                    
-                    // BOTÃO DE PAGAMENTO PARCIAL
                     const btnPartial = (payStatus === 'Pendente' || payStatus === 'A_pagar') 
                         ? `<button onclick="admin.registerPartialOnPending('${o.id}', ${o.total})" class="btn-modern small outline" style="margin-top:5px; width:100%; border-color:#f39c12; color:#e67e22;"><i class="fas fa-coins"></i> Registrar Entrada/Sinal</button>` 
                         : '';
-
                     div.innerHTML += `
                     <div class="order-card-modern">
                         <div class="oc-header"><span class="oc-id">Pedido #${o.id.slice(-6)}</span><span class="oc-date">${o.date}</span></div>
@@ -1625,22 +1671,18 @@
                                 <div style="font-size:0.8rem; color:#666;">${o.customer_email}</div>
                                 ${phoneClean ? `<a href="https://wa.me/55${phoneClean}" target="_blank" class="admin-wa-btn"><i class="fab fa-whatsapp"></i> Conversar no Whats</a>` : `<span style="color:#999; font-size:0.8rem;">Tel: ${phoneRaw}</span>`}
                             </div>
-                            
                             <div class="oc-section" style="grid-column: span 2; background:#fff; border:1px solid #eee;">
                                 <label><i class="fas fa-map-marker-alt" style="color:var(--danger)"></i> Entrega</label>
                                 <div style="font-size:0.9rem; color:#444; margin-bottom:5px;">${fullAddrString} <br> <small style="color:#777;">Ref: ${addr.ref || 'Sem referência'}</small></div>
                                 <a href="${mapLink}" target="_blank" class="btn-map">Ver no Google Maps <i class="fas fa-external-link-alt"></i></a>
                             </div>
-
                             <div class="oc-section">
                                 <label>Total</label><div class="oc-val" style="color:var(--success)">R$ ${o.total.toFixed(2)}</div>
                             </div>
-                            
                             <div class="oc-section">
                                 <label>Status Pedido</label>
                                 <select onchange="admin.updateStatus('${o.id}', this.value)" class="status-selector ${stClass}"><option value="Pendente" ${o.status.includes('Pendente')?'selected':''}>Pendente</option><option value="Enviado" ${o.status==='Enviado'?'selected':''}>Enviado</option><option value="Entregue" ${o.status==='Entregue'?'selected':''}>Entregue</option><option value="Cancelado" ${o.status==='Cancelado'?'selected':''}>Cancelado</option></select>
                             </div>
-                            
                             <div class="payment-box">
                                 <label style="font-weight:bold; color:var(--accent);">Financeiro:</label>
                                 <select onchange="admin.togglePaymentDetails(this, '${o.id}', ${o.total})" class="input" style="margin-top:5px;">
@@ -1648,9 +1690,7 @@
                                     <option value="Pago" ${payStatus==='Pago'?'selected':''}>Pago</option>
                                     <option value="Parcelado" ${payStatus==='Parcelado'?'selected':''}>Parcelado</option>
                                 </select>
-                                
                                 ${btnPartial}
-
                                 <div id="pay-det-${o.id}" class="gen-installments-area" style="display:${showPayDetails}">
                                     <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
                                         <input type="number" id="inst-n-${o.id}" class="input qty-installments-input" placeholder="Qtd Parc.">
@@ -1660,7 +1700,6 @@
                                 </div>
                                 <button onclick="admin.updatePaymentStatus('${o.id}')" class="btn-modern success small" style="width:100%; margin-top:10px;"><i class="fas fa-save"></i> Salvar Financeiro</button>
                             </div>
-                            
                             <div class="oc-items-box">${itemsHtml}</div>
                         </div>
                     </div>`;
@@ -1763,14 +1802,12 @@
                 const { data } = await sb.from('orders').select('*').neq('status', 'Cancelado').order('created_at', {ascending: false});
                 const div = document.getElementById('pay-list'); if(!div) return; div.innerHTML = "";
                 if(!data || data.length === 0) { div.innerHTML = "<p>Nenhum pedido.</p>"; return; }
-                
                 let filtered = data;
                 if(state.filterPay !== 'all') {
                     if(state.filterPay === 'A_pagar') filtered = data.filter(o => o.payment_status === 'Pendente' || o.payment_status === 'A_pagar');
                     else filtered = data.filter(o => o.payment_status === state.filterPay);
                 }
                 if(filtered.length === 0) { div.innerHTML = "<p>Nenhum registro encontrado.</p>"; return; }
-                
                 filtered.forEach(o => {
                     let items = [];
                     try { items = JSON.parse(o.installments || '[]'); } catch(e) {}
@@ -1839,34 +1876,58 @@
                     </div>`;
                 });
             },
-            // ... (restante das funções: financeiro, stats, etc.)
-            
-            // --- ATUALIZAÇÃO: FINANCEIRO COM RECEITA REAL ---
+            editInstField: async (oid, idx, field, val) => {
+                const { data } = await sb.from('orders').select('installments').eq('id', oid).single();
+                if(data) {
+                    const arr = JSON.parse(data.installments);
+                    if(arr[idx]) {
+                        arr[idx][field] = val;
+                        await sb.from('orders').update({ installments: JSON.stringify(arr) }).eq('id', oid);
+                    }
+                }
+            },
+            expandInstallments: (id) => {
+                const el = document.getElementById(`inst-manage-${id}`);
+                if(el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
+            },
+            quickPayInst: async (oid, idx, isPaid) => {
+                const { data } = await sb.from('orders').select('installments, total').eq('id', oid).single();
+                if(data) {
+                    const arr = JSON.parse(data.installments);
+                    if(arr[idx]) {
+                        arr[idx].paid = isPaid;
+                        const allPaid = arr.every(i => i.paid);
+                        let updateObj = { installments: JSON.stringify(arr) };
+                        if(allPaid && confirm("Todas as parcelas foram pagas. Deseja marcar o pedido como 'Pago'?")) {
+                            updateObj.payment_status = 'Pago'; updateObj.installments = null; 
+                        }
+                        await sb.from('orders').update(updateObj).eq('id', oid);
+                        admin.renderPayments();
+                    }
+                }
+            },
+            markAsPaidFull: async (id) => {
+                if(confirm("Confirmar o recebimento TOTAL deste pedido?")) {
+                    await sb.from('orders').update({ payment_status: 'Pago', installments: null }).eq('id', id);
+                    admin.renderPayments(); admin.renderOrders(); 
+                }
+            },
             renderFinance: async () => {
                 const startStr = document.getElementById('fin-start').value;
                 const endStr = document.getElementById('fin-end').value;
                 if(!startStr || !endStr) return;
                 const start = new Date(startStr + 'T00:00:00');
                 const end = new Date(endStr + 'T23:59:59');
-                
-                // Busca TODOS os pedidos válidos
                 const { data: orders } = await sb.from('orders').select('*').neq('status', 'Cancelado');
-                
                 let realRevenue = 0;
                 let totalCreated = 0;
-
                 if(orders) {
                     orders.forEach(o => {
                         const orderDate = new Date(o.created_at);
-                        
-                        // Soma Total Criado: Se data do PEDIDO estiver no filtro
                         if(orderDate >= start && orderDate <= end) {
                             totalCreated += o.total;
                         }
-
-                        // Soma Receita Real: Se data do PAGAMENTO estiver no filtro
                         if(o.payment_status === 'Pago') {
-                            // Se foi pago à vista/total, assume data do pedido como data do recebimento
                             if(orderDate >= start && orderDate <= end) {
                                 realRevenue += o.total;
                             }
@@ -1875,7 +1936,6 @@
                                 const inst = JSON.parse(o.installments);
                                 inst.forEach(i => {
                                     if(i.paid) {
-                                        // Verifica a data da parcela ou data do pedido
                                         const payDate = i.date ? new Date(i.date + 'T12:00:00') : orderDate;
                                         if(payDate >= start && payDate <= end) {
                                             realRevenue += parseFloat(i.amount);
@@ -1886,11 +1946,9 @@
                         }
                     });
                 }
-
                 document.getElementById('fin-real-revenue').innerText = `R$ ${realRevenue.toFixed(2)}`;
                 document.getElementById('fin-total-created').innerText = `R$ ${totalCreated.toFixed(2)}`;
             },
-
             updateStatus: async (id, val) => { if(sb) await sb.from('orders').update({status: val}).eq('id', id); alert("Status atualizado!"); admin.renderOrders(); },
             updateStats: () => {
                 const grid = document.getElementById('dash-stock-grid'); if(!grid) return; grid.innerHTML = "";
