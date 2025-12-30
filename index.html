@@ -9,152 +9,149 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            --primary: #c48b78; --primary-dark: #a06b5a;
-            --accent: #2c3e50; --accent-light: #34495e;
-            --bg: #f8f9fa; --white: #ffffff;
+            --primary: #c48b78; --accent: #2c3e50; --bg: #f8f9fa; --white: #ffffff;
             --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; --info: #3498db;
-            --radius: 12px; --shadow: 0 10px 30px rgba(0,0,0,0.05);
+            --radius: 12px; --shadow: 0 10px 40px rgba(0,0,0,0.08);
         }
         * { margin:0; padding:0; box-sizing:border-box; outline:none; font-family:'Plus Jakarta Sans', sans-serif; }
         body { background: var(--bg); color: var(--accent); overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh; }
         
-        /* GENERAL UI */
         h1, .brand-font { font-family:'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -0.5px; }
-        button { cursor:pointer; transition: all 0.2s ease; }
-        
+        button { cursor:pointer; transition: all 0.3s; }
+
         /* LOADING */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
-        
+        #status-bar { position:fixed; top:0; left:0; width:100%; min-height:30px; background:#222; color:white; font-size:0.8rem; display:none; align-items:center; justify-content:center; z-index:99999; padding:5px; text-align:center; }
+        .ok { background:var(--success) !important; } .err { background:var(--danger) !important; }
+
         /* HEADER & HERO */
-        .header-floating { position: fixed; top: 20px; right: 5%; z-index: 1000; display:flex; gap:10px; align-items: center; }
-        .icon-btn { width:45px; height:45px; border-radius:50%; border:none; background:white; box-shadow:0 4px 15px rgba(0,0,0,0.1); color:var(--accent); font-size:1.1rem; display:flex; align-items:center; justify-content:center; position:relative; }
-        .icon-btn:hover { background:var(--primary); color:white; transform:scale(1.05); }
-        .badge { position:absolute; top:-2px; right:-2px; background:var(--accent); color:white; width:20px; height:20px; border-radius:50%; font-size:0.7rem; display:flex; align-items:center; justify-content:center; font-weight:bold; border:2px solid white; }
-        .login-btn-header { padding: 8px 18px; background: white; border: none; border-radius: 30px; font-weight: 700; color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+        .header-floating { position: fixed; top: 30px; right: 5%; z-index: 1000; display:flex; gap:10px; align-items: center; }
+        .icon-btn { width:50px; height:50px; border-radius:50%; border:none; background:white; box-shadow:0 4px 15px rgba(0,0,0,0.15); color:var(--accent); font-size:1.2rem; display:flex; align-items:center; justify-content:center; position:relative; }
+        .icon-btn:hover { background:var(--primary); color:white; transform:scale(1.1); }
+        .badge { position:absolute; top:-5px; right:-5px; background:var(--accent); color:white; width:22px; height:22px; border-radius:50%; font-size:0.75rem; display:flex; align-items:center; justify-content:center; font-weight:bold; border:2px solid white; }
+        .login-btn-header { padding: 10px 20px; background: white; border: none; border-radius: 30px; font-weight: 700; color: var(--accent); box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
         
-        .hero { padding: 80px 20px 60px; text-align:center; background: radial-gradient(circle at top, #fff5f2 0%, transparent 100%); display: flex; flex-direction: column; align-items: center; }
-        .hero img { width:160px; height:160px; border-radius:50%; object-fit:cover; border:4px solid white; box-shadow:var(--shadow); margin-bottom:15px; }
-        .btn-cta { padding: 14px 40px; background: var(--accent); color: white; border-radius: 50px; border: none; font-weight: 700; font-size: 1rem; box-shadow: 0 8px 20px rgba(44,62,80,0.2); margin-top: 30px; animation: pulse 2s infinite; }
+        .hero { padding: 100px 20px 80px; text-align:center; background: radial-gradient(circle at top, #fff5f2 0%, transparent 100%); display: flex; flex-direction: column; align-items: center; }
+        .hero img { width:180px; height:180px; border-radius:50%; object-fit:cover; border:5px solid white; box-shadow:var(--shadow); margin-bottom:20px; }
+        .btn-cta { padding: 16px 50px; background: var(--accent); color: white; border-radius: 50px; border: none; font-weight: 700; font-size: 1.1rem; box-shadow: 0 10px 25px rgba(44,62,80,0.25); margin-top: 45px; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* GRID & CARDS */
-        .container { max-width:1200px; margin:0 auto; padding:30px 20px; flex: 1; }
-        .filters { display:flex; justify-content:center; gap:10px; margin-bottom:40px; flex-wrap:wrap; }
-        .filter-btn { padding: 8px 24px; border-radius: 30px; border: 1px solid #e0e0e0; background: white; color: #555; font-weight: 600; font-size: 0.9rem; }
-        .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-        
-        .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:15px; }
-        .card { background:white; border-radius:var(--radius); overflow:hidden; border:1px solid #f0f0f0; transition:0.3s; position:relative; cursor:pointer; }
-        .card:hover { transform:translateY(-4px); box-shadow:var(--shadow); border-color:var(--primary); }
-        .card img { width:100%; height:200px; object-fit:cover; background:#f9f9f9; }
-        .card-info { padding:12px; text-align:center; }
-        .tag-promo { position:absolute; top:8px; right:8px; background:#e91e63; color:white; padding:3px 8px; border-radius:12px; font-size:0.6rem; font-weight:bold; z-index: 2; }
+        /* CONTAINER */
+        .container { max-width:1200px; margin:0 auto; padding:40px 20px; flex: 1; }
+        .filters { display:flex; justify-content:center; gap:12px; margin-bottom:50px; flex-wrap:wrap; }
+        .filter-btn { padding: 10px 28px; border-radius: 30px; border: 1px solid #e0e0e0; background: white; color: #555; font-weight: 600; }
+        .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); transform: scale(1.05); }
+
+        .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:20px; }
+        .card { background:white; border-radius:var(--radius); overflow:hidden; border:1px solid #f0f0f0; transition:0.4s; position:relative; cursor:pointer; }
+        .card:hover { transform:translateY(-5px); box-shadow:var(--shadow); border-color:var(--primary); }
+        .card img { width:100%; height:250px; object-fit:cover; background:#f9f9f9; }
+        .card-info { padding:15px; text-align:center; }
+        .tag-promo { position:absolute; top:10px; right:10px; background:#e91e63; color:white; padding:4px 10px; border-radius:20px; font-size:0.6rem; font-weight:bold; z-index: 2; }
 
         /* MODALS */
-        .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(5px); z-index:2000; display:none; align-items:center; justify-content:center; padding:15px; }
-        .overlay.active { display:flex; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes popIn { from{transform:scale(0.95); opacity:0;} to{transform:scale(1); opacity:1;} }
-        .box { background:white; width:100%; max-width:900px; border-radius:16px; overflow:hidden; max-height:90vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow: var(--shadow); }
-        .box.single-col { display:block; max-width:450px; grid-template-columns: 1fr; }
+        .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
+        .overlay.active { display:flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
+        
+        .box { background:white; width:100%; max-width:900px; border-radius:20px; overflow:hidden; max-height:90vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .box.single-col { display:block; max-width:500px; grid-template-columns: 1fr; }
+        
+        /* SIDEBAR */
+        .sidebar { position:fixed; top:0; right:-500px; width:450px; height:100%; background:white; z-index:3000; padding:30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s; display:flex; flex-direction:column; }
+        .sidebar.open { right:0; }
+        
+        /* ADMIN/FORMS - SMALLER FONT */
+        .admin-content { font-size: 0.9rem; }
+        .input { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:0.9rem; margin-bottom:10px; background: #fafafa; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .input-cep-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
 
-        /* ADMIN SPECIFIC STYLES (COMPACT & MODERN) */
-        .admin-box { font-size: 0.85rem; } /* Font size adjustment for admin */
-        .admin-nav { padding:15px; background:white; border-bottom:1px solid #eee; display:flex; gap:8px; overflow-x:auto; align-items: center; }
-        .admin-tab { padding:8px 16px; border-radius:20px; border:1px solid #eee; background:transparent; font-weight:600; cursor:pointer; white-space:nowrap; color: #666; transition: 0.2s; font-size: 0.85rem; }
-        .admin-tab.active { background:var(--accent); color:white; border-color: var(--accent); box-shadow: 0 2px 8px rgba(44,62,80,0.15); }
-        
-        /* MODERN DATE INPUT */
-        .date-modern-wrapper { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #ddd; padding: 6px 12px; border-radius: 8px; transition: 0.2s; }
-        .date-modern-wrapper:focus-within { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(196, 139, 120, 0.1); }
-        .input-date-modern { border: none; outline: none; font-family: inherit; font-size: 0.85rem; color: #444; background: transparent; cursor: pointer; }
-        
-        /* STATUS CHIPS FILTERS */
-        .filter-chips-container { display: flex; gap: 8px; overflow-x: auto; padding: 5px 0; margin-bottom: 15px; -webkit-overflow-scrolling: touch; }
-        .status-chip { 
-            padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; cursor: pointer; 
-            border: 1px solid #eee; background: white; color: #777; transition: all 0.2s; white-space: nowrap;
+        /* MODERN DATE PICKER */
+        .modern-date {
+            border: 1px solid #ddd; padding: 8px 15px; border-radius: 20px; font-family: inherit; color: var(--accent); font-weight: 600; outline: none; background: #fff;
         }
-        .status-chip:hover { transform: translateY(-1px); }
-        .status-chip.active { color: white; border-color: transparent; box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
-        
-        /* Chip Colors */
-        .chip-all.active { background: var(--accent); }
-        .chip-pendente.active { background: var(--warning); }
-        .chip-enviado.active { background: var(--info); }
-        .chip-entregue.active { background: var(--success); }
-        .chip-cancelado.active { background: var(--danger); }
-        .chip-pago.active { background: var(--success); }
-        .chip-fiado.active { background: var(--danger); }
-        .chip-parcelado.active { background: var(--warning); }
+        .modern-date:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(196,139,120,0.1); }
 
-        /* ORDER CARD COMPACT */
-        .order-card-compact { background: white; border: 1px solid #eee; border-radius: 10px; margin-bottom: 10px; overflow: hidden; transition: 0.2s; }
-        .order-card-compact:hover { border-color: #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        .occ-header { padding: 10px 15px; background: #fdfdfd; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: #888; }
-        .occ-body { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .occ-info label { font-size: 0.7rem; text-transform: uppercase; color: #aaa; font-weight: 700; display: block; margin-bottom: 2px; }
-        .occ-val { font-size: 0.9rem; font-weight: 600; color: #333; }
-        .occ-items { grid-column: span 2; background: #f9f9f9; padding: 10px; border-radius: 6px; font-size: 0.85rem; color: #555; border: 1px dashed #e0e0e0; }
+        /* STATUS FILTER CHIPS */
+        .status-filters { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .status-chip {
+            padding: 6px 12px; border-radius: 20px; border: 1px solid #eee; background: white; 
+            font-size: 0.8rem; font-weight: bold; color: #666; cursor: pointer; white-space: nowrap; transition:0.2s;
+        }
+        .status-chip:hover { background: #f0f0f0; }
+        .status-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
         
-        /* PAYMENT & INSTALLMENT UI */
-        .pay-card { border: 1px solid #eee; background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; position: relative; border-left: 4px solid var(--warning); transition: 0.2s; }
-        .pay-card.paid { border-left-color: var(--success); }
-        .pay-card.overdue { border-left-color: var(--danger); background: #fff5f5; }
-        
-        .pay-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .pay-client { font-weight: 800; font-size: 1.1rem; color: var(--accent); }
-        .pay-status-badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
-        
-        .pay-progress-bar { height: 6px; background: #eee; border-radius: 3px; margin: 10px 0; overflow: hidden; }
-        .pay-progress-fill { height: 100%; background: var(--success); transition: width 0.5s; }
-        
-        .pay-products-grid { display: flex; gap: 8px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 5px; }
-        .pay-prod-chip { background: #f4f6f8; border: 1px solid #eee; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
-        
-        .inst-row-modern { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #f5f5f5; transition: 0.2s; }
-        .inst-row-modern:last-child { border-bottom: none; }
-        .inst-row-modern:hover { background: #fafafa; }
-        
-        /* CUSTOM MODERN CHECKBOX */
-        .modern-checkbox { position: relative; cursor: pointer; display: flex; align-items: center; }
-        .modern-checkbox input { opacity: 0; width: 0; height: 0; }
-        .checkmark { width: 22px; height: 22px; background-color: #fff; border: 2px solid #ddd; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .modern-checkbox input:checked ~ .checkmark { background-color: var(--success); border-color: var(--success); }
-        .checkmark::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: white; font-size: 0.8rem; display: none; }
-        .modern-checkbox input:checked ~ .checkmark::after { display: block; }
-
-        /* FINANCE CARDS */
-        .fin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .fin-card-m { background: white; padding: 15px; border-radius: 10px; border: 1px solid #eee; text-align: center; }
-        .fin-card-m label { font-size: 0.7rem; color: #888; font-weight: 700; text-transform: uppercase; }
-        .fin-card-m div { font-size: 1.2rem; font-weight: 800; margin-top: 5px; color: var(--accent); }
-
-        /* MISC */
-        .input { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:0.9rem; margin-bottom:8px; background: #fafafa; }
-        .btn-filter-action { background: var(--accent); color: white; padding: 8px 15px; border-radius: 8px; border: none; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
-        
-        .client-order { border:1px solid #eee; padding:20px; border-radius:12px; margin-bottom:15px; background:#fff; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+        /* ADMIN INTERACTIVE */
+        .admin-nav { padding:20px; background:white; border-bottom:1px solid #eee; display:flex; gap:10px; overflow-x:auto; }
+        .admin-tab { padding:8px 16px; border-radius:30px; border:1px solid #eee; background:transparent; font-weight:600; cursor:pointer; white-space:nowrap; color: #777; transition: all 0.3s ease; font-size: 0.85rem; }
+        .admin-tab:hover { background: #f0f0f0; color: var(--accent); }
+        .admin-tab.active { background:var(--accent); color:white; border-color: var(--accent); box-shadow: 0 4px 10px rgba(44,62,80,0.2); }
         
         /* CAROUSEL */
-        .carousel-wrapper { overflow-x: auto; white-space: nowrap; padding: 10px 0; scrollbar-width: none; }
-        .carousel-wrapper::-webkit-scrollbar { display: none; }
-        .carousel-track { display: inline-flex; gap: 10px; animation: scrollPromo 25s linear infinite; }
-        .promo-card { min-width: 130px; width: 130px; background: white; border: 1px solid #eee; border-radius: 10px; padding: 8px; cursor: pointer; text-align: center; transition: 0.3s; white-space: normal; }
-        .promo-card img { width: 100%; height: 90px; border-radius: 6px; object-fit: cover; margin-bottom: 5px; }
+        .carousel-wrapper { overflow: hidden; white-space: nowrap; padding: 10px 0; }
+        .carousel-track { display: inline-flex; gap: 15px; animation: scrollPromo 20s linear infinite; }
+        .promo-card { width: 140px; background: white; border: 1px solid #eee; border-radius: 12px; padding: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; text-align: center; white-space: normal; transition:0.3s; }
+        .promo-card:hover { transform: translateY(-3px); border-color: var(--primary); }
+        .promo-card img { width: 100%; height: 90px; border-radius: 8px; object-fit: cover; margin-bottom: 5px; }
+        @keyframes scrollPromo { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-        @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} }
+        /* ORDER & PAYMENT CARDS */
+        .order-card-modern { background: white; border: 1px solid #eee; border-radius: 12px; margin-bottom: 15px; overflow: hidden; }
+        .oc-header { background: #fdfdfd; padding: 10px 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: #888; }
+        .oc-body { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .oc-section label { display: block; font-size: 0.7rem; text-transform: uppercase; color: #aaa; font-weight: bold; margin-bottom: 3px; }
+        .oc-val { font-size: 0.9rem; color: #333; font-weight: 600; }
+        .oc-items-box { grid-column: span 2; background: #f9f9f9; padding: 10px; border-radius: 8px; font-size: 0.85rem; color: #555; }
+        .status-selector { width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.85rem; font-weight: 600; }
+
+        /* DEBT CARD */
+        .debt-card { border: 1px solid #eee; background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 15px; position: relative; border-left: 4px solid var(--warning); box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .debt-card.paid { border-left-color: var(--success); opacity: 0.8; }
+        .debt-card.overdue { border-left-color: var(--danger); background: #fff5f5; }
+        
+        .debt-header { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
+        .debt-client { font-size: 1.1rem; font-weight: 800; color: var(--accent); }
+        .debt-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: white; text-transform: uppercase; }
+        
+        .prog-bar { height: 6px; background: #eee; border-radius: 3px; margin: 10px 0; overflow: hidden; }
+        .prog-fill { height: 100%; background: var(--success); transition: width 0.3s; }
+
+        .inst-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
+        .inst-check { width: 20px; height: 20px; cursor: pointer; accent-color: var(--success); }
+        
+        /* Product Chip in Payment */
+        .prod-chip { display: inline-flex; align-items: center; gap: 5px; background: #f0f2f5; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; margin-right: 5px; margin-bottom: 5px; border: 1px solid #e0e0e0; }
+
+        /* Client Area */
+        .client-order { border:1px solid #eee; padding:20px; border-radius:12px; margin-bottom:15px; background:#fff; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+        .track-container { margin-top: 20px; position: relative; padding: 15px 0; }
+        .track-line-bg { height: 4px; background: #e0e0e0; border-radius: 2px; position: absolute; top: 50%; left: 0; width: 100%; transform: translateY(-50%); z-index: 1; }
+        .track-fill { height: 4px; background: linear-gradient(90deg, #2ecc71, #27ae60); border-radius: 2px; position: absolute; top: 50%; left: 0; transform: translateY(-50%); z-index: 2; transition: width 1s ease; }
+        .track-fill.cancelled { background: var(--danger) !important; width: 100% !important; }
+        .truck-icon.cancelled { color: var(--danger) !important; left: 100% !important; transform: translateX(-50%) translateY(-3px); animation: none; }
+        .track-steps { display: flex; justify-content: space-between; position: relative; z-index: 3; font-size: 0.7rem; font-weight: bold; color: #aaa; text-transform: uppercase; }
+        .truck-icon { position: absolute; top: -20px; z-index: 4; font-size: 1.4rem; color: #2c3e50; transition: left 1s ease; transform: translateX(-50%); }
+
+        /* MISC */
+        .btn-mp, .btn-whats { width:100%; padding:14px; border-radius:12px; border:none; font-weight:bold; margin-top:10px; color:white; display:flex; align-items:center; justify-content:center; gap:10px; }
+        .btn-mp { background:#009EE3; } .btn-whats { background:#25D366; }
+        footer { background: #222; color: #888; text-align: center; padding: 40px 20px; margin-top: auto; }
+        footer button { color: #ddd; text-decoration: none; font-size: 0.8rem; font-weight: bold; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; transition: 0.3s; cursor: pointer; background: transparent; }
+
+        @media(max-width:768px){ .box{grid-template-columns:1fr;} .sidebar{width:100%;} .hero{padding-top:80px;} .oc-body{grid-template-columns:1fr;} }
     </style>
 </head>
 <body>
 
     <div id="loading-screen">
         <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--primary);"></i>
-        <p style="margin-top:15px; color:#666;">Carregando loja...</p>
+        <p style="margin-top:15px; color:#666;">Carregando...</p>
     </div>
 
     <div id="status-bar"></div>
@@ -172,7 +169,7 @@
         <img src="logo.jpg" onerror="this.src='https://via.placeholder.com/200?text=2A'">
         <h1 class="brand-font">2A Modas e Perfumes</h1>
         <p>Elegância que transforma. Descubra sua essência.</p>
-        <button class="btn-cta btn-pulse" onclick="app.openPromoModal()">✨ Ver Promoções</button>
+        <button class="btn-cta" onclick="app.openPromoModal()">✨ Ver Promoções</button>
     </div>
 
     <div class="container" id="vitrine">
@@ -228,16 +225,23 @@
     <div id="address-modal" class="overlay" style="justify-content:flex-start; padding-left:20px; z-index:10001;">
         <div class="box single-col" style="width:100%; max-width:500px; height:auto; overflow-y: auto;">
             <div style="padding:20px;">
-                <h3>📍 Endereço</h3>
+                <h3>📍 Onde entregar?</h3>
                 <div id="saved-addresses-list" style="margin-bottom:20px; max-height:150px; overflow-y:auto;"></div>
                 <div style="background:#f9f9f9; padding:15px; border-radius:10px;">
                     <input type="text" id="addr-cep" class="input" placeholder="CEP" onblur="app.fetchCep(this.value)">
                     <input type="text" id="addr-street" class="input" placeholder="Rua">
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"><input type="text" id="addr-num" class="input" placeholder="Num"><input type="text" id="addr-bairro" class="input" placeholder="Bairro"></div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"><input type="text" id="addr-city" class="input" placeholder="Cidade"><input type="text" id="addr-uf" class="input" placeholder="UF"></div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <input type="text" id="addr-num" class="input" placeholder="Número">
+                        <input type="text" id="addr-bairro" class="input" placeholder="Bairro">
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <input type="text" id="addr-city" class="input" placeholder="Cidade">
+                        <input type="text" id="addr-uf" class="input" placeholder="UF">
+                    </div>
+                    <input type="text" id="addr-ref" class="input" placeholder="Referência">
                     <input type="text" id="addr-name" class="input" placeholder="Nome Recebedor">
                     <input type="text" id="addr-phone" class="input" placeholder="Telefone">
-                    <select id="addr-type" class="input"><option value="Casa">Casa</option><option value="Trabalho">Trabalho</option></select>
+                    <select id="addr-type" class="input"><option>Casa</option><option>Trabalho</option></select>
                     <button onclick="app.addNewAddress()" style="width:100%; background:var(--primary); color:white; padding:10px; border-radius:8px; border:none;">Salvar</button>
                 </div>
                 <button onclick="app.closeModal('address-modal')" style="width:100%; margin-top:10px; background:none; border:none;">Fechar</button>
@@ -249,10 +253,15 @@
         <div class="box single-col" style="max-width:600px;">
             <div style="padding:30px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><h2>Minha Conta</h2><button onclick="app.closeModal('client-modal')" style="border:none;background:none;font-size:1.5rem;">&times;</button></div>
-                <div style="background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:20px;"><p id="client-info-txt"></p><button onclick="auth.logout()" style="border:1px solid #ccc; background:white; padding:5px 15px; border-radius:20px;">Sair</button></div>
-                <h3>Meus Pedidos</h3>
-                <div class="date-modern-wrapper" style="margin-bottom:10px; width:fit-content;"><input type="date" id="client-date-start" class="input-date-modern" onchange="auth.loadClientOrders()"> <span style="color:#ccc">|</span> <input type="date" id="client-date-end" class="input-date-modern" onchange="auth.loadClientOrders()"></div>
-                <div id="client-orders-list" style="max-height:400px; overflow-y:auto;"></div>
+                <div style="background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:20px;">
+                    <p id="client-info-txt" style="font-size:0.9rem;"></p>
+                    <button onclick="auth.logout()" style="border:1px solid #ccc; background:white; padding:5px 15px; border-radius:20px;">Sair</button>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Meus Pedidos</h3>
+                    <div style="display:flex; gap:5px;"><input type="date" id="client-date-start" class="modern-date" onchange="auth.loadClientOrders()"><input type="date" id="client-date-end" class="modern-date" onchange="auth.loadClientOrders()"></div>
+                </div>
+                <div id="client-orders-list" style="max-height:400px; overflow-y:auto; margin-top:10px;"></div>
             </div>
         </div>
     </div>
@@ -262,8 +271,8 @@
         <div style="flex:1; overflow-y:auto;"><ul id="cart-list" style="list-style:none;"></ul></div>
         <div style="border-top:1px solid #eee; padding-top:20px;">
             <div id="cart-auth-area" style="margin-bottom:15px;"></div>
-            <button id="btn-address-trigger" onclick="app.openAddressModal()" class="btn-addr-trigger">📍 Cadastrar Entrega</button>
-            <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:15px; font-size:1.1rem;"><span>Total</span> <span id="cart-total">R$ 0.00</span></div>
+            <button id="btn-address-trigger" onclick="app.openAddressModal()" class="btn-addr-trigger" style="width:100%; padding:15px; border:2px dashed var(--accent); background:none; border-radius:12px; cursor:pointer;">📍 Entrega</button>
+            <div style="display:flex; justify-content:space-between; font-weight:bold; margin:15px 0; font-size:1.1rem;"><span>Total</span> <span id="cart-total">R$ 0.00</span></div>
             <button onclick="app.checkout('whatsapp')" class="btn-whats">Falar WhatsApp</button>
             <button onclick="app.checkout('mercadopago')" class="btn-mp">Pagamento Online</button>
         </div>
@@ -279,138 +288,95 @@
     </div>
 
     <div id="admin-auth-modal" class="overlay" style="z-index:10003;">
-        <div class="box single-col" style="max-width: 350px; padding: 40px; text-align:center;">
-            <i class="fas fa-lock" style="font-size:3rem; color:var(--accent); margin-bottom:20px;"></i>
+        <div class="box single-col" style="max-width: 350px; text-align:center; padding:40px;">
+            <i class="fas fa-lock" style="font-size:2rem; color:var(--accent); margin-bottom:15px;"></i>
             <h2>Área Restrita</h2>
-            <input type="password" id="admin-pass" class="input" placeholder="Senha" style="text-align:center; font-size:1.2rem; margin-top:20px;" onkeydown="if(event.key==='Enter') admin.verifyLogin()">
+            <input type="password" id="admin-pass" class="input" placeholder="Senha" style="text-align:center; font-size:1.2rem; margin-top:15px;" onkeydown="if(event.key==='Enter') admin.verifyLogin()">
             <button onclick="admin.verifyLogin()" style="width:100%; background:var(--accent); color:white; padding:12px; border-radius:8px; border:none; font-weight:bold; margin-top:10px;">Entrar</button>
-            <button onclick="app.closeModal('admin-auth-modal')" style="background:none; border:none; color:#999; margin-top:10px; text-decoration:underline;">Cancelar</button>
+            <button onclick="app.closeModal('admin-auth-modal')" style="background:none; border:none; color:#999; text-decoration:underline; margin-top:10px;">Cancelar</button>
         </div>
     </div>
 
     <div id="admin-modal" class="overlay" style="z-index:2001; background:#f4f6f9; align-items:flex-start; padding:0;">
-        <div class="box admin-box" style="max-width:100%; height:100%; border-radius:0; padding:0; display:flex; flex-direction:column;">
+        <div class="box admin-content" style="max-width:100%; height:100%; border-radius:0; padding:0; display:flex; flex-direction:column;">
             <div class="admin-nav">
-                <h3 style="margin-right:15px;">Admin 2A</h3>
-                <button onclick="admin.tab('dash')" class="admin-tab active">Dashboard</button>
-                <button onclick="admin.tab('orders')" class="admin-tab">Pedidos</button>
+                <h3 style="margin-right:20px;">Admin</h3>
+                <button onclick="admin.tab('orders')" class="admin-tab active">Pedidos</button>
                 <button onclick="admin.tab('pay')" class="admin-tab">Pagamentos</button>
-                <button onclick="admin.tab('fin')" class="admin-tab">Financeiro</button>
                 <button onclick="admin.tab('prod')" class="admin-tab">Produtos</button>
                 <button onclick="app.closeModal('admin-modal')" style="background:var(--danger); color:white; border:none; padding:6px 15px; border-radius:20px; margin-left:auto; font-size:0.8rem;">Sair</button>
             </div>
-            <div style="flex:1; overflow-y:auto; padding:20px; width:100%; max-width:1100px; margin:0 auto;">
+            <div style="flex:1; overflow-y:auto; padding:20px; width:100%; max-width:1200px; margin:0 auto;">
                 
-                <div id="tab-dash">
-                    <div class="fin-grid">
-                        <div class="fin-card-m" style="border-color:var(--success)"><label>Lucro</label><div id="st-profit">R$ 0.00</div></div>
-                        <div class="fin-card-m" style="border-color:var(--danger)"><label>Custo Estoque</label><div id="st-cost">R$ 0.00</div></div>
-                        <div class="fin-card-m" style="border-color:var(--info)"><label>Venda Total</label><div id="st-rev">R$ 0.00</div></div>
-                    </div>
-                    <div style="background:white; padding:20px; border-radius:12px; border:1px solid #eee;">
-                        <h4>Estoque & Produtos</h4>
-                        <div id="mini-prod-list" style="margin-top:15px;"></div>
-                    </div>
-                </div>
-
-                <div id="tab-orders" style="display:none;">
-                    <div style="background:white; padding:20px; border-radius:12px; border:1px solid #eee;">
+                <div id="tab-orders">
+                    <div style="background:white; padding:20px; border-radius:12px; margin-bottom:20px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                             <h3>Pedidos</h3>
-                            <div class="date-modern-wrapper">
-                                <input type="date" id="order-start" class="input-date-modern" onchange="admin.renderOrders()">
-                                <span style="color:#ccc">|</span>
-                                <input type="date" id="order-end" class="input-date-modern" onchange="admin.renderOrders()">
+                            <div style="display:flex; gap:10px;">
+                                <input type="date" id="order-start" class="modern-date" onchange="admin.renderOrders()">
+                                <input type="date" id="order-end" class="modern-date" onchange="admin.renderOrders()">
                             </div>
                         </div>
-                        
-                        <div class="filter-chips-container">
-                            <div class="status-chip chip-all active" onclick="admin.filterOrders('all', this)">Todos</div>
-                            <div class="status-chip chip-pendente" onclick="admin.filterOrders('Pendente', this)">Pendentes</div>
-                            <div class="status-chip chip-enviado" onclick="admin.filterOrders('Enviado', this)">Enviados</div>
-                            <div class="status-chip chip-entregue" onclick="admin.filterOrders('Entregue', this)">Entregues</div>
-                            <div class="status-chip chip-cancelado" onclick="admin.filterOrders('Cancelado', this)">Cancelados</div>
+                        <div class="status-filters">
+                            <div class="status-chip active" onclick="admin.filterOrders('all', this)">Todos</div>
+                            <div class="status-chip" onclick="admin.filterOrders('Pendente', this)">Pendentes</div>
+                            <div class="status-chip" onclick="admin.filterOrders('Enviado', this)">Enviados</div>
+                            <div class="status-chip" onclick="admin.filterOrders('Entregue', this)">Entregues</div>
+                            <div class="status-chip" onclick="admin.filterOrders('Cancelado', this)">Cancelados</div>
                         </div>
-
                         <div id="orders-list"></div>
                     </div>
                 </div>
 
                 <div id="tab-pay" style="display:none;">
-                    <div style="background:white; padding:20px; border-radius:12px; border:1px solid #eee;">
+                    <div style="background:white; padding:20px; border-radius:12px; margin-bottom:20px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                            <h3>Controle de Pagamentos</h3>
-                            <div class="date-modern-wrapper">
-                                <input type="date" id="pay-start" class="input-date-modern" onchange="admin.renderPayments()">
-                                <span style="color:#ccc">|</span>
-                                <input type="date" id="pay-end" class="input-date-modern" onchange="admin.renderPayments()">
+                            <h3>Pagamentos</h3>
+                            <div style="display:flex; gap:10px;">
+                                <input type="date" id="pay-start" class="modern-date" onchange="admin.renderPayments()">
+                                <input type="date" id="pay-end" class="modern-date" onchange="admin.renderPayments()">
                             </div>
                         </div>
-
-                        <div class="filter-chips-container">
-                            <div class="status-chip chip-all active" onclick="admin.filterPayments('all', this)">Todos</div>
-                            <div class="status-chip chip-pago" onclick="admin.filterPayments('Pago', this)">Pagos</div>
-                            <div class="status-chip chip-parcelado" onclick="admin.filterPayments('Parcelado', this)">Parcelados</div>
-                            <div class="status-chip chip-fiado" onclick="admin.filterPayments('Fiado', this)">Fiados</div>
+                        <div class="status-filters">
+                            <div class="status-chip active" onclick="admin.filterPayments('all', this)">Todos</div>
+                            <div class="status-chip" onclick="admin.filterPayments('Parcelado', this)">Parcelados</div>
+                            <div class="status-chip" onclick="admin.filterPayments('Fiado', this)">Fiados</div>
+                            <div class="status-chip" onclick="admin.filterPayments('Pago', this)">Pagos</div>
                         </div>
-
                         <div id="pay-list"></div>
                     </div>
                 </div>
 
-                <div id="tab-fin" style="display:none;">
-                    <div style="background:white; padding:20px; border-radius:12px; border:1px solid #eee;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                            <h3>Relatório</h3>
-                            <div class="date-modern-wrapper">
-                                <input type="date" id="fin-start" class="input-date-modern" onchange="admin.renderFinance()">
-                                <span style="color:#ccc">|</span>
-                                <input type="date" id="fin-end" class="input-date-modern" onchange="admin.renderFinance()">
-                            </div>
-                        </div>
-                        
-                        <div class="fin-grid">
-                            <div class="fin-card-m" style="border-color:var(--info)"><label>Faturamento</label><div id="fin-total-rev">R$ 0.00</div></div>
-                            <div class="fin-card-m" style="border-color:var(--danger)"><label>Custos</label><div id="fin-total-cost">R$ 0.00</div></div>
-                            <div class="fin-card-m" style="border-color:var(--success)"><label>Lucro Liq.</label><div id="fin-total-profit">R$ 0.00</div></div>
-                            <div class="fin-card-m" style="border-color:var(--warning)"><label>Margem</label><div id="fin-total-margin">0%</div></div>
-                        </div>
-
-                        <h4 style="margin-top:20px;">Desempenho por Produto</h4>
-                        <div id="fin-prod-list" style="margin-top:10px; border:1px solid #eee; border-radius:8px;"></div>
-                    </div>
-                </div>
-
                 <div id="tab-prod" style="display:none;">
-                    <div style="background:white; padding:20px; border-radius:12px; margin-bottom:20px; border:1px solid #eee;">
+                    <div style="background:white; padding:20px; border-radius:12px; margin-bottom:20px;">
                         <h3>Cadastro</h3>
                         <input type="hidden" id="edit-id">
-                        <input type="text" id="f-name" class="input" placeholder="Nome do Produto">
-                        <div style="display:flex; gap:10px;">
+                        <input type="text" id="f-name" class="input" placeholder="Nome">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                             <select id="f-cat" class="input"><option value="feminino">Feminino</option><option value="infantil">Infantil</option><option value="perfumes">Perfumes</option></select>
-                            <input type="number" id="f-cost" class="input" placeholder="Custo (Opcional)">
+                            <input type="number" id="f-cost" class="input" placeholder="Custo">
                         </div>
-                        <div style="display:flex; gap:10px;">
-                            <input type="number" id="f-price-global" class="input" placeholder="Preço Venda Global">
-                            <input type="number" id="f-stock-global" class="input" placeholder="Estoque Geral">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <input type="number" id="f-price-global" class="input" placeholder="Preço Venda">
+                            <input type="number" id="f-stock-global" class="input" placeholder="Estoque">
                         </div>
-                        <label class="toggle-switch"><input type="checkbox" id="f-promo"><span class="slider"></span></label> Promoção?
+                        <label><input type="checkbox" id="f-promo"> Promoção?</label>
                         <input type="file" id="f-file" class="input" style="margin-top:10px;">
-                        <textarea id="f-desc" class="input" rows="2" placeholder="Descrição"></textarea>
-                        <button onclick="admin.save()" id="btn-save" style="width:100%; background:var(--primary); color:white; padding:10px; border-radius:8px; border:none; margin-top:10px; font-weight:bold;">Salvar</button>
+                        <button onclick="admin.save()" id="btn-save" style="width:100%; background:var(--primary); color:white; padding:10px; border-radius:8px; border:none; margin-top:10px;">Salvar</button>
                         <button onclick="admin.clear()" style="width:100%; padding:5px; background:none; border:none; color:#666;">Limpar</button>
                     </div>
-                    <div style="background:white; padding:20px; border-radius:12px; border:1px solid #eee;">
+                    <div style="background:white; padding:20px; border-radius:12px;">
                         <h3>Lista</h3>
                         <div id="admin-list"></div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
 
     <script>
-        // INIT & LOAD
+        // --- INIT & CONFIG ---
         setTimeout(() => { document.getElementById('loading-screen').style.opacity='0'; setTimeout(()=>document.getElementById('loading-screen').style.display='none',500); }, 2000);
         
         const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
@@ -420,7 +386,7 @@
 
         const state = { products: [], cart: [], current: null, var: null, qty: 1, user: null, address: null, filterOrder: 'all', filterPay: 'all' };
 
-        // APP LOGIC
+        // --- APP LOGIC ---
         const app = {
             load: async () => {
                 if(!sb) return;
@@ -473,64 +439,136 @@
             },
             toggleCart: () => document.querySelector('.sidebar').classList.toggle('open'),
             
-            // ... (Auth, Address logic same as previous, omitted for brevity but assumed present) ...
-            // INSERT AUTH AND ADDRESS FUNCTIONS HERE FROM PREVIOUS VERSIONS IF NEEDED
-            
+            // --- CHECKOUT ---
             checkout: async (method) => {
                 if(!state.cart.length) return alert("Vazio");
                 if(!state.user) { alert("Login necessário"); app.showModal('auth-modal'); return; }
+                
                 const oid = Date.now().toString();
                 const status = method==='whatsapp' ? 'Pendente (WhatsApp)' : 'Pendente';
                 const payStatus = method==='mercadopago' ? 'Pago' : 'Pendente';
                 
-                await sb.from('orders').insert([{
+                const orderData = {
                     id: oid, customer_name: state.user.name, customer_email: state.user.email,
                     total: state.cart.reduce((a,b)=>a+b.price*b.qty,0), items: JSON.stringify(state.cart),
                     address: JSON.stringify(state.address), date: new Date().toLocaleDateString(),
                     method: method, status: status, payment_status: payStatus, created_at: new Date().toISOString()
-                }]);
+                };
+
+                await sb.from('orders').insert([orderData]);
                 
-                // STOCK UPDATE LOGIC HERE
-                
+                // Simples baixa de estoque para manter estabilidade
+                for (const item of state.cart) {
+                    const prod = state.products.find(p => p.name === item.name);
+                    if(prod) {
+                        const vars = JSON.parse(prod.variations);
+                        const v = vars.find(x => x.name === item.variant);
+                        if(v) { v.stock = Math.max(0, parseInt(v.stock)-item.qty); await sb.from('products').update({variations: JSON.stringify(vars)}).eq('id', prod.id); }
+                    }
+                }
+
                 alert("Pedido Recebido!");
+                state.cart = []; app.renderCart(); app.toggleCart();
                 if(method==='whatsapp') window.location.href = `https://wa.me/5567998951120?text=Pedido ${oid}`;
             },
 
-            // UTILS
+            // UTILS & ADDRESS
             showModal: (id) => { document.getElementById(id).classList.add('active'); },
             closeModal: (id) => { document.getElementById(id).classList.remove('active'); },
             filter: (cat, btn) => {
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 app.render(cat==='all' ? state.products : state.products.filter(p => p.category===cat));
+            },
+            fetchCep: async (cep) => { /* Mantido simples */ },
+            addNewAddress: () => { 
+                const a = { name: document.getElementById('addr-name').value, street: document.getElementById('addr-street').value };
+                state.address = a; localStorage.setItem('2a_active_addr', JSON.stringify(a));
+                app.updateUI(); app.closeModal('address-modal');
+            },
+            updateUI: () => {
+                const btn = document.getElementById('btn-address-trigger');
+                if(btn && state.address) { btn.classList.add('filled'); btn.innerHTML = `📍 Entrega: ${state.address.street}`; }
             }
         };
 
-        // ADMIN LOGIC UPDATED
+        // --- AUTH ---
+        const auth = {
+            checkProfile: () => { 
+                if(state.user) { app.showModal('client-modal'); auth.loadClientOrders(); document.getElementById('client-info-txt').innerText = state.user.name; } 
+                else app.showModal('auth-modal'); 
+            },
+            toggle: (m) => { document.getElementById('form-login').style.display=m==='login'?'block':'none'; document.getElementById('form-register').style.display=m==='register'?'block':'none'; },
+            login: async () => {
+                const e = document.getElementById('l-email').value, p = document.getElementById('l-pass').value;
+                const {data} = await sb.from('customers').select('*').eq('email',e).eq('password',p).single();
+                if(data) { state.user=data; localStorage.setItem('2a_user', JSON.stringify(data)); app.closeModal('auth-modal'); } else alert("Erro");
+            },
+            register: async () => {
+                const n=document.getElementById('r-name').value, e=document.getElementById('r-email').value, p=document.getElementById('r-pass').value;
+                await sb.from('customers').insert([{id: Date.now(), name:n, email:e, password:p}]);
+                alert("OK"); auth.toggle('login');
+            },
+            logout: () => { localStorage.removeItem('2a_user'); location.reload(); },
+            loadClientOrders: async () => {
+                const startStr = document.getElementById('client-date-start').value;
+                const endStr = document.getElementById('client-date-end').value;
+                
+                let q = sb.from('orders').select('*').eq('customer_email', state.user.email).order('created_at', {ascending:false});
+                if(startStr && endStr) {
+                    q = q.gte('created_at', new Date(startStr + 'T00:00:00').toISOString()).lte('created_at', new Date(endStr + 'T23:59:59').toISOString());
+                }
+                const { data } = await q;
+                const div = document.getElementById('client-orders-list'); div.innerHTML = "";
+                if(!data || !data.length) { div.innerHTML="Sem pedidos."; return; }
+                
+                data.forEach(o => {
+                    let isCancelled = o.status === 'Cancelado';
+                    let pct = 10;
+                    if(o.status.includes('Enviado')) pct=50;
+                    if(o.status.includes('Entregue')) pct=100;
+                    
+                    const trackHTML = isCancelled ? 
+                        `<div class="track-fill cancelled"></div><div class="truck-icon cancelled"><i class="fas fa-times-circle"></i></div>` : 
+                        `<div class="track-fill" style="width:${pct}%"></div><div class="truck-icon" style="left:${pct}%"><i class="fas fa-truck"></i></div>`;
+
+                    div.innerHTML += `
+                    <div class="client-order">
+                        <div style="display:flex;justify-content:space-between"><b>${o.date}</b> <b>R$ ${o.total.toFixed(2)}</b></div>
+                        <div class="track-container"><div class="track-line-bg"></div>${trackHTML}</div>
+                        <small style="color:${isCancelled?'red':'green'}">${o.status}</small>
+                    </div>`;
+                });
+            }
+        };
+
+        // --- ADMIN ---
         const admin = {
             verifyLogin: () => {
                 if(document.getElementById('admin-pass').value === "123") {
-                    app.closeModal('admin-auth-modal');
-                    app.showModal('admin-modal');
-                    // Set Default Dates (Last 30 days)
+                    app.closeModal('admin-auth-modal'); app.showModal('admin-modal');
                     const end = new Date(); const start = new Date(); start.setDate(end.getDate()-30);
-                    ['order','pay','fin'].forEach(p => {
-                        document.getElementById(`${p}-end`).valueAsDate = end;
-                        document.getElementById(`${p}-start`).valueAsDate = start;
+                    ['order','pay'].forEach(k => {
+                        document.getElementById(`${k}-end`).valueAsDate = end;
+                        document.getElementById(`${k}-start`).valueAsDate = start;
                     });
-                    admin.renderOrders(); admin.renderPayments(); admin.renderFinance();
+                    // Client defaults too
+                    document.getElementById('client-date-end').valueAsDate = end;
+                    document.getElementById('client-date-start').valueAsDate = start;
+                    
+                    admin.renderOrders(); admin.renderPayments(); admin.renderList();
                 } else alert("Senha incorreta");
             },
             tab: (t) => {
                 document.querySelectorAll('.admin-tab').forEach(b=>b.classList.remove('active'));
                 document.querySelector(`.admin-tab[onclick*='${t}']`).classList.add('active');
-                ['dash','orders','pay','fin','prod'].forEach(i=>document.getElementById(`tab-${i}`).style.display = i===t?'block':'none');
+                ['orders','pay','prod'].forEach(i=>document.getElementById(`tab-${i}`).style.display = i===t?'block':'none');
             },
             
-            // ORDER FILTERS
-            filterOrders: (status, btn) => {
-                state.filterOrder = status;
-                document.querySelectorAll('#tab-orders .status-chip').forEach(b => b.classList.remove('active'));
+            // ORDER LOGIC
+            filterOrders: (st, btn) => {
+                state.filterOrder = st;
+                document.querySelectorAll('#tab-orders .status-chip').forEach(b=>b.classList.remove('active'));
                 btn.classList.add('active');
                 admin.renderOrders();
             },
@@ -539,96 +577,131 @@
                 const end = new Date(document.getElementById('order-end').value + 'T23:59:59');
                 let q = sb.from('orders').select('*').gte('created_at', start.toISOString()).lte('created_at', end.toISOString()).order('created_at', {ascending:false});
                 
-                if(state.filterOrder !== 'all') {
-                    if(state.filterOrder === 'Pendente') q = q.ilike('status', '%Pendente%');
-                    else q = q.eq('status', state.filterOrder);
-                }
-
                 const { data } = await q;
                 const div = document.getElementById('orders-list'); div.innerHTML = "";
                 
-                if(!data || !data.length) { div.innerHTML="<p style='color:#999;text-align:center'>Nenhum pedido encontrado.</p>"; return; }
-
                 data.forEach(o => {
+                    if(state.filterOrder !== 'all') {
+                        if(state.filterOrder === 'Pendente' && !o.status.includes('Pendente')) return;
+                        if(state.filterOrder !== 'Pendente' && o.status !== state.filterOrder) return;
+                    }
+
                     const items = JSON.parse(o.items);
                     const itemsHtml = items.map(i => `<div>${i.qty}x ${i.name}</div>`).join('');
-                    const stClass = o.status.includes('Enviado') ? 'st-enviado' : o.status.includes('Entregue') ? 'st-entregue' : o.status.includes('Cancelado') ? 'st-cancelado' : 'st-pendente';
                     
+                    const payStatus = o.payment_status || 'Pendente';
+                    const isOwing = payStatus === 'Parcelado' || payStatus === 'Fiado';
+
                     div.innerHTML += `
-                    <div class="order-card-compact">
-                        <div class="occ-header"><span>#${o.id.slice(-6)}</span> <span>${o.date}</span></div>
-                        <div class="occ-body">
-                            <div class="occ-info"><label>Cliente</label><div class="occ-val">${o.customer_name}</div></div>
-                            <div class="occ-info"><label>Total</label><div class="occ-val" style="color:var(--success)">R$ ${o.total.toFixed(2)}</div></div>
-                            <div class="occ-info"><label>Status</label>
-                                <select onchange="admin.updateStatus('${o.id}', this.value)" class="status-selector ${stClass}" style="padding:4px 10px; font-size:0.75rem;">
+                    <div class="order-card-modern">
+                        <div class="oc-header"><span>#${o.id.slice(-6)}</span> <span>${o.date}</span></div>
+                        <div class="oc-body">
+                            <div class="oc-section"><label>Cliente</label><div class="oc-val">${o.customer_name}</div></div>
+                            <div class="oc-section"><label>Total</label><div class="oc-val" style="color:var(--success)">R$ ${o.total.toFixed(2)}</div></div>
+                            <div class="oc-section"><label>Status</label>
+                                <select onchange="admin.updateStatus('${o.id}', this.value)" class="status-selector">
                                     <option value="Pendente" ${o.status.includes('Pendente')?'selected':''}>Pendente</option>
-                                    <option value="Enviado" ${o.status.includes('Enviado')?'selected':''}>Enviado</option>
-                                    <option value="Entregue" ${o.status.includes('Entregue')?'selected':''}>Entregue</option>
-                                    <option value="Cancelado" ${o.status.includes('Cancelado')?'selected':''}>Cancelado</option>
+                                    <option value="Enviado" ${o.status==='Enviado'?'selected':''}>Enviado</option>
+                                    <option value="Entregue" ${o.status==='Entregue'?'selected':''}>Entregue</option>
+                                    <option value="Cancelado" ${o.status==='Cancelado'?'selected':''}>Cancelado</option>
                                 </select>
                             </div>
-                            <div class="occ-items">${itemsHtml}</div>
+                            <div class="oc-items-box">${itemsHtml}</div>
+                            
+                            <div style="grid-column:span 2; background:#fffaf0; padding:10px; border:1px solid #ffeeba; border-radius:8px;">
+                                <label style="font-weight:bold; font-size:0.8rem;">Financeiro:</label>
+                                <select onchange="admin.togglePaymentDetails(this, '${o.id}')" class="input" style="margin-top:5px;">
+                                    <option value="Pendente" ${payStatus==='Pendente'?'selected':''}>Pendente</option>
+                                    <option value="Pago" ${payStatus==='Pago'?'selected':''}>Pago</option>
+                                    <option value="Parcelado" ${payStatus==='Parcelado'?'selected':''}>Parcelado</option>
+                                    <option value="Fiado" ${payStatus==='Fiado'?'selected':''}>Fiado</option>
+                                </select>
+                                <div id="pay-det-${o.id}" style="display:${isOwing?'block':'none'}; margin-top:5px;">
+                                    <div style="display:flex; gap:5px;">
+                                        <input type="number" id="inst-n-${o.id}" class="input" placeholder="Qtd Parcelas" style="margin:0;">
+                                        <button onclick="admin.genInstallments('${o.id}', ${o.total})" style="padding:5px 15px; background:var(--accent); color:white; border:none; border-radius:6px;">Gerar</button>
+                                    </div>
+                                    <div id="inst-list-${o.id}" style="margin-top:5px;"></div>
+                                    <button onclick="admin.saveFinance('${o.id}')" style="width:100%; background:var(--success); color:white; border:none; padding:8px; border-radius:6px; margin-top:5px;">Salvar Financeiro</button>
+                                </div>
+                            </div>
                         </div>
                     </div>`;
                 });
             },
             updateStatus: async (id, val) => { await sb.from('orders').update({status: val}).eq('id', id); admin.renderOrders(); },
+            
+            // PAYMENT DETAILS LOGIC
+            togglePaymentDetails: (sel, id) => { document.getElementById(`pay-det-${id}`).style.display = (sel.value==='Parcelado'||sel.value==='Fiado')?'block':'none'; },
+            genInstallments: (id, total) => {
+                const n = parseInt(document.getElementById(`inst-n-${id}`).value);
+                if(!n) return;
+                const box = document.getElementById(`inst-list-${id}`); box.innerHTML = "";
+                const val = (total/n).toFixed(2);
+                for(let i=0; i<n; i++) {
+                    const d = new Date(); d.setDate(d.getDate() + (30*(i+1)));
+                    box.innerHTML += `<div class="inst-row"><span style="font-size:0.8rem">${i+1}x</span><input type="date" value="${d.toISOString().split('T')[0]}" class="input i-date" style="width:auto;padding:5px;"><input type="number" value="${val}" class="input i-amount" style="width:80px;padding:5px;margin:0;"></div>`;
+                }
+            },
+            saveFinance: async (id) => {
+                const root = document.querySelector(`#pay-det-${id}`).parentElement;
+                const st = root.querySelector('select').value;
+                let json = null;
+                if(st === 'Parcelado' || st === 'Fiado') {
+                    const rows = document.querySelectorAll(`#inst-list-${id} .inst-row`);
+                    const arr = [];
+                    rows.forEach(r => arr.push({date: r.querySelector('.i-date').value, amount: r.querySelector('.i-amount').value, paid: false}));
+                    json = JSON.stringify(arr);
+                }
+                await sb.from('orders').update({payment_status: st, installments: json}).eq('id', id);
+                alert("Salvo!"); admin.renderPayments();
+            },
 
-            // PAYMENTS LOGIC
-            filterPayments: (status, btn) => {
-                state.filterPay = status;
-                document.querySelectorAll('#tab-pay .status-chip').forEach(b => b.classList.remove('active'));
+            // PAYMENTS TAB LOGIC
+            filterPayments: (st, btn) => {
+                state.filterPay = st;
+                document.querySelectorAll('#tab-pay .status-chip').forEach(b=>b.classList.remove('active'));
                 btn.classList.add('active');
                 admin.renderPayments();
             },
             renderPayments: async () => {
                 const start = new Date(document.getElementById('pay-start').value + 'T00:00:00');
                 const end = new Date(document.getElementById('pay-end').value + 'T23:59:59');
+                const { data } = await sb.from('orders').select('*').gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
                 
-                let q = sb.from('orders').select('*').gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
-                
-                // Logic: Fetch ALL, then filter in JS to properly handle "all payments" including paid ones
-                const { data } = await q;
                 const div = document.getElementById('pay-list'); div.innerHTML = "";
-
-                if(!data || !data.length) { div.innerHTML="<p style='color:#999;text-align:center'>Nenhum registro.</p>"; return; }
-
+                
                 data.forEach(o => {
-                    // Filter Logic
+                    // Show ALL if filter is 'all', else filter strictly
                     if(state.filterPay !== 'all' && o.payment_status !== state.filterPay) return;
 
                     const items = JSON.parse(o.items);
-                    const prodChips = items.map(i => `<span class="pay-prod-chip"><i class="fas fa-box"></i> ${i.qty}x ${i.name}</span>`).join('');
+                    const prodTags = items.map(i => `<span class="prod-chip"><i class="fas fa-tag"></i> ${i.qty}x ${i.name}</span>`).join('');
                     
-                    let instData = [];
-                    try { instData = JSON.parse(o.installments || '[]'); } catch(e){}
+                    let inst = []; try { inst = JSON.parse(o.installments || '[]'); } catch(e){}
+                    let paid = 0;
                     
-                    let paidAmount = 0;
-                    if(instData.length > 0) {
-                        instData.forEach(i => { if(i.paid) paidAmount += parseFloat(i.amount); });
-                    } else if(o.payment_status === 'Pago') {
-                        paidAmount = o.total;
+                    if(inst.length) {
+                        inst.forEach(i => { if(i.paid) paid += parseFloat(i.amount); });
+                    } else if (o.payment_status === 'Pago') {
+                        paid = o.total;
                     }
 
-                    const progressPct = Math.min(100, (paidAmount / o.total) * 100);
-                    const isFullyPaid = progressPct >= 99.9;
+                    const pct = Math.min(100, (paid/o.total)*100);
+                    const isFullyPaid = pct >= 99.9;
+                    const badgeColor = isFullyPaid ? 'var(--success)' : o.payment_status==='Fiado' ? 'var(--danger)' : 'var(--warning)';
                     const statusClass = isFullyPaid ? 'paid' : (o.payment_status === 'Fiado' ? 'overdue' : '');
 
-                    // Render Installments (Visual Cards)
                     let instHtml = '';
-                    if(instData.length > 0) {
+                    if(inst.length) {
                         instHtml = `<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">`;
-                        instData.forEach((inst, idx) => {
+                        inst.forEach((i, idx) => {
                             instHtml += `
                             <div class="inst-row-modern">
-                                <div>
-                                    <span style="font-weight:bold; color:#555;">${idx+1}ª Parcela</span><br>
-                                    <small style="color:#999;">Vence: ${inst.date.split('-').reverse().join('/')}</small>
-                                </div>
-                                <div style="font-weight:bold;">R$ ${parseFloat(inst.amount).toFixed(2)}</div>
+                                <div><span style="font-weight:bold; color:#555;">${idx+1}ª</span> <small style="color:#999;">${i.date.split('-').reverse().join('/')}</small></div>
+                                <div style="font-weight:bold;">R$ ${parseFloat(i.amount).toFixed(2)}</div>
                                 <label class="modern-checkbox">
-                                    <input type="checkbox" ${inst.paid?'checked':''} onchange="admin.quickPayInst('${o.id}', ${idx}, this.checked)">
+                                    <input type="checkbox" ${i.paid?'checked':''} onchange="admin.quickPay('${o.id}', ${idx}, this.checked)">
                                     <span class="checkmark"></span>
                                 </label>
                             </div>`;
@@ -637,65 +710,77 @@
                     }
 
                     div.innerHTML += `
-                    <div class="pay-card ${statusClass}">
-                        <div class="pay-header">
-                            <span class="pay-client">${o.customer_name}</span>
-                            <span class="pay-status-badge" style="background:${isFullyPaid?'var(--success)':'var(--warning)'}; color:white;">${o.payment_status}</span>
+                    <div class="debt-card ${statusClass}">
+                        <div class="debt-header">
+                            <span class="debt-client">${o.customer_name}</span>
+                            <span class="debt-badge" style="background:${badgeColor}">${o.payment_status}</span>
                         </div>
-                        <div class="pay-products-grid">${prodChips}</div>
-                        <div style="display:flex; justify-content:space-between; font-size:0.9rem; font-weight:bold;">
-                            <span>Pago: R$ ${paidAmount.toFixed(2)}</span>
+                        <div style="margin-bottom:10px;">${prodTags}</div>
+                        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:0.9rem;">
+                            <span>Pago: R$ ${paid.toFixed(2)}</span>
                             <span style="color:${isFullyPaid?'var(--success)':'var(--danger)'}">Total: R$ ${o.total.toFixed(2)}</span>
                         </div>
-                        <div class="pay-progress-bar"><div class="pay-progress-fill" style="width:${progressPct}%"></div></div>
+                        <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
                         ${instHtml}
                     </div>`;
                 });
             },
-            quickPayInst: async (id, idx, checked) => {
-                const { data } = await sb.from('orders').select('installments, total').eq('id', id).single();
+            quickPay: async (oid, idx, checked) => {
+                const { data } = await sb.from('orders').select('installments').eq('id', oid).single();
                 if(data) {
                     const arr = JSON.parse(data.installments);
                     arr[idx].paid = checked;
-                    
-                    // Check if all paid
                     const allPaid = arr.every(i => i.paid);
-                    const newStatus = allPaid ? 'Pago' : 'Parcelado'; // Or keep original if 'Fiado' logic differs
-                    
-                    await sb.from('orders').update({ installments: JSON.stringify(arr), payment_status: newStatus }).eq('id', id);
+                    const newSt = allPaid ? 'Pago' : 'Parcelado'; 
+                    await sb.from('orders').update({ installments: JSON.stringify(arr), payment_status: newSt }).eq('id', oid);
                     admin.renderPayments();
                 }
             },
 
-            // FINANCE & PRODUCT - (Simplified for brevity, logic maintained)
-            renderFinance: async () => { /* Same logic as previous, utilizing date inputs */ },
-            save: async () => { /* Same save logic */ }
+            // PROD - (Simplified Logic)
+            save: async () => {
+                const n=document.getElementById('f-name').value;
+                const vars = []; // Logic to grab vars or global
+                const gPrice = document.getElementById('f-price-global').value;
+                if(gPrice) vars.push({name:'Padrão', price:gPrice, stock:document.getElementById('f-stock-global').value, cost:document.getElementById('f-cost').value});
+                
+                const file = document.getElementById('f-file').files[0];
+                let url = "https://via.placeholder.com/300";
+                if(file) {
+                    const f = `prod_${Date.now()}`;
+                    await sb.storage.from('images').upload(f, file);
+                    const {data} = sb.storage.from('images').getPublicUrl(f);
+                    url = data.publicUrl;
+                }
+                const p = { name:n, variations:JSON.stringify(vars), image_url:url, category: document.getElementById('f-cat').value, is_promo: document.getElementById('f-promo').checked };
+                const eid = document.getElementById('edit-id').value;
+                
+                if(eid) await sb.from('products').update(p).eq('id', eid);
+                else await sb.from('products').insert([p]);
+                
+                alert("Salvo!"); admin.renderList();
+            },
+            clear: () => { /* Clear inputs */ },
+            renderList: async () => { /* Render logic */ }
         };
 
-        // ... (Auth/Init Logic same as previous) ...
-        // Insert User/Init code here (omitted to fit response limit, identical to previous working version)
-        
+        // --- INIT ---
         (async function init() {
             if(window.emailjs) emailjs.init(EMAILJS_PUBLIC_KEY);
             const u = localStorage.getItem('2a_user'); if(u) state.user=JSON.parse(u);
             const a = localStorage.getItem('2a_active_addr'); if(a) state.address=JSON.parse(a);
             
-            // Auto-load last 30 days
-            const today = new Date(); const prior = new Date(new Date().setDate(today.getDate()-30));
-            if(document.getElementById('client-date-end')) {
-                document.getElementById('client-date-end').valueAsDate = today;
-                document.getElementById('client-date-start').valueAsDate = prior;
-                auth.loadClientOrders();
+            // Auto Load Admin Products list on init for performance
+            await app.load();
+            if(document.getElementById('admin-modal')) {
+                const {data} = await sb.from('products').select('*');
+                const d = document.getElementById('admin-list'); d.innerHTML="";
+                data.forEach(x => d.innerHTML += `<div class="mini-prod"><b>${x.name}</b> <button onclick="admin.edit('${x.id}')">Edit</button></div>`);
             }
-
-            await app.load(); 
-            // Mock Checkboxes init for Admin
-            if(document.getElementById('admin-modal')) admin.initCheckboxes = () => {}; 
-            
-            document.getElementById('loading-screen').style.opacity='0';
-            setTimeout(()=>document.getElementById('loading-screen').style.display='none', 500);
         })();
 
+        window.addEventListener('popstate', (e) => { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); });
+        document.addEventListener('keydown', (e) => { if(e.key === "Escape") { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); history.back(); } });
     </script>
 </body>
 </html>
