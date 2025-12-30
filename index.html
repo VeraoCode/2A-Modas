@@ -17,7 +17,7 @@
             --primary: #c48b78; --primary-dark: #a06b5a;
             --accent: #2c3e50; --accent-light: #34495e;
             --bg: #f8f9fa; --white: #ffffff;
-            --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; --info: #3498db; --purple: #9b59b6;
+            --success: #27ae60; --warning: #f39c12; --danger: #e74c3c; --info: #3498db;
             --radius: 12px; --shadow: 0 10px 40px rgba(0,0,0,0.08);
         }
         * { margin:0; padding:0; box-sizing:border-box; outline:none; font-family:'Plus Jakarta Sans', sans-serif; }
@@ -81,12 +81,27 @@
         .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .input-cep-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
 
-        /* FILTER BAR (DATE) */
-        .filter-wrapper { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #eee; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-        .date-group { display: flex; align-items: center; gap: 5px; background: #f9f9f9; padding: 5px 10px; border-radius: 8px; border: 1px solid #eee; }
-        .date-group label { font-size: 0.8rem; font-weight: bold; color: #777; }
-        .input-date-modern { border: none; background: transparent; font-family: inherit; color: var(--accent); font-weight: 600; font-size: 0.9rem; cursor: pointer; outline: none; }
-        .btn-filter-action { background: var(--accent); color: white; padding: 8px 20px; border-radius: 8px; border: none; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+        /* MODERN DATE PICKER */
+        .input-date-modern { 
+            padding: 10px 15px; border: 1px solid #ddd; border-radius: 25px; 
+            background: #fff; color: var(--accent); font-family: inherit; font-weight: 600;
+            outline: none; transition: 0.3s; cursor: pointer;
+        }
+        .input-date-modern:hover, .input-date-modern:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(196, 139, 120, 0.1); }
+
+        /* FILTER BAR */
+        .filter-wrapper { 
+            background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 25px; 
+            border: 1px solid #eee; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+        .date-group { display: flex; align-items: center; gap: 8px; }
+        .date-group label { font-size: 0.85rem; font-weight: bold; color: #555; }
+        
+        .btn-filter-action {
+            background: var(--accent); color: white; padding: 10px 25px; border-radius: 25px; border: none;
+            font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 0.9rem;
+        }
         .btn-filter-action:hover { background: var(--accent-light); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(44,62,80,0.2); }
 
         /* FINANCE CARDS */
@@ -101,18 +116,25 @@
         .fin-label { font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: bold; letter-spacing: 0.5px; }
         .fin-val-big { font-size: 1.6rem; font-weight: 800; color: var(--accent); margin-top: 5px; }
         .fin-prod-row { display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid #f5f5f5; background: white; transition: 0.2s; }
+        .fin-prod-row:hover { background: #fafafa; }
         .fin-prod-row img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; }
         .margin-badge { font-size: 0.75rem; background: #e0f7fa; color: #006064; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-left: 10px; }
 
         /* DEBT CARD (CONTROLE DE PAGAMENTOS) */
-        .debt-card { border: 1px solid #eee; background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 15px; position: relative; border-left: 5px solid var(--warning); }
+        .debt-card { border: 1px solid #eee; background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 15px; position: relative; border-left: 5px solid var(--warning); box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
         .debt-card.overdue { border-left-color: var(--danger); background: #fff5f5; }
         .debt-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
         .debt-client { font-size: 1.2rem; font-weight: 800; color: var(--accent); }
-        .debt-value { font-size: 1.2rem; font-weight: 800; color: var(--danger); }
+        .debt-val-box { text-align: right; }
+        .debt-total { font-size: 0.9rem; color: #777; }
+        .debt-rest { font-size: 1.2rem; font-weight: 800; color: var(--danger); }
         .debt-info { font-size: 0.9rem; color: #555; margin-bottom: 5px; }
         .debt-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; color: white; background: var(--warning); }
         .debt-card.overdue .debt-badge { background: var(--danger); }
+        
+        .installment-list { margin-top: 10px; background: #f9f9f9; padding: 10px; border-radius: 8px; display: none; }
+        .installment-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        .inst-check { transform: scale(1.3); cursor: pointer; }
 
         /* MODERN TOGGLE SWITCH */
         .toggle-switch { position: relative; display: inline-block; width: 60px; height: 30px; margin-right: 10px; vertical-align: middle; }
@@ -164,7 +186,11 @@
         .st-cancelado { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
         .payment-box { grid-column: span 2; background: #fffaf0; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-top: 10px; }
-        .pay-details-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        
+        /* DYNAMIC INSTALLMENT ROWS */
+        .gen-installments-area { display: none; margin-top: 10px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
+        .inst-gen-row { display: grid; grid-template-columns: 30px 1fr 1fr auto; gap: 5px; align-items: center; margin-bottom: 5px; font-size: 0.85rem; }
+        .inst-gen-row input { padding: 5px; border: 1px solid #ddd; border-radius: 4px; }
 
         .admin-contact-btn { display: inline-flex; align-items: center; gap: 6px; background: #25D366; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: bold; margin-top: 5px; transition: 0.3s; }
         .admin-contact-btn:hover { background: #128C7E; transform: translateY(-2px); }
@@ -485,8 +511,8 @@
 
                 <div id="tab-pay" style="display:none;">
                     <div style="background:white; padding:20px; border-radius:12px;">
-                        <h3>Controle de Pagamentos (A Pagar / Fiado)</h3>
-                        <p style="color:#666; font-size:0.9rem; margin-bottom:20px;">Listando apenas clientes com pendências.</p>
+                        <h3>Controle de Parcelas & Fiados</h3>
+                        <p style="color:#666; font-size:0.9rem; margin-bottom:20px;">Gerencie recebimentos parciais e totais.</p>
                         <div id="pay-list"></div>
                     </div>
                 </div>
@@ -874,11 +900,13 @@
                 if(sb) {
                     let query = sb.from('orders').select('*').eq('customer_email', state.user.email).order('created_at', {ascending: false});
                     
-                    const start = document.getElementById('client-date-start').value;
-                    const end = document.getElementById('client-date-end').value;
+                    const startStr = document.getElementById('client-date-start').value;
+                    const endStr = document.getElementById('client-date-end').value;
                     
-                    if(start && end) {
-                        query = query.gte('created_at', new Date(start).toISOString()).lte('created_at', new Date(end).toISOString());
+                    if(startStr && endStr) {
+                        const start = new Date(startStr + 'T00:00:00');
+                        const end = new Date(endStr + 'T23:59:59');
+                        query = query.gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
                     }
 
                     const { data } = await query;
@@ -935,12 +963,15 @@
                     app.closeModal('admin-auth-modal');
                     setTimeout(() => { 
                         app.showModal('admin-modal'); 
+                        
                         const today = new Date();
                         const prior = new Date(new Date().setDate(today.getDate() - 30));
+                        
                         document.getElementById('order-end').valueAsDate = today;
                         document.getElementById('order-start').valueAsDate = prior;
                         document.getElementById('fin-end').valueAsDate = today;
                         document.getElementById('fin-start').valueAsDate = prior;
+
                         admin.renderList(); admin.renderOrders(); admin.updateStats(); admin.renderPayments();
                     }, 100);
                 } else alert("Senha incorreta");
@@ -1034,9 +1065,16 @@
             renderOrders: async () => {
                 if(!sb) return;
                 let query = sb.from('orders').select('*').order('created_at', {ascending:false});
-                const start = document.getElementById('order-start').value;
-                const end = document.getElementById('order-end').value;
-                if(start && end) query = query.gte('created_at', new Date(start).toISOString()).lte('created_at', new Date(end).toISOString());
+                
+                const startStr = document.getElementById('order-start').value;
+                const endStr = document.getElementById('order-end').value;
+                
+                if(startStr && endStr) {
+                    // Fix: Set start to 00:00:00 and end to 23:59:59 of local day
+                    const start = new Date(startStr + 'T00:00:00');
+                    const end = new Date(endStr + 'T23:59:59');
+                    query = query.gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
+                }
 
                 const { data } = await query;
                 const div = document.getElementById('orders-list'); div.innerHTML="";
@@ -1053,9 +1091,8 @@
                     if(o.status.includes('Entregue')) stClass = 'st-entregue';
                     if(o.status === 'Cancelado') stClass = 'st-cancelado';
 
-                    // Payment details
                     const payStatus = o.payment_status || 'Pendente';
-                    const isOwing = payStatus === 'A Pagar' || payStatus === 'Fiado';
+                    const isOwing = payStatus === 'Parcelado' || payStatus === 'Fiado';
                     const showPayDetails = isOwing ? 'block' : 'none';
 
                     div.innerHTML += `
@@ -1081,16 +1118,19 @@
                             
                             <div class="payment-box">
                                 <label style="font-weight:bold; color:var(--accent);">Financeiro:</label>
-                                <select onchange="admin.togglePaymentDetails(this, '${o.id}')" class="input" style="margin-top:5px;">
+                                <select onchange="admin.togglePaymentDetails(this, '${o.id}', ${o.total})" class="input" style="margin-top:5px;">
                                     <option value="Pendente" ${payStatus==='Pendente'?'selected':''}>Pendente</option>
                                     <option value="Pago" ${payStatus==='Pago'?'selected':''}>Pago</option>
-                                    <option value="A Pagar" ${payStatus==='A Pagar'?'selected':''}>A Pagar</option>
+                                    <option value="Parcelado" ${payStatus==='Parcelado'?'selected':''}>Parcelado</option>
                                     <option value="Fiado" ${payStatus==='Fiado'?'selected':''}>Fiado</option>
                                 </select>
                                 
-                                <div id="pay-det-${o.id}" class="pay-details-inputs" style="display:${showPayDetails}">
-                                    <input type="text" id="inst-${o.id}" class="input" placeholder="Parcelas (Ex: 2x)" value="${o.installments || ''}">
-                                    <input type="date" id="due-${o.id}" class="input" value="${o.due_date || ''}">
+                                <div id="pay-det-${o.id}" class="gen-installments-area" style="display:${showPayDetails}">
+                                    <div style="display:flex; gap:10px; margin-bottom:10px;">
+                                        <input type="number" id="inst-n-${o.id}" class="input" placeholder="Qtd Parcelas" style="margin:0;">
+                                        <button onclick="admin.genInstallments('${o.id}', ${o.total})" class="btn-filter-action" style="padding:5px 15px;">Gerar</button>
+                                    </div>
+                                    <div id="inst-list-${o.id}"></div>
                                 </div>
                                 <button onclick="admin.updatePaymentStatus('${o.id}')" class="btn-filter-action" style="width:100%; justify-content:center; margin-top:5px;">Salvar Financeiro</button>
                             </div>
@@ -1098,33 +1138,96 @@
                             <div class="oc-items-box">${itemsHtml}</div>
                         </div>
                     </div>`;
+                    
+                    // Pre-fill existing installments
+                    if(isOwing && o.installments) {
+                        try {
+                            const instData = JSON.parse(o.installments);
+                            if(Array.isArray(instData)) {
+                                document.getElementById(`inst-n-${o.id}`).value = instData.length;
+                                admin.renderInstInputs(o.id, instData);
+                            }
+                        } catch(e) { console.log('Legacy installment format'); }
+                    }
                 });
             },
-            togglePaymentDetails: (sel, id) => {
+            togglePaymentDetails: (sel, id, total) => {
                 const div = document.getElementById(`pay-det-${id}`);
-                div.style.display = (sel.value === 'A Pagar' || sel.value === 'Fiado') ? 'grid' : 'none';
+                div.style.display = (sel.value === 'Parcelado' || sel.value === 'Fiado') ? 'block' : 'none';
+            },
+            genInstallments: (id, total) => {
+                const n = parseInt(document.getElementById(`inst-n-${id}`).value);
+                if(!n || n < 1) return alert("Digite qtd parcelas");
+                const arr = [];
+                const val = (total / n).toFixed(2);
+                for(let i=0; i<n; i++) {
+                    const d = new Date(); d.setDate(d.getDate() + (30 * (i+1)));
+                    arr.push({ date: d.toISOString().split('T')[0], amount: val, paid: false });
+                }
+                admin.renderInstInputs(id, arr);
+            },
+            renderInstInputs: (id, arr) => {
+                const box = document.getElementById(`inst-list-${id}`);
+                box.innerHTML = "";
+                arr.forEach((item, idx) => {
+                    box.innerHTML += `
+                    <div class="inst-gen-row">
+                        <span style="font-weight:bold;">${idx+1}x</span>
+                        <input type="date" value="${item.date}" class="i-date">
+                        <input type="number" value="${item.amount}" class="i-amount">
+                        <label><input type="checkbox" class="i-check" ${item.paid?'checked':''}> Pago</label>
+                    </div>`;
+                });
             },
             updatePaymentStatus: async (id) => {
                 const row = document.querySelector(`#pay-det-${id}`).parentElement;
                 const status = row.querySelector('select').value;
-                const inst = document.getElementById(`inst-${id}`).value;
-                const due = document.getElementById(`due-${id}`).value;
                 
-                await sb.from('orders').update({ payment_status: status, installments: inst, due_date: due }).eq('id', id);
-                alert("Financeiro atualizado!");
-                admin.renderPayments(); // Refresh payments tab if open
+                let installmentsJson = null;
+                if(status === 'Parcelado' || status === 'Fiado') {
+                    const list = document.getElementById(`inst-list-${id}`);
+                    const rows = list.querySelectorAll('.inst-gen-row');
+                    const arr = [];
+                    rows.forEach(r => {
+                        arr.push({
+                            date: r.querySelector('.i-date').value,
+                            amount: r.querySelector('.i-amount').value,
+                            paid: r.querySelector('.i-check').checked
+                        });
+                    });
+                    installmentsJson = JSON.stringify(arr);
+                }
+                
+                await sb.from('orders').update({ payment_status: status, installments: installmentsJson }).eq('id', id);
+                alert("Financeiro salvo!");
+                admin.renderPayments();
             },
             renderPayments: async () => {
-                const { data } = await sb.from('orders').select('*').or('payment_status.eq.A Pagar,payment_status.eq.Fiado').order('due_date', {ascending: true});
+                const { data } = await sb.from('orders').select('*').or('payment_status.eq.Parcelado,payment_status.eq.Fiado');
                 const div = document.getElementById('pay-list'); div.innerHTML = "";
                 
                 if(!data || data.length === 0) { div.innerHTML = "<p>Nenhum pagamento pendente.</p>"; return; }
                 
                 data.forEach(o => {
+                    let items = [];
+                    try { items = JSON.parse(o.installments || '[]'); } catch(e) {}
+                    
+                    if(!items.length) return; // Skip if no valid installments
+
+                    let totalPaid = 0;
+                    let nextDue = null;
                     const today = new Date().toISOString().split('T')[0];
-                    const isOverdue = o.due_date && o.due_date < today;
-                    const items = JSON.parse(o.items);
-                    const prodNames = items.map(i => i.name).join(', ');
+
+                    items.forEach(i => {
+                        if(i.paid) totalPaid += parseFloat(i.amount);
+                        else if(!nextDue) nextDue = i.date; // First unpaid is next due
+                    });
+
+                    const remaining = o.total - totalPaid;
+                    const isOverdue = nextDue && nextDue < today;
+                    const prodList = JSON.parse(o.items).map(x=>x.name).join(', ');
+
+                    if(remaining < 0.1) return; // Hide completely paid
 
                     div.innerHTML += `
                     <div class="debt-card ${isOverdue ? 'overdue' : ''}">
@@ -1132,24 +1235,57 @@
                             <span class="debt-client">${o.customer_name}</span>
                             <span class="debt-badge">${o.payment_status}</span>
                         </div>
-                        <div class="debt-value">R$ ${o.total.toFixed(2)}</div>
-                        <div class="debt-info">Vence em: <strong>${o.due_date ? o.due_date.split('-').reverse().join('/') : 'Sem data'}</strong></div>
-                        <div class="debt-info">Parcelas: ${o.installments || '1x'}</div>
-                        <small style="color:#777">${prodNames}</small>
+                        <div class="debt-val-box">
+                            <div class="debt-total">Total: R$ ${o.total.toFixed(2)}</div>
+                            <div class="debt-rest">Resta: R$ ${remaining.toFixed(2)}</div>
+                        </div>
+                        <div class="debt-info" style="color:${isOverdue?'var(--danger)':'#555'}">
+                            Próx Vencimento: <strong>${nextDue ? nextDue.split('-').reverse().join('/') : '---'}</strong>
+                        </div>
+                        <small style="color:#777">${prodList}</small>
                         <br>
-                        <a href="#" onclick="admin.tab('orders')" style="font-size:0.8rem; text-decoration:underline;">Ver Pedido Completo</a>
+                        <button onclick="admin.expandInstallments('${o.id}')" style="margin-top:10px; font-size:0.8rem; text-decoration:underline; border:none; background:none; color:blue;">Ver/Baixar Parcelas</button>
+                        
+                        <div id="inst-manage-${o.id}" class="installment-list">
+                            ${items.map((i, idx) => `
+                                <div class="installment-item">
+                                    <span>${idx+1}x (${i.date.split('-').reverse().join('/')}) - R$ ${parseFloat(i.amount).toFixed(2)}</span>
+                                    <input type="checkbox" class="inst-check" ${i.paid?'checked':''} 
+                                        onchange="admin.quickPayInst('${o.id}', ${idx}, this.checked)">
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>`;
                 });
             },
+            expandInstallments: (id) => {
+                const el = document.getElementById(`inst-manage-${id}`);
+                el.style.display = el.style.display === 'block' ? 'none' : 'block';
+            },
+            quickPayInst: async (oid, idx, isPaid) => {
+                const { data } = await sb.from('orders').select('installments').eq('id', oid).single();
+                if(data) {
+                    const arr = JSON.parse(data.installments);
+                    if(arr[idx]) {
+                        arr[idx].paid = isPaid;
+                        await sb.from('orders').update({ installments: JSON.stringify(arr) }).eq('id', oid);
+                        admin.renderPayments(); // Refresh list to update totals
+                    }
+                }
+            },
             renderFinance: async () => {
-                const start = document.getElementById('fin-start').value;
-                const end = document.getElementById('fin-end').value;
-                if(!start || !end) return alert("Selecione data inicial e final.");
+                const startStr = document.getElementById('fin-start').value;
+                const endStr = document.getElementById('fin-end').value;
+                
+                if(!startStr || !endStr) return alert("Selecione data inicial e final.");
+
+                const start = new Date(startStr + 'T00:00:00');
+                const end = new Date(endStr + 'T23:59:59');
 
                 const { data: orders } = await sb.from('orders').select('*')
                     .neq('status', 'Cancelado')
-                    .gte('created_at', new Date(start).toISOString())
-                    .lte('created_at', new Date(end).toISOString());
+                    .gte('created_at', start.toISOString())
+                    .lte('created_at', end.toISOString());
 
                 let totalRev = 0, totalCost = 0;
                 const productStats = {}; 
