@@ -67,7 +67,8 @@ const auth = {
         }
     },
 
-handleHeaderClick: () => {
+    // Função chamada pelo botão do cabeçalho
+    handleHeaderClick: () => {
         if(state.user) {
             auth.openClientArea();
         } else {
@@ -89,8 +90,6 @@ handleHeaderClick: () => {
     },
 
     register: async () => {
-        // (MANTENHA O CÓDIGO DE REGISTRO DO PASSO ANTERIOR AQUI - SEM ALTERAÇÕES)
-        // Apenas certifique-se de chamar auth.checkProfile(true) no final
         const name = document.getElementById('r-name').value;
         const email = document.getElementById('r-email').value;
         const pass = document.getElementById('r-pass').value;
@@ -159,8 +158,6 @@ handleHeaderClick: () => {
     },
 
     loadClientOrders: async () => {
-        // (MANTENHA A FUNÇÃO DO CAMINHÃOZINHO AQUI - SEM ALTERAÇÕES)
-        // ... código do caminhãozinho do passo anterior ...
         const div = document.getElementById('client-orders-list');
         div.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>';
         const { data } = await sb.from('orders').select('*').eq('customer_id', state.user.id).order('created_at', {ascending: false});
@@ -181,6 +178,7 @@ handleHeaderClick: () => {
         });
     }
 };
+
 // ================= APP (STORE) =================
 const app = {
     load: async () => {
@@ -219,7 +217,6 @@ const app = {
         const yesBtn = document.getElementById('btn-confirm-yes');
         const noBtn = document.getElementById('btn-confirm-no');
         
-        // Remove listeners antigos
         const newYes = yesBtn.cloneNode(true);
         const newNo = noBtn.cloneNode(true);
         yesBtn.parentNode.replaceChild(newYes, yesBtn);
@@ -414,7 +411,6 @@ const app = {
     cQty: (idx,n) => { state.cart[idx].qty+=n; if(state.cart[idx].qty<1) state.cart[idx].qty=1; app.renderCart(); },
     toggleCart: () => document.querySelector('.sidebar').classList.toggle('open'),
     fetchCep: async (cep, prefix) => {
-        // prefix pode ser 'addr' (modal endereço), 'manual' (admin) ou 'reg' (cadastro)
         cep = cep.replace(/\D/g, '');
         if(cep.length === 8) {
             try {
@@ -515,7 +511,6 @@ const app = {
             else authArea.innerHTML = `<button onclick="app.showModal('auth-modal')" style="width:100%; padding:10px; background:#f0f0f0; border:none; border-radius:8px; color:#555; font-weight:bold;"><i class="fas fa-user-circle"></i> Login / Cadastro</button>`;
         }
         
-        // --- LÓGICA DO "OLÁ NOME" NO CABEÇALHO ---
         const headerBtn = document.querySelector('.login-btn-header');
         if(headerBtn) {
             if(state.user) {
@@ -878,62 +873,33 @@ const admin = {
             } else { alert("Ação cancelada."); }
         }
     },
-    admin.renderList = () => {
-    const div = document.getElementById('admin-list'); div.innerHTML="";
-    state.products.forEach(p => {
-        const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-        let stock = 0; if(vars) vars.forEach(v => stock += parseInt(v.stock||0));
-        let mainImg = "https://via.placeholder.com/50";
-        try { const m = JSON.parse(p.image_url); if(Array.isArray(m)) mainImg = m[0]; else mainImg = p.image_url; } catch(e){}
-        
-        const isSoldOut = stock === 0;
-        
-        div.innerHTML += `
-        <div class="mini-prod ${isSoldOut ? 'stock-zero' : ''}">
-            <img src="${mainImg}" onerror="this.src='https://via.placeholder.com/50'"> 
-            <div style="flex:1">
-                <strong>${p.name}</strong><br>
-                ${isSoldOut 
-                    ? '<span style="background:#ddd; color:#666; padding:2px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">ESGOTADO</span>' 
-                    : `<span class="stock-info" style="color:var(--success)">Estoque: ${stock}</span>`
-                }
-            </div>
-            <div>
-                <button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-chip-edit"><i class="fas fa-pen"></i></button> 
-                <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none; margin-left:10px;"><i class="fas fa-trash"></i></button>
-            </div>
-        </div>`;
-    });
-};
-
-admin.updateStats = () => {
-    // (MESMA LÓGICA ANTERIOR, APENAS GARANTINDO O ESTILO CINZA)
-    const grid = document.getElementById('dash-stock-grid'); if(!grid) return; grid.innerHTML = "";
-    let grandTotalStock = 0, grandTotalValue = 0, grandTotalCost = 0;
-    state.products.forEach(p => {
-        const vars = typeof p.variations === 'string' ? JSON.parse(p.variations || '[]') : (p.variations || []);
-        let pStock = 0, pValue = 0; 
-        vars.forEach(v => {
-            const q = parseInt(v.stock||0); const price = parseFloat(v.price||0); const cost = parseFloat(v.cost) || parseFloat(p.cost_price) || 0;
-            pStock += q; pValue += (q * price); grandTotalStock += q; grandTotalValue += (q * price); grandTotalCost += (q * cost);
+    renderList: () => {
+        const div = document.getElementById('admin-list'); div.innerHTML="";
+        state.products.forEach(p => {
+            const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+            let stock = 0; if(vars) vars.forEach(v => stock += parseInt(v.stock||0));
+            let mainImg = "https://via.placeholder.com/50";
+            try { const m = JSON.parse(p.image_url); if(Array.isArray(m)) mainImg = m[0]; else mainImg = p.image_url; } catch(e){}
+            
+            const isSoldOut = stock === 0;
+            
+            div.innerHTML += `
+            <div class="mini-prod ${isSoldOut ? 'stock-zero' : ''}">
+                <img src="${mainImg}" onerror="this.src='https://via.placeholder.com/50'"> 
+                <div style="flex:1">
+                    <strong>${p.name}</strong><br>
+                    ${isSoldOut 
+                        ? '<span style="background:#ddd; color:#666; padding:2px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">ESGOTADO</span>' 
+                        : `<span class="stock-info" style="color:var(--success)">Estoque: ${stock}</span>`
+                    }
+                </div>
+                <div>
+                    <button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-chip-edit"><i class="fas fa-pen"></i></button> 
+                    <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none; margin-left:10px;"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>`;
         });
-        const isSoldOut = pStock === 0;
-        
-        // Estilo cinza direto no HTML se esgotado
-        const cardStyle = isSoldOut ? 'background:#f0f0f0; opacity:0.8; filter:grayscale(1);' : '';
-        const color = isSoldOut ? '#888' : (pStock < 5 ? '#f39c12' : '#27ae60');
-        let mainImg = "https://via.placeholder.com/60";
-        try { const m = JSON.parse(p.image_url); if(Array.isArray(m)) mainImg = m[0]; else mainImg = p.image_url; } catch(e) {}
-        
-        grid.innerHTML += `<div class="dash-card" style="${cardStyle}">
-            ${isSoldOut ? '<span class="tag-dashboard-sold">ESGOTADO</span>' : ''}
-            <img src="${mainImg}">
-            <div style="flex:1"><strong style="font-size:0.95rem; display:block;">${p.name}</strong><small style="color:#666;">${vars.length} Var.</small><div style="margin-top:5px; font-weight:bold; color:${color}"><i class="fas fa-box"></i> ${pStock} un.</div></div>
-            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;"><div style="text-align:right; font-size:0.8rem; color:#888;">Est. Venda:<br><span style="color:var(--accent); font-weight:bold;">R$ ${pValue.toFixed(2)}</span></div><button class="btn-modern small outline" onclick="admin.edit('${p.id}')">Editar</button></div>
-        </div>`;
-    });
-    setSafe('st-rev', `R$ ${grandTotalValue.toFixed(2)}`); setSafe('st-cost', `R$ ${grandTotalCost.toFixed(2)}`); setSafe('st-qty', grandTotalStock);
-};
+    },
     filterOrders: (status, btn) => {
         state.filterStatus = status;
         document.querySelectorAll('#order-filters .chip').forEach(c => c.classList.remove('active'));
@@ -1192,96 +1158,90 @@ admin.updateStats = () => {
         app.success("Financeiro salvo com sucesso!");
         admin.renderPayments();
     },
-    admin.renderPayments = async () => {
-    const { data } = await sb.from('orders').select('*').neq('status', 'Cancelado').order('created_at', {ascending: false});
-    const div = document.getElementById('pay-list'); 
-    if(!div) return; 
-    div.innerHTML = "";
-    
-    if(!data || data.length === 0) { div.innerHTML = "<p>Nenhum registro.</p>"; return; }
-
-    const clients = {};
-    data.forEach(o => {
-        const key = o.customer_email && o.customer_email.includes('@') ? o.customer_email : o.customer_name;
-        if(!clients[key]) {
-            clients[key] = {
-                name: o.customer_name, email: o.customer_email, phone: "", 
-                total_debt: 0, total_paid: 0, orders: []
-            };
-        }
-        try { const addr = JSON.parse(o.address || '{}'); if(addr.phone) clients[key].phone = addr.phone; } catch(e){}
-        // Fallback: se não achou telefone no endereço, tenta usar do cadastro do cliente (se tivermos essa info no futuro)
+    renderPayments: async () => {
+        const { data } = await sb.from('orders').select('*').neq('status', 'Cancelado').order('created_at', {ascending: false});
+        const div = document.getElementById('pay-list'); 
+        if(!div) return; 
+        div.innerHTML = "";
         
-        let orderPaid = 0;
-        let orderTotal = o.total;
-        
-        if(o.payment_status === 'Pago') { 
-            orderPaid = o.total; 
-        } else if (o.installments) {
-            try {
-                const inst = JSON.parse(o.installments);
-                inst.forEach(i => { if(i.paid) orderPaid += parseFloat(i.amount); });
-            } catch(e){}
-        }
-        
-        clients[key].total_paid += orderPaid;
-        clients[key].total_debt += (orderTotal - orderPaid);
-        clients[key].orders.push(o);
-    });
+        if(!data || data.length === 0) { div.innerHTML = "<p>Nenhum registro.</p>"; return; }
 
-    Object.values(clients).forEach((c, index) => {
-        const debt = Math.max(0, c.total_debt);
-        const hasDebt = debt > 0.1; 
-        const debtColor = hasDebt ? 'var(--danger)' : 'var(--success)';
-        const phoneClean = c.phone ? c.phone.replace(/\D/g, '') : '';
-        const ordersHTML = c.orders.map(o => admin.generateOrderCardHTML(o)).join('');
+        const clients = {};
+        data.forEach(o => {
+            const key = o.customer_email && o.customer_email.includes('@') ? o.customer_email : o.customer_name;
+            if(!clients[key]) {
+                clients[key] = {
+                    name: o.customer_name, email: o.customer_email, phone: "", 
+                    total_debt: 0, total_paid: 0, orders: []
+                };
+            }
+            try { const addr = JSON.parse(o.address || '{}'); if(addr.phone) clients[key].phone = addr.phone; } catch(e){}
+            
+            let orderPaid = 0;
+            let orderTotal = o.total;
+            
+            if(o.payment_status === 'Pago') { 
+                orderPaid = o.total; 
+            } else if (o.installments) {
+                try {
+                    const inst = JSON.parse(o.installments);
+                    inst.forEach(i => { if(i.paid) orderPaid += parseFloat(i.amount); });
+                } catch(e){}
+            }
+            
+            clients[key].total_paid += orderPaid;
+            clients[key].total_debt += (orderTotal - orderPaid);
+            clients[key].orders.push(o);
+        });
 
-        // LAYOUT NOVO DO CARD DE CLIENTE
-        div.innerHTML += `
-        <div class="client-admin-card">
-            <div class="cac-header" onclick="document.getElementById('client-body-${index}').classList.toggle('open')">
-                <div class="cac-info">
-                    <div style="display:flex; flex-direction:column;">
-                        <h4 style="font-size:1.1rem; margin-bottom:5px;">${c.name}</h4>
-                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                            ${phoneClean ? `
-                                <span style="font-size:0.9rem; color:#555;"><i class="fas fa-phone"></i> ${c.phone}</span>
-                                <a href="https://wa.me/55${phoneClean}" target="_blank" onclick="event.stopPropagation()" class="admin-wa-btn">
-                                    <i class="fab fa-whatsapp"></i> Conversar
-                                </a>` : '<span style="color:#999;">Sem telefone</span>'}
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="cac-stats">
-                    ${hasDebt ? `
-                        <div class="debt-alert-box">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <div>
-                                <small>RECEBER</small><br>
-                                <strong>R$ ${debt.toFixed(2)}</strong>
+        Object.values(clients).forEach((c, index) => {
+            const debt = Math.max(0, c.total_debt);
+            const hasDebt = debt > 0.1; 
+            const debtColor = hasDebt ? 'var(--danger)' : 'var(--success)';
+            const phoneClean = c.phone ? c.phone.replace(/\D/g, '') : '';
+            const ordersHTML = c.orders.map(o => admin.generateOrderCardHTML(o)).join('');
+
+            div.innerHTML += `
+            <div class="client-admin-card">
+                <div class="cac-header" onclick="document.getElementById('client-body-${index}').classList.toggle('open')">
+                    <div class="cac-info">
+                        <div style="display:flex; flex-direction:column;">
+                            <h4 style="font-size:1.1rem; margin-bottom:5px;">${c.name}</h4>
+                            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                                ${phoneClean ? `
+                                    <span style="font-size:0.9rem; color:#555;"><i class="fas fa-phone"></i> ${c.phone}</span>
+                                    <a href="https://wa.me/55${phoneClean}" target="_blank" onclick="event.stopPropagation()" class="admin-wa-btn">
+                                        <i class="fab fa-whatsapp"></i> Conversar
+                                    </a>` : '<span style="color:#999;">Sem telefone</span>'}
                             </div>
                         </div>
-                    ` : `
-                        <div style="text-align:right;">
-                            <small style="color:var(--success); font-weight:bold;">TUDO PAGO</small><br>
-                            <span style="color:#999; font-size:0.8rem;">Histórico OK</span>
-                        </div>
-                    `}
-                    <div style="margin-left:15px; color:#ccc;"><i class="fas fa-chevron-down"></i></div>
+                    </div>
+                    
+                    <div class="cac-stats">
+                        ${hasDebt ? `
+                            <div class="debt-alert-box">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <div>
+                                    <small>RECEBER</small><br>
+                                    <strong>R$ ${debt.toFixed(2)}</strong>
+                                </div>
+                            </div>
+                        ` : `
+                            <div style="text-align:right;">
+                                <small style="color:var(--success); font-weight:bold;">TUDO PAGO</small><br>
+                                <span style="color:#999; font-size:0.8rem;">Histórico OK</span>
+                            </div>
+                        `}
+                        <div style="margin-left:15px; color:#ccc;"><i class="fas fa-chevron-down"></i></div>
+                    </div>
                 </div>
-            </div>
-            <div id="client-body-${index}" class="cac-body">
-                ${ordersHTML}
-            </div>
-        </div>`;
-    });
-};
+                <div id="client-body-${index}" class="cac-body">
+                    ${ordersHTML}
+                </div>
+            </div>`;
+        });
+    },
     
-    // ============================================================
-    // ATUALIZAÇÃO GESTÃO COMPLETA - CORRIGIDA
-    // ============================================================
-
     generateOrderCardHTML: (o) => {
         let items = []; try { items = JSON.parse(o.installments || '[]'); } catch(e) {}
         let totalPaid = 0; 
@@ -1289,23 +1249,19 @@ admin.updateStats = () => {
         if(isPaidStatus) totalPaid = o.total;
         if(items.length > 0) items.forEach(i => { if(i.paid) totalPaid += parseFloat(i.amount); });
         
-        // Cálculos
         const remaining = Math.max(0, o.total - totalPaid);
         const prodList = JSON.parse(o.items).map(i => `${i.qty}x ${i.name}`).join(', ');
 
-        // Endereço e Mapa
         let fullAddrString = "Sem endereço registrado";
         let mapLink = "#";
         try {
             const addr = JSON.parse(o.address || '{}');
             if(addr.street) {
                 fullAddrString = `${addr.street}, ${addr.number} - ${addr.bairro}, ${addr.city}/${addr.uf}`;
-                // Link universal do Google Maps
                 mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddrString)}`;
             }
         } catch(e) {}
 
-        // HTML das Parcelas (Editáveis)
         let instHTML = '';
         if(o.payment_status === 'Parcelado' && items.length > 0) {
             instHTML = `<div style="margin-top:10px; background:#fafafa; padding:10px; border:1px solid #eee; border-radius:8px;">
@@ -1313,13 +1269,10 @@ admin.updateStats = () => {
                 ${items.map((i, idx) => `
                     <div style="display:grid; grid-template-columns: 0.5fr 2fr 1.5fr auto; gap:5px; align-items:center; padding:8px 0; border-bottom:1px dashed #ddd;">
                         <small style="font-weight:bold; color:#555;">${idx+1}x</small>
-                        
                         <input type="date" value="${i.date}" class="input small-input" 
                             onchange="admin.editInstField('${o.id}', ${idx}, 'date', this.value)" style="margin:0; font-size:0.8rem;">
-                        
                         <input type="number" step="0.01" value="${parseFloat(i.amount).toFixed(2)}" class="input small-input" 
                             onchange="admin.editInstField('${o.id}', ${idx}, 'amount', this.value)" style="margin:0; font-size:0.8rem;">
-                        
                         ${i.paid 
                             ? '<span style="color:green; font-weight:bold; font-size:0.8rem;"><i class="fas fa-check"></i></span>' 
                             : `<button onclick="admin.quickPayInst('${o.id}', ${idx}, true)" class="btn-chip-action" title="Baixar"><i class="fas fa-check"></i></button>`
@@ -1329,7 +1282,6 @@ admin.updateStats = () => {
             </div>`;
         }
 
-        // Seletores de Status (Entrega e Pagamento)
         const statusEntrega = `
             <select onchange="admin.updateStatus('${o.id}', this.value)" class="status-selector small-select ${o.status === 'Cancelado' ? 'st-cancelado' : (o.status === 'Entregue' ? 'st-entregue' : 'st-pendente')}" style="margin-bottom:5px;">
                 <option value="Pendente" ${o.status.includes('Pendente')?'selected':''}>🚚 Entrega Pendente</option>
@@ -1382,7 +1334,6 @@ admin.updateStats = () => {
     },
 
     editInstField: async (oid, idx, field, val) => {
-        // Validação básica
         if(field === 'amount' && (isNaN(val) || val < 0)) return alert("Valor inválido");
         if(field === 'date' && !val) return alert("Data inválida");
 
@@ -1390,11 +1341,8 @@ admin.updateStats = () => {
         if(data) {
             const arr = JSON.parse(data.installments);
             if(arr[idx]) {
-                arr[idx][field] = val; // Atualiza o campo (date ou amount)
-                
+                arr[idx][field] = val; 
                 await sb.from('orders').update({ installments: JSON.stringify(arr) }).eq('id', oid);
-                
-                // Atualiza a tela sem recarregar tudo bruscamente
                 setTimeout(() => admin.renderPayments(), 500); 
             }
         }
@@ -1482,10 +1430,19 @@ admin.updateStats = () => {
                 pStock += q; pValue += (q * price); grandTotalStock += q; grandTotalValue += (q * price); grandTotalCost += (q * cost);
             });
             const isSoldOut = pStock === 0;
+            
+            // Estilo cinza direto no HTML se esgotado
+            const cardStyle = isSoldOut ? 'background:#f0f0f0; opacity:0.8; filter:grayscale(1);' : '';
             const color = isSoldOut ? '#888' : (pStock < 5 ? '#f39c12' : '#27ae60');
             let mainImg = "https://via.placeholder.com/60";
             try { const m = JSON.parse(p.image_url); if(Array.isArray(m)) mainImg = m[0]; else mainImg = p.image_url; } catch(e) {}
-            grid.innerHTML += `<div class="dash-card ${isSoldOut ? 'sold-out' : ''}">${isSoldOut ? '<span class="tag-dashboard-sold">ESGOTADO</span>' : ''}<img src="${mainImg}" onerror="this.src='https://via.placeholder.com/60'"><div style="flex:1"><strong style="font-size:0.95rem; display:block;">${p.name}</strong><small style="color:#666;">${vars.length} Variações</small><div style="margin-top:5px; font-weight:bold; color:${color}"><i class="fas fa-box"></i> ${pStock} un.</div></div><div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;"><div style="text-align:right; font-size:0.8rem; color:#888;">Est. Venda:<br><span style="color:var(--accent); font-weight:bold;">R$ ${pValue.toFixed(2)}</span></div><button class="btn-modern small outline" onclick="admin.edit('${p.id}')">Editar</button></div></div>`;
+            
+            grid.innerHTML += `<div class="dash-card" style="${cardStyle}">
+                ${isSoldOut ? '<span class="tag-dashboard-sold">ESGOTADO</span>' : ''}
+                <img src="${mainImg}">
+                <div style="flex:1"><strong style="font-size:0.95rem; display:block;">${p.name}</strong><small style="color:#666;">${vars.length} Var.</small><div style="margin-top:5px; font-weight:bold; color:${color}"><i class="fas fa-box"></i> ${pStock} un.</div></div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;"><div style="text-align:right; font-size:0.8rem; color:#888;">Est. Venda:<br><span style="color:var(--accent); font-weight:bold;">R$ ${pValue.toFixed(2)}</span></div><button class="btn-modern small outline" onclick="admin.edit('${p.id}')">Editar</button></div>
+            </div>`;
         });
         setSafe('st-rev', `R$ ${grandTotalValue.toFixed(2)}`); setSafe('st-cost', `R$ ${grandTotalCost.toFixed(2)}`); setSafe('st-qty', grandTotalStock);
     },
@@ -1524,5 +1481,3 @@ document.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('popstate', (e) => { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); });
-
-
