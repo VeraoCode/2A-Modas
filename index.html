@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2A Modas | Boutique & Perfumes</title>
+    <title>2A Modas e Perfumes | Sistema Integrado</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
@@ -11,8 +12,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <link rel="stylesheet" href="style.css">
@@ -21,30 +21,32 @@
 
     <div id="success-toast">
         <div class="st-icon-box"><i class="fas fa-check"></i></div>
-        <div class="st-msg" id="st-text">Sucesso!</div>
+        <div class="st-msg" id="st-text">Operação realizada!</div>
         <div class="st-progress-bg"><div class="st-progress-bar"></div></div>
     </div>
 
     <div id="entry-modal" class="overlay">
         <div class="box single-col" style="max-width: 350px; padding: 30px; text-align: center;">
-            <i class="fas fa-coins" style="font-size: 3rem; color: var(--warning); margin-bottom: 20px;"></i>
-            <h3 style="margin-bottom: 10px;">Registrar Pagamento</h3>
-            <p style="color: #666; margin-bottom: 20px;">Abatimento ou Entrada</p>
+            <h3 style="margin-bottom: 20px;">💰 Registrar Entrada</h3>
+            <p style="color: #666; margin-bottom: 15px;">Digite o valor pago pelo cliente:</p>
             <input type="number" id="entry-val" class="input" placeholder="R$ 0,00" style="text-align: center; font-size: 1.5rem; margin-bottom: 20px;">
             <input type="hidden" id="entry-oid">
             <input type="hidden" id="entry-total">
-            <button onclick="admin.confirmEntry()" class="btn-modern success" style="width: 100%; margin-bottom: 10px;">Confirmar Recebimento</button>
+            <button onclick="admin.confirmEntry()" class="btn-modern success" style="width: 100%; margin-bottom: 10px;">Confirmar Pagamento</button>
             <button onclick="app.closeModal('entry-modal')" class="btn-modern outline" style="width: 100%;">Cancelar</button>
         </div>
     </div>
 
     <div id="loading-screen">
         <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--primary);"></i>
+        <p style="margin-top:15px; color:#666;">Carregando loja...</p>
     </div>
+
+    <div id="status-bar"></div>
 
     <div class="header-floating">
         <button class="login-btn-header" onclick="auth.checkProfile()">
-            <i class="fas fa-user-circle"></i> Login
+            <i class="fas fa-user-circle"></i> Login / Cadastro
         </button>
         <button class="icon-btn" onclick="app.toggleCart()">
             <i class="fas fa-shopping-bag"></i><span class="badge" id="cart-count">0</span>
@@ -54,8 +56,8 @@
     <div class="hero">
         <img src="logo.jpg" onerror="this.src='https://via.placeholder.com/200?text=2A'">
         <h1 class="brand-font">2A Modas e Perfumes</h1>
-        <p>Elegância que transforma. A moda que combina com sua essência.</p>
-        <button class="btn-cta" onclick="app.openPromoModal()">✨ Ver Coleção</button>
+        <p>Elegância que transforma. Descubra sua essência.</p>
+        <button class="btn-cta" onclick="app.openPromoModal()">✨ Ver Promoções</button>
     </div>
 
     <div class="container" id="vitrine">
@@ -69,243 +71,426 @@
     </div>
 
     <footer>
-        <p class="brand-font">© 2026 2A Modas e Perfumes.</p>
+        <p class="brand-font">© 2025 2A Modas e Perfumes.</p>
         <br>
-        <button onclick="admin.showLogin()">Acesso Restrito (Admin)</button>
+        <button onclick="admin.showLogin()">Área Administrativa</button>
     </footer>
 
     <div id="promo-modal" class="overlay">
-        <div class="box single-col" style="max-width:800px; padding: 0;">
-            <div style="padding:20px; display:flex; justify-content:space-between; align-items:center; background:#f9f9f9;">
-                <h3>🔥 Destaques da Semana</h3>
+        <div class="box single-col" style="background:var(--bg); overflow:hidden; max-width:800px;">
+            <div style="padding:20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee;">
+                <h3>🔥 Ofertas Especiais</h3>
                 <button onclick="app.closeModal('promo-modal')" style="border:none; background:none; font-size:1.5rem;">×</button>
             </div>
-            <div class="carousel-wrapper" style="padding: 30px;">
+            <div class="carousel-wrapper" style="padding: 20px;">
                 <div id="promo-track" class="promo-list-container"></div>
             </div>
         </div>
     </div>
 
     <div id="product-modal" class="overlay">
-        <div class="box" style="padding: 25px; height: 90vh; max-height: 800px;">
+        <div class="box" style="padding: 25px; height: 85vh; max-height: 750px;">
             <div class="product-modal-grid">
                 <div class="pm-images" id="m-media-area"></div>
+                
                 <div class="pm-details">
-                    <button onclick="app.closeModal('product-modal')" style="align-self: flex-end; border:none; background:none; font-size:1.5rem; color:#999; cursor: pointer;">×</button>
-                    <small id="m-cat" style="color:var(--primary); font-weight:800; text-transform:uppercase; margin-bottom: 5px;">Categoria</small>
-                    <h2 id="m-title" style="margin:0 0 10px; font-family: var(--font-serif); font-size: 2.5rem; line-height: 1.1;"></h2>
+                    <button onclick="app.closeModal('product-modal')" style="align-self: flex-end; border:none; background:none; font-size:1.5rem; color:#999; cursor: pointer; margin-bottom: 10px;">×</button>
+                    
+                    <small id="m-cat" style="color:var(--primary); font-weight:800; text-transform:uppercase; letter-spacing: 1px; font-size: 0.8rem;">Categoria</small>
+                    <h2 id="m-title" style="margin:5px 0 10px; font-size: 2.2rem; line-height: 1.1;"></h2>
+                    
                     <h3 id="m-price" class="pm-price-tag"></h3>
-                    <div class="pm-desc-box"><p id="m-desc"></p></div>
+                    
+                    <div class="pm-desc-box">
+                        <p id="m-desc"></p>
+                    </div>
+
                     <div style="margin-bottom:25px;">
-                        <label style="font-weight:bold; font-size:0.9rem; margin-bottom:10px; display:block;">Escolha sua variação:</label>
+                        <label style="font-weight:bold; font-size:0.9rem; margin-bottom:10px; display:block; color: var(--accent);">Escolha uma opção:</label>
                         <div id="m-vars" class="var-chip-container"></div>
                     </div>
+
                     <div style="margin-top: auto;">
-                        <div style="margin-bottom: 15px; color:#27ae60; font-weight:600; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-truck"></i> Entrega Rápida (03-05 dias)
+                        <div style="margin-bottom: 15px; color:#27ae60; font-weight:600; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-truck"></i> Entrega: 03 a 05 dias úteis
                         </div>
                         <div style="display:flex; gap:15px;">
-                            <div style="border:1px solid #ddd; border-radius:50px; display:flex; align-items: center; height: 55px; padding: 0 5px;">
+                            <div style="border:1px solid #ddd; border-radius:30px; display:flex; align-items: center; height: 55px;">
                                 <button onclick="app.updQty(-1)" style="padding:0 15px; border:none; background:transparent; font-size: 1.2rem;">-</button>
-                                <span id="m-qty" style="font-weight:bold; width: 25px; text-align: center;">1</span>
+                                <span id="m-qty" style="font-weight:bold; width: 20px; text-align: center;">1</span>
                                 <button onclick="app.updQty(1)" style="padding:0 15px; border:none; background:transparent; font-size: 1.2rem;">+</button>
                             </div>
-                            <button onclick="app.addCart()" class="btn-modern btn-cta" style="flex:1; height: 55px; margin-top: 0; border-radius: 50px;">Adicionar à Sacola</button>
+                            <button onclick="app.addCart()" class="btn-modern btn-cta" style="flex:1; height: 55px; font-size: 1.1rem; margin-top: 0;">Adicionar à Sacola</button>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="address-modal" class="overlay" style="justify-content:flex-start; padding-left:20px; z-index:10001;">
+        <div class="box single-col" style="width:100%; max-width:500px; height:auto; overflow-y: auto;">
+            <div style="padding:25px;">
+                <h3>📍 Onde entregar?</h3>
+                <div id="saved-addresses-list" style="margin-bottom:20px; max-height:150px; overflow-y:auto;"></div>
+                <div style="background:#f9f9f9; padding:20px; border-radius:16px;">
+                    <h4>Novo Endereço</h4>
+                    <div class="input-cep-grid">
+                        <input type="text" id="addr-cep" class="input" placeholder="CEP (00000-000)" onblur="app.fetchCep(this.value, 'addr')" maxlength="9">
+                        <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" style="font-size:0.8rem; display:flex; align-items:center;">Não sei meu CEP</a>
+                    </div>
+                    <input type="text" id="addr-street" class="input" placeholder="Rua / Logradouro">
+                    <div class="input-row">
+                        <input type="text" id="addr-num" class="input" placeholder="Número">
+                        <input type="text" id="addr-bairro" class="input" placeholder="Bairro">
+                    </div>
+                    <div class="input-row">
+                        <input type="text" id="addr-city" class="input" placeholder="Cidade">
+                        <input type="text" id="addr-uf" class="input" placeholder="Estado (UF)" maxlength="2">
+                    </div>
+                    <input type="text" id="addr-ref" class="input" placeholder="Ponto de Referência">
+                    <input type="text" id="addr-name" class="input" placeholder="Nome de quem recebe">
+                    <input type="text" id="addr-phone" class="input" placeholder="Telefone / WhatsApp">
+                    <label style="display:block; margin:10px 0; font-weight:bold;">Salvar como:</label>
+                    <select id="addr-type" class="input">
+                        <option value="Casa">Casa</option>
+                        <option value="Trabalho">Trabalho</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                    <button onclick="app.addNewAddress()" class="btn-modern" style="width:100%;">Salvar Endereço</button>
+                </div>
+                <button onclick="app.closeModal('address-modal')" style="width:100%; margin-top:15px; background:none; border:none; color:#666;">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="client-modal" class="overlay">
+        <div class="box single-col" style="max-width:600px;">
+            <div style="padding:30px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h2>Minha Conta</h2>
+                    <button onclick="app.closeModal('client-modal')" style="border:none; background:none; font-size:1.5rem;">×</button>
+                </div>
+                <div style="background:#f9f9f9; padding:20px; border-radius:16px; margin-bottom:25px;">
+                    <h4>Meus Dados</h4>
+                    <p id="client-info-txt" style="color:#666; font-size:0.95rem; line-height:1.6; margin-bottom:10px;"></p>
+                    <button onclick="auth.logout()" class="btn-modern outline small">Sair</button>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h3>Meus Pedidos</h3>
+                </div>
+                <div class="filter-wrapper">
+                    <div class="date-group">
+                        <label>De:</label>
+                        <input type="text" id="client-date-start" class="flatpickr-input compact-date" onchange="auth.loadClientOrders()">
+                    </div>
+                    <div class="date-group">
+                        <label>Até:</label>
+                        <input type="text" id="client-date-end" class="flatpickr-input compact-date" onchange="auth.loadClientOrders()">
+                    </div>
+                </div>
+                
+                <div id="client-orders-list" style="max-height:450px; overflow-y:auto; margin-top:15px;"></div>
             </div>
         </div>
     </div>
 
     <div class="sidebar">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-            <h2 style="font-family: var(--font-serif);">Sua Sacola</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;">
+            <h2 style="margin:0;">Sua Sacola</h2>
             <button onclick="app.toggleCart()" style="border:none; background:none; font-size:1.5rem; color:#999;">×</button>
         </div>
-        <div style="flex:1; overflow-y:auto; padding-right: 5px;">
+        
+        <div style="background: white; border: 1px solid #eee; padding: 15px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-truck" style="color: var(--success); font-size: 1.2rem;"></i>
+            <div>
+                <strong style="display: block; font-size: 0.9rem;">Entrega Rápida</strong>
+                <small style="color: #666;">Receba em 03 a 05 dias úteis</small>
+            </div>
+        </div>
+
+        <div style="flex:1; overflow-y:auto;">
             <ul id="cart-list" style="list-style:none;"></ul>
         </div>
+        
         <div style="border-top:1px solid #eee; padding-top:25px;">
-            <div id="cart-auth-area" style="margin-bottom:15px;"></div>
+            <div id="cart-auth-area" style="margin-bottom:15px;">
+                <button onclick="app.showModal('auth-modal')" style="width:100%; padding:12px; background:#f0f0f0; border:none; border-radius:12px; color:#555; font-weight:bold;">
+                    <i class="fas fa-user-circle"></i> Fazer Login / Cadastro
+                </button>
+            </div>
+            
             <button id="btn-address-trigger" onclick="app.openAddressModal()" class="btn-addr-trigger">
                 <i class="fas fa-map-marker-alt"></i> Cadastrar local de entrega
             </button>
-            <div style="background: #fafafa; padding: 20px; border-radius: 16px; margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="color:#666;">Total</span>
-                <span id="cart-total" style="font-size: 1.5rem; font-weight: 800; color: var(--accent);">R$ 0.00</span>
+            
+            <div style="background: #fafafa; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.1rem; color: var(--accent);">
+                    <span>Total</span> <span id="cart-total">R$ 0.00</span>
+                </div>
             </div>
-            <button onclick="app.checkout('whatsapp')" class="btn-modern btn-whatsapp" style="width: 100%; margin-bottom: 10px;">
-                <i class="fab fa-whatsapp"></i> Finalizar no WhatsApp
+
+            <button onclick="app.checkout('whatsapp')" class="btn-modern btn-whatsapp btn-pulse" style="width: 100%; margin-bottom: 10px;">
+                <i class="fab fa-whatsapp"></i> Falar Via WhatsApp
             </button>
-            <button onclick="app.checkout('mercadopago')" class="btn-modern btn-mp" style="width: 100%;">
-                <i class="fas fa-qrcode"></i> Pagar Agora (Pix/Cartão)
+            <button onclick="app.checkout('mercadopago')" class="btn-modern btn-mp btn-pulse" style="width: 100%;">
+                <i class="fas fa-qrcode"></i> Pagar via Pix/Cartão
             </button>
         </div>
     </div>
 
-    <div id="address-modal" class="overlay"><div class="box single-col" style="padding: 30px;"><div id="saved-addresses-list"></div><h4 style="margin-top:20px">Novo Endereço</h4><input id="addr-cep" class="input" placeholder="CEP" onblur="app.fetchCep(this.value)"><input id="addr-street" class="input" placeholder="Rua"><div class="input-row"><input id="addr-num" class="input" placeholder="Nº"><input id="addr-bairro" class="input" placeholder="Bairro"></div><div class="input-row"><input id="addr-city" class="input" placeholder="Cidade"><input id="addr-uf" class="input" placeholder="UF"></div><input id="addr-name" class="input" placeholder="Nome Recebedor"><input id="addr-phone" class="input" placeholder="Telefone"><select id="addr-type" class="input"><option value="Casa">Casa</option></select><button onclick="app.addNewAddress()" class="btn-modern success" style="width:100%">Salvar</button><button onclick="app.closeModal('address-modal')" class="btn-modern outline" style="width:100%; margin-top:10px">Fechar</button></div></div>
+    <div id="auth-modal" class="overlay" style="z-index:10002;">
+        <div class="box single-col" style="padding:40px; text-align:center; max-width:400px;">
+            <h2 id="auth-title" style="margin-bottom:25px;">Acesso</h2>
+            <div id="form-login">
+                <input type="email" id="l-email" class="input" placeholder="E-mail">
+                <input type="password" id="l-pass" class="input" placeholder="Senha">
+                <button onclick="auth.login()" class="btn-modern" style="width:100%;">Entrar</button>
+                <p style="margin-top:20px; font-size:0.9rem;">Não tem conta? <a href="#" onclick="auth.toggle('register')">Cadastre-se</a></p>
+            </div>
+            <div id="form-register" style="display:none;">
+                <input type="text" id="r-name" class="input" placeholder="Nome">
+                <input type="email" id="r-email" class="input" placeholder="E-mail">
+                <input type="password" id="r-pass" class="input" placeholder="Senha">
+                <button onclick="auth.register()" class="btn-modern" style="width:100%;">Cadastrar</button>
+                <p style="margin-top:20px; font-size:0.9rem;"><a href="#" onclick="auth.toggle('login')">Voltar</a></p>
+            </div>
+            <button onclick="app.closeModal('auth-modal')" style="position:absolute; top:20px; right:20px; border:none; background:none; font-size:1.5rem;">×</button>
+        </div>
+    </div>
 
-    <div id="auth-modal" class="overlay"><div class="box single-col" style="padding:40px; text-align:center;"><h2 style="margin-bottom:20px;">Acesse sua conta</h2><div id="form-login"><input type="email" id="l-email" class="input" placeholder="E-mail"><input type="password" id="l-pass" class="input" placeholder="Senha"><button onclick="auth.login()" class="btn-modern" style="width:100%">Entrar</button><p style="margin-top:15px"><a href="#" onclick="auth.toggle('register')">Criar conta</a></p></div><div id="form-register" style="display:none;"><input id="r-name" class="input" placeholder="Nome"><input id="r-email" class="input" placeholder="E-mail"><input id="r-pass" type="password" class="input" placeholder="Senha"><button onclick="auth.register()" class="btn-modern" style="width:100%">Cadastrar</button><p style="margin-top:15px"><a href="#" onclick="auth.toggle('login')">Voltar</a></p></div><button onclick="app.closeModal('auth-modal')" style="position:absolute; top:20px; right:20px; border:none; background:none; font-size:1.5rem;">×</button></div></div>
-    
-    <div id="admin-auth-modal" class="overlay">
-        <div class="box single-col" style="max-width: 350px; padding: 40px; text-align: center;">
-            <i class="fas fa-fingerprint" style="font-size: 3rem; color: var(--accent); margin-bottom: 20px;"></i>
-            <h3>Portal Admin</h3>
-            <input type="email" id="admin-email" class="input" placeholder="Admin Email" value="loja@2amoda.com">
-            <input type="password" id="admin-pass" class="input" placeholder="Senha" onkeydown="if(event.key==='Enter') admin.verifyLogin()">
-            <button onclick="admin.verifyLogin()" class="btn-modern" style="width:100%; margin-top: 10px;">Acessar Painel</button>
-            <button onclick="app.closeModal('admin-auth-modal')" style="background:none; border:none; color:#999; margin-top:15px; text-decoration: underline;">Cancelar</button>
+    <div id="admin-auth-modal" class="overlay" style="z-index:10003;">
+        <div class="box single-col" style="max-width: 350px;">
+            <i class="fas fa-lock"></i>
+            <h2>Área Restrita</h2>
+            <p style="margin-bottom:20px; color:#666;">Acesso administrativo seguro</p>
+            
+            <input type="email" id="admin-email" class="input" placeholder="E-mail Admin" value="loja@2amoda.com">
+            <input type="password" id="admin-pass" class="input" placeholder="Sua senha" style="text-align:center; font-size:1.2rem;" onkeydown="if(event.key==='Enter') admin.verifyLogin()">
+            
+            <button onclick="admin.verifyLogin()" class="btn-modern" style="width:100%;">Entrar</button>
+            <button onclick="app.closeModal('admin-auth-modal')" style="background:none; border:none; color:#999; text-decoration:underline; margin-top:10px;">Cancelar</button>
         </div>
     </div>
 
     <div id="admin-modal" class="overlay" style="z-index:2001; background:#f4f6f9; align-items:flex-start; padding:0;">
-        <div class="box" style="max-width:100%; height:100%; border-radius:0; padding:0; display:flex; flex-direction:column; background: #fdfbf7;">
-            
-            <div class="admin-nav" style="padding: 15px 20px; background: white; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <h3 style="color: var(--accent);">Admin 2A</h3>
-                    <div style="height: 25px; width: 1px; background: #ddd;"></div>
-                    <button onclick="admin.tab('unified')" class="admin-tab active"><i class="fas fa-chart-pie"></i> Gestão Unificada</button>
-                    <button onclick="admin.tab('stock')" class="admin-tab"><i class="fas fa-boxes"></i> Estoque</button>
-                    <button onclick="admin.tab('prod')" class="admin-tab"><i class="fas fa-tshirt"></i> Produtos</button>
-                </div>
-                <button onclick="admin.logout()" class="btn-modern outline small">Sair</button>
+        <div class="box" style="max-width:100%; height:100%; border-radius:0; padding:0; display:flex; flex-direction:column;">
+            <div class="admin-nav">
+                <h3 style="margin-right:20px; align-self:center;">Admin 2A</h3>
+                <button onclick="admin.tab('dash')" class="admin-tab active">Estoque</button>
+                <button onclick="admin.tab('orders')" class="admin-tab">Pedidos</button>
+                <button onclick="admin.tab('new-order')" class="admin-tab" style="color:var(--primary); border-color:var(--primary);"><i class="fas fa-plus-circle"></i> Novo Pedido</button>
+                <button onclick="admin.tab('pay')" class="admin-tab">Clientes</button>
+                <button onclick="admin.tab('prod')" class="admin-tab">Produtos</button>
+                <button onclick="admin.resetData()" class="btn-modern danger small" style="margin-left:20px;">Resetar</button>
+                <button onclick="admin.logout()" class="btn-modern outline small" style="margin-left:auto;">Sair (Logout)</button>
             </div>
-
-            <div style="flex:1; overflow-y:auto; padding:30px; width:100%; max-width:1300px; margin:0 auto;">
+            <div style="flex:1; overflow-y:auto; padding:30px; width:100%; max-width:1200px; margin:0 auto;">
                 
-                <div id="tab-unified">
-                    <div class="kpi-grid">
-                        <div class="kpi-card highlight">
-                            <h4>Total a Receber (Em Aberto)</h4>
-                            <div class="val" id="kpi-to-receive">R$ 0.00</div>
-                            <small style="color: rgba(255,255,255,0.8); margin-top: 5px;">Soma de pendências e parcelas futuras</small>
+                <div id="tab-dash">
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:20px; margin-bottom:30px;">
+                        <div style="background:white; padding:25px; border-radius:16px; text-align:center; box-shadow: var(--shadow);">
+                            <div style="color:var(--success); font-weight:bold;">VALOR EM ESTOQUE (VENDA)</div>
+                            <div class="stat-val" id="st-rev" style="font-size:1.8rem; font-weight:bold;">R$ 0.00</div>
                         </div>
-                        <div class="kpi-card">
-                            <h4>Receita Real (Caixa)</h4>
-                            <div class="val" id="kpi-revenue" style="color: var(--success);">R$ 0.00</div>
+                        <div style="background:white; padding:25px; border-radius:16px; text-align:center; box-shadow: var(--shadow);">
+                            <div style="color:var(--danger); font-weight:bold;">CUSTO TOTAL ESTOQUE</div>
+                            <div class="stat-val" id="st-cost" style="font-size:1.8rem; font-weight:bold;">R$ 0.00</div>
                         </div>
-                        <div class="kpi-card">
-                            <h4>Vendas Totais (Mês)</h4>
-                            <div class="val" id="kpi-sales">R$ 0.00</div>
-                        </div>
-                        <button onclick="admin.tab('new-order')" class="btn-modern" style="height: 100%; justify-content: center; font-size: 1.1rem;">
-                            <i class="fas fa-plus-circle"></i> Novo Pedido Manual
-                        </button>
-                    </div>
-
-                    <div class="admin-toolbar">
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" id="unified-search" class="input" placeholder="Buscar Cliente, Pedido ou Tel..." onkeyup="admin.renderUnified(true)">
-                        </div>
-                        <div style="display:flex; gap: 10px; align-items: center;">
-                            <input type="text" id="unified-start" class="flatpickr-input compact-date" placeholder="De" onchange="admin.renderUnified()">
-                            <input type="text" id="unified-end" class="flatpickr-input compact-date" placeholder="Até" onchange="admin.renderUnified()">
-                            <select id="unified-filter-pay" class="input" style="width: auto; margin:0;" onchange="admin.renderUnified(true)">
-                                <option value="all">Todos Financeiro</option>
-                                <option value="debt">🔴 Em Aberto (Deve)</option>
-                                <option value="paid">🟢 Quitado</option>
-                            </select>
+                        <div style="background:white; padding:25px; border-radius:16px; text-align:center; box-shadow: var(--shadow);">
+                            <div style="color:var(--info); font-weight:bold;">QTD ITENS TOTAL</div>
+                            <div class="stat-val" id="st-qty" style="font-size:1.8rem; font-weight:bold;">0</div>
                         </div>
                     </div>
-
-                    <div id="unified-list"></div>
+                    <div style="background:white; padding:25px; border-radius:16px; box-shadow: var(--shadow);">
+                        <h4>Visão Geral do Estoque</h4>
+                        <div id="dash-stock-grid" class="dashboard-grid"></div>
+                    </div>
                 </div>
 
-                <div id="tab-stock" style="display:none;">
-                    <div class="kpi-grid">
-                         <div class="kpi-card"><h4>Valor em Estoque</h4><div class="val" id="st-rev">R$ 0.00</div></div>
-                         <div class="kpi-card"><h4>Custo Total</h4><div class="val" id="st-cost">R$ 0.00</div></div>
-                         <div class="kpi-card"><h4>Qtd Itens</h4><div class="val" id="st-qty">0</div></div>
-                    </div>
-                    <div id="dash-stock-grid" class="dashboard-grid"></div>
-                </div>
-
-                <div id="tab-prod" style="display:none;">
-                    <div style="background:white; padding:30px; border-radius:20px; box-shadow: var(--shadow); margin-bottom: 30px;">
-                        <h3>Cadastro de Produto</h3>
-                        <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 20px;">
-                            <div>
-                                <input type="hidden" id="edit-id">
-                                <input type="text" id="f-name" class="input" placeholder="Nome do Produto">
-                                <div class="input-row">
-                                    <select id="f-cat" class="input"><option value="feminino">Feminino</option><option value="infantil">Infantil</option><option value="perfumes">Perfumes</option></select>
-                                    <input type="number" id="f-cost" class="input" placeholder="Custo">
-                                </div>
-                                <div class="input-row">
-                                    <input type="number" id="f-price-global" class="input" placeholder="Preço Venda (Padrão)">
-                                    <input type="number" id="f-stock-global" class="input" placeholder="Estoque (Padrão)">
-                                </div>
-                                <div style="margin:15px 0;">
-                                    <label class="toggle-switch"><input type="checkbox" id="f-promo"><span class="slider"></span></label> <span>Em Promoção?</span>
-                                </div>
-                                <textarea id="f-desc" class="input" rows="3" placeholder="Descrição Detalhada"></textarea>
+                <div id="tab-orders" style="display:none;">
+                    <div style="background:white; padding:25px; border-radius:16px; box-shadow: var(--shadow);">
+                        <h3>Acompanhar Pedidos</h3>
+                        <div class="filter-wrapper">
+                            <div class="date-group">
+                                <label>De:</label>
+                                <input type="text" id="order-start" class="flatpickr-input compact-date">
                             </div>
-                            <div>
-                                <div class="file-upload-wrapper" onclick="document.getElementById('f-file').click()">
-                                    <i class="fas fa-camera"></i> <p>Fotos/Vídeos</p>
-                                    <input type="file" id="f-file" multiple accept="image/*,video/*" onchange="admin.handleFileSelect(this)">
-                                </div>
-                                <div id="file-preview-area" class="file-preview-grid"></div>
+                            <div class="date-group">
+                                <label>Até:</label>
+                                <input type="text" id="order-end" class="flatpickr-input compact-date">
                             </div>
                         </div>
-                        
-                        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-                        <h4>Variações (Cores e Tamanhos)</h4>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:10px;">
-                            <div><div id="color-checks" class="modern-checkbox-grid"></div></div>
-                            <div><div id="volume-checks" class="modern-checkbox-grid"></div></div>
+                        <div class="chip-container" id="order-filters">
+                            <button class="chip active" onclick="admin.filterOrders('all', this)"><span class="chip-dot" style="background:#555"></span> Todos</button>
+                            <button class="chip" onclick="admin.filterOrders('Pendente', this)"><span class="chip-dot" style="background:#f39c12"></span> Pendente</button>
+                            <button class="chip" onclick="admin.filterOrders('Enviado', this)"><span class="chip-dot" style="background:#3498db"></span> Enviado</button>
+                            <button class="chip" onclick="admin.filterOrders('Entregue', this)"><span class="chip-dot" style="background:#27ae60"></span> Entregue</button>
+                            <button class="chip" onclick="admin.filterOrders('Cancelado', this)"><span class="chip-dot" style="background:#e74c3c"></span> Cancelado</button>
                         </div>
-                        <div id="active-vars-area" style="margin-top:15px;"></div>
-                        
-                        <div style="display:flex; gap:10px; margin-top:20px;">
-                            <button onclick="admin.save()" id="btn-save" class="btn-modern success" style="flex:2;">Salvar Produto</button>
-                            <button onclick="admin.clear()" class="btn-modern outline" style="flex:1;">Limpar</button>
-                        </div>
-                    </div>
-                    <div style="background:white; padding:25px; border-radius:20px; box-shadow: var(--shadow);">
-                        <h3>Inventário</h3>
-                        <div id="admin-list" style="margin-top:20px;"></div>
+                        <div id="orders-list"></div>
                     </div>
                 </div>
 
                 <div id="tab-new-order" style="display:none;">
-                    <button onclick="admin.tab('unified')" class="btn-modern outline small" style="margin-bottom:15px;">&larr; Voltar</button>
-                    <div style="background:white; padding:30px; border-radius:20px; box-shadow: var(--shadow); max-width: 900px; margin: 0 auto;">
-                        <h3>Criar Pedido Manual</h3>
+                    <div style="background:white; padding:30px; border-radius:16px; box-shadow: var(--shadow); max-width: 900px; margin: 0 auto;">
+                        <h3><i class="fas fa-edit"></i> Criar Pedido Avulso / Manual</h3>
+                        <p style="color:#666; margin-bottom:20px; font-size:0.9rem;">Registre vendas feitas fora do site (WhatsApp, Loja Física) para controle de estoque e financeiro.</p>
+                        
                         <div class="manual-order-grid">
                             <div>
-                                <h4>Dados do Cliente</h4>
-                                <input id="m-client-name" class="input" placeholder="Nome">
-                                <input id="m-client-phone" class="input" placeholder="WhatsApp">
-                                <input id="m-client-cep" class="input" placeholder="CEP" onblur="app.fetchCep(this.value, 'manual')">
-                                <input id="m-client-street" class="input" placeholder="Rua">
-                                <div class="input-row"><input id="m-client-num" class="input" placeholder="Nº"><input id="m-client-bairro" class="input" placeholder="Bairro"></div>
-                                <div class="input-row"><input id="m-client-city" class="input" placeholder="Cidade"><input id="m-client-uf" class="input" placeholder="UF"></div>
+                                <h4 style="margin-bottom:10px; color:var(--accent);">Dados do Cliente</h4>
+                                <input type="text" id="m-client-name" class="input" placeholder="Nome do Cliente">
+                                <input type="email" id="m-client-email" class="input" placeholder="E-mail (opcional para envio)">
+                                <input type="text" id="m-client-phone" class="input" placeholder="Telefone / WhatsApp">
                                 
-                                <h4 style="margin-top:20px">Financeiro Inicial</h4>
+                                <hr style="margin:15px 0; border:0; border-top:1px dashed #eee;">
+                                
+                                <div class="input-cep-grid">
+                                    <input type="text" id="m-client-cep" class="input" placeholder="CEP (00000-000)" onblur="app.fetchCep(this.value, 'manual')" maxlength="9">
+                                    <span style="font-size:0.8rem; display:flex; align-items:center; color:#666;">Busca Automática</span>
+                                </div>
+                                <input type="text" id="m-client-street" class="input" placeholder="Rua / Logradouro">
                                 <div class="input-row">
-                                    <select id="m-payment-method" class="input"><option value="Dinheiro">Dinheiro</option><option value="Pix">Pix</option><option value="Cartão">Cartão</option><option value="Crediário">Crediário/Fiado</option></select>
-                                    <select id="m-payment-status" class="input"><option value="Pago">Pago (Total)</option><option value="Pendente">A Pagar</option></select>
+                                    <input type="text" id="m-client-num" class="input" placeholder="Número">
+                                    <input type="text" id="m-client-bairro" class="input" placeholder="Bairro">
+                                </div>
+                                <div class="input-row">
+                                    <input type="text" id="m-client-city" class="input" placeholder="Cidade">
+                                    <input type="text" id="m-client-uf" class="input" placeholder="UF">
+                                </div>
+                                
+                                <h4 style="margin:20px 0 10px; color:var(--accent);">Pagamento & Status</h4>
+                                <div class="input-row">
+                                    <select id="m-payment-method" class="input">
+                                        <option value="Dinheiro">Dinheiro</option>
+                                        <option value="Pix">Pix</option>
+                                        <option value="Cartão">Cartão</option>
+                                        <option value="Crediário">Crediário/Fiado</option>
+                                    </select>
+                                    <select id="m-payment-status" class="input">
+                                        <option value="Pago">Pago (Total)</option>
+                                        <option value="Pendente">Não Pago (À Pagar)</option>
+                                    </select>
                                 </div>
                             </div>
+
                             <div>
-                                <h4>Itens</h4>
+                                <h4 style="margin-bottom:10px; color:var(--accent);">Itens do Pedido</h4>
+                                
                                 <div class="manual-prod-adder">
-                                    <select id="m-prod-select" class="input" style="flex:2"></select>
-                                    <input type="number" id="m-prod-qty" class="input" value="1" style="width:60px; text-align:center;">
+                                    <select id="m-prod-select" class="input" style="margin:0; flex:2;">
+                                        <option value="">Selecione um produto do estoque...</option>
+                                    </select>
+                                    <input type="number" id="m-prod-qty" class="input" value="1" style="margin:0; width:60px; text-align:center;">
                                     <button onclick="admin.addManualItem()" class="btn-modern small"><i class="fas fa-plus"></i></button>
                                 </div>
-                                <div class="manual-cart-list" id="manual-cart-list"></div>
-                                <h3 style="text-align:right; margin-top:15px; color:var(--accent);">Total: <span id="m-total-display">R$ 0.00</span></h3>
-                                <button onclick="admin.saveManualOrder()" class="btn-modern success" style="width:100%; margin-top:15px;">Confirmar Venda</button>
+                                <div style="text-align:center; margin:5px 0; font-size:0.8rem; font-weight:bold; color:#888;">OU</div>
+                                <div class="manual-prod-adder" style="background:#fff5f2; border-color:#eec;">
+                                    <input type="text" id="m-custom-item" class="input" placeholder="Item avulso (ex: Taxa de Entrega)" style="margin:0; flex:2;">
+                                    <input type="number" id="m-custom-price" class="input" placeholder="R$" style="margin:0; width:80px;">
+                                    <button onclick="admin.addCustomItem()" class="btn-modern small success"><i class="fas fa-plus"></i></button>
+                                </div>
+
+                                <div class="manual-cart-list" id="manual-cart-list">
+                                    <div style="padding:15px; text-align:center; color:#999;">Nenhum item adicionado</div>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; font-size:1.2rem; font-weight:800; color:var(--accent);">
+                                    <span>Total</span>
+                                    <span id="m-total-display">R$ 0.00</span>
+                                </div>
                             </div>
+                        </div>
+
+                        <div style="margin-top:30px; text-align:right;">
+                            <button onclick="admin.saveManualOrder()" class="btn-modern" style="width:100%; justify-content:center; font-size:1.1rem;">
+                                <i class="fas fa-save"></i> Finalizar e Salvar Pedido
+                            </button>
                         </div>
                     </div>
                 </div>
 
+                <div id="tab-pay" style="display:none;">
+                    <div style="background:white; padding:25px; border-radius:16px; box-shadow: var(--shadow);">
+                        <h3>Gestão de Clientes & Financeiro</h3>
+                        
+                        <div class="filter-wrapper" style="background: #f0f9ff; border-color: #dbeafe;">
+                            <div class="date-group">
+                                <label>De:</label>
+                                <input type="text" id="fin-start" class="flatpickr-input compact-date">
+                            </div>
+                            <div class="date-group">
+                                <label>Até:</label>
+                                <input type="text" id="fin-end" class="flatpickr-input compact-date">
+                            </div>
+                        </div>
+
+                        <div class="fin-grid">
+                            <div class="fin-card-modern profit">
+                                <div class="fin-label">Vendas (Receita Real)</div>
+                                <div id="fin-real-revenue" class="fin-val-big">R$ 0.00</div>
+                            </div>
+                            <div class="fin-card-modern cost">
+                                <div class="fin-label">Total Pedidos (Criados)</div>
+                                <div id="fin-total-created" class="fin-val-big">R$ 0.00</div>
+                            </div>
+                        </div>
+                        
+                        <div id="pay-list"></div>
+                    </div>
+                </div>
+
+                <div id="tab-prod" style="display:none;">
+                    <div style="background:white; padding:30px; border-radius:16px; margin-bottom:30px; box-shadow: var(--shadow);">
+                        <h3>Cadastro de Produto</h3>
+                        <input type="hidden" id="edit-id">
+                        <input type="text" id="f-name" class="input" placeholder="Nome do Produto">
+                        <div style="display:flex; gap:15px;">
+                            <select id="f-cat" class="input"><option value="feminino">Feminino</option><option value="infantil">Infantil</option><option value="perfumes">Perfumes</option></select>
+                            <input type="number" id="f-cost" class="input" placeholder="Custo Global (Opcional)">
+                        </div>
+                        <div class="input-row">
+                            <input type="number" id="f-price-global" class="input" placeholder="Preço de Venda Global">
+                            <input type="number" id="f-stock-global" class="input" placeholder="Estoque Geral">
+                        </div>
+                        <div style="margin: 20px 0; display:flex; align-items:center;">
+                            <label class="toggle-switch"><input type="checkbox" id="f-promo"><span class="slider"></span></label>
+                            <span class="toggle-label">Ativar Promoção?</span>
+                        </div>
+                        
+                        <div class="file-upload-wrapper" onclick="document.getElementById('f-file').click()">
+                            <i class="fas fa-cloud-upload-alt" style="font-size:2.5rem; color:#ccc; margin-bottom:10px;"></i>
+                            <p style="margin:5px 0; color:#555; font-weight:bold;">Toque para adicionar fotos/vídeos</p>
+                            <small style="color:#999;">Máx 5 arquivos (5MB). Clique na foto para selecionar a principal.</small>
+                            <input type="file" id="f-file" multiple accept="image/*,video/*" onchange="admin.handleFileSelect(this)">
+                        </div>
+                        <div id="file-preview-area" class="file-preview-grid"></div>
+
+                        <hr style="margin:25px 0; border:0; border-top:1px solid #eee;">
+                        <label style="font-weight:bold; display:block; margin-bottom:15px; font-size:1.1rem;">Variações (Cores e Tamanhos):</label>
+                        
+                        <span class="checkbox-section-title">🎨 Cores</span>
+                        <div class="modern-checkbox-grid" id="color-checks"></div>
+                        
+                        <span class="checkbox-section-title">📏 Tamanhos</span>
+                        <div class="modern-checkbox-grid" id="volume-checks"></div>
+                        
+                        <div id="active-vars-area"></div>
+                        
+                        <textarea id="f-desc" class="input" rows="3" placeholder="Descrição" style="margin-top:20px;"></textarea>
+                        
+                        <div style="display:flex; gap:10px; margin-top:20px;">
+                            <button onclick="admin.save()" id="btn-save" class="btn-modern" style="flex:2;">Salvar Produto</button>
+                            <button onclick="admin.clear()" class="btn-modern outline" style="flex:1;">Limpar</button>
+                        </div>
+                    </div>
+                    
+                    <div style="background:white; padding:25px; border-radius:16px; overflow-y:auto; max-height:80vh; box-shadow: var(--shadow);">
+                        <h3>Lista de Produtos</h3>
+                        <div id="admin-list" style="margin-top:20px;"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
