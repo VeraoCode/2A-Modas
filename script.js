@@ -24,7 +24,79 @@ let autoScrollInterval;
 document.addEventListener('DOMContentLoaded', () => {
     flatpickr(".flatpickr-input", { dateFormat: "Y-m-d", locale: "pt", altInput: true, altFormat: "d/m/Y" });
 });
+const auth = {
+    user: null,
+    checkProfile: async () => {
+        const { data } = await sb.auth.getSession();
+        if(data.session) {
+            // Busca dados extras na tabela customers se necessario
+            const { data: profile } = await sb.from('customers').select('*').eq('id', data.session.user.id).single();
+            state.user = profile || { id: data.session.user.id, email: data.session.user.email, name: 'Cliente' };
+            app.showModal('client-modal');
+            app.updateUI();
+        } else {
+            app.showModal('auth-modal');
+        }
+    },
+    login: async () => {
+        const email = document.getElementById('l-email').value;
+        const pass = document.getElementById('l-pass').value;
+        if(!email || !pass) return alert("Preencha todos os campos");
+        
+        const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+        if(error) return alert("Erro: " + error.message);
+        
+        app.success("Login realizado!");
+        app.closeModal('auth-modal');
+        auth.checkProfile(); // Atualiza estado
+    },
+    register: async () => {
+        const name = document.getElementById('r-name').value;
+        const email = document.getElementById('r-email').value;
+        const pass = document.getElementById('r-pass').value;
+        if(!name || !email || !pass) return alert("Preencha tudo");
 
+        const { data, error } = await sb.auth.signUp({ email, password: pass });
+        if(error) return alert("Erro: " + error.message);
+
+        // Cria perfil na tabela customers
+        if(data.user) {
+            await sb.from('customers').insert([{ id: data.user.id, name: name, email: email }]);
+            app.success("Conta criada! Faça login.");
+            auth.toggle('login');
+        }
+    },
+    logout: async () => {
+        await sb.auth.signOut();
+        state.user = null;
+        localStorage.removeItem('2a_user');
+        window.location.reload();
+    },
+    toggle: (mode) => {
+        document.getElementById('form-login').style.display = mode === 'login' ? 'block' : 'none';
+        document.getElementById('form-register').style.display = mode === 'register' ? 'block' : 'none';
+        document.getElementById('auth-title').innerText = mode === 'login' ? 'Acesso' : 'Criar Conta';
+    },
+    loadClientOrders: async () => {
+        // Lógica para carregar pedidos do cliente no modal
+        if(!state.user) return;
+        const div = document.getElementById('client-orders-list');
+        div.innerHTML = '<p>Carregando...</p>';
+        const { data } = await sb.from('orders').select('*').eq('customer_id', state.user.id).order('created_at', {ascending: false});
+        div.innerHTML = '';
+        if(data && data.length) {
+            data.forEach(o => {
+                div.innerHTML += `<div style="border:1px solid #eee; padding:10px; margin-bottom:10px; border-radius:10px;">
+                    <b>#${o.id.slice(-4)}</b> - ${o.date} <br>
+                    Status: <span class="badge" style="position:static; display:inline-block; width:auto; padding:2px 8px; border-radius:4px;">${o.status}</span>
+                    <div style="text-align:right; font-weight:bold;">R$ ${o.total.toFixed(2)}</div>
+                </div>`;
+            });
+        } else {
+            div.innerHTML = '<p>Nenhum pedido encontrado.</p>';
+        }
+    }
+};
 const app = {
     load: async () => {
         if(!sb) return;
@@ -53,6 +125,295 @@ const app = {
             div.innerHTML += `<div class="card" onclick="app.openModal('${p.id}')">${isPromo}<img src="${mainImg}" onerror="this.src='https://via.placeholder.com/300'"><div class="card-info"><span style="font-size:0.8rem;color:#999;text-transform:uppercase;">${p.category}</span><div style="font-weight:bold;margin:5px 0;">${p.name}</div><div style="color:var(--primary);font-weight:bold;">A partir R$ ${minP.toFixed(2)}</div><span class="tag-delivery">🚚 03 a 05 dias úteis</span></div></div>`;
         });
     },
+    app.ask = (title, msg, onYes) => {
+    document.getElementById('confirm-title').innerText = title;
+    document.getElementById('confirm-msg').innerText = msg;
+    const modal = document.getElementById('custom-confirm-modal');
+    modal.classList.add('active');
+    
+    // Remove listeners antigos para evitar duplicação
+    const yesBtn = document.getElementById('btn-confirm-yes');
+    const noBtn = document.getElementById('btn-confirm-no');
+    
+    const newYes = yesBtn.cloneNode(true);
+    const newNo = noBtn.cloneNode(true);
+    
+    yesBtn.parentNode.replaceChild(newYes, yesBtn);
+    noBtn.parentNode.replaceChild(newNo, noBtn);
+    
+    newYes.addEventListener('click', () => {
+        modal.classList.remove('active');
+        if(onYes) onYes();
+    });
+    
+    newNo.addEventListener('click', () => {
+        modal.classList.remove('active');
+    });
+};
+
+app.renderCart = () => {
+    const ul = document.getElementById('cart-list'); 
+    if(!ul) return; 
+    ul.innerHTML=""; 
+    let t=0;
+    
+    if(state.cart.length === 0) {
+        ul.innerHTML = `<div style="text-align:center; padding:40px 0; color:#999;">
+            <i class="fas fa-shopping-basket" style="font-size:3rem; margin-bottom:10px; opacity:0.3;"></i>
+            <p>Sua sacola está vazia</p>
+        </div>`;
+    }
+
+    state.cart.forEach((i,idx) => {
+        t += i.price*i.qty;
+        ul.innerHTML += `
+        <li class="cart-item">
+            <img src="${i.image || 'https://via.placeholder.com/60'}" class="cart-thumb">
+            <div class="cart-details">
+                <span class="cart-name">${i.name}</span>
+                <span class="cart-variant">${i.variant}</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+                    <div class="qty-selector">
+                        <button class="qty-btn" onclick="app.cQty(${idx},-1)">-</button>
+                        <div class="qty-val">${i.qty}</div>
+                        <button class="qty-btn" onclick="app.cQty(${idx},1)">+</button>
+                    </div>
+                    <div style="font-weight:bold; color:var(--accent);">R$ ${(i.price*i.qty).toFixed(2)}</div>
+                </div>
+            </div>
+            <button class="btn-remove-modern" onclick="app.removeFromCart(${idx})">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </li>`;
+    });
+    
+    // Adiciona o botão Continuar Comprando ao final da lista se houver itens
+    if(state.cart.length > 0) {
+        ul.innerHTML += `<button onclick="app.toggleCart()" class="btn-continue-shop">
+            <i class="fas fa-arrow-left"></i> Continuar Comprando
+        </button>`;
+    }
+
+    document.getElementById('cart-total').innerText = `R$ ${t.toFixed(2)}`;
+    document.getElementById('cart-count').innerText = state.cart.length;
+};
+
+app.removeFromCart = (idx) => {
+    // Confirmação moderna antes de remover
+    state.cart.splice(idx,1);
+    app.renderCart();
+    // Opcional: Adicionar app.ask aqui se quiser confirmação para remover
+};
+
+
+/* ============================================================
+   3. ATUALIZAÇÕES NO ADMIN (Pagamentos e Emails)
+   ============================================================ */
+
+// Adicione estas funções ao objeto 'admin' existente
+
+admin.openPartialPay = (oid, idx, amount) => {
+    document.getElementById('pp-oid').value = oid;
+    document.getElementById('pp-idx').value = idx;
+    document.getElementById('pp-total-show').value = "R$ " + parseFloat(amount).toFixed(2);
+    document.getElementById('pp-val').value = "";
+    app.showModal('partial-pay-modal');
+    setTimeout(() => document.getElementById('pp-val').focus(), 100);
+};
+
+admin.processPartialPay = async () => {
+    const oid = document.getElementById('pp-oid').value;
+    const idx = parseInt(document.getElementById('pp-idx').value);
+    const valStr = document.getElementById('pp-val').value;
+    
+    if(!valStr || isNaN(valStr) || parseFloat(valStr) <= 0) return alert("Valor inválido");
+    
+    const paidVal = parseFloat(valStr);
+    
+    app.ask("Confirmar Pagamento", `Confirma o recebimento de R$ ${paidVal.toFixed(2)}?`, async () => {
+        const { data } = await sb.from('orders').select('installments').eq('id', oid).single();
+        if(data) {
+            const arr = JSON.parse(data.installments);
+            const originalVal = parseFloat(arr[idx].amount);
+            
+            // Lógica: Abater o valor. Se sobrar, criar nova parcela para o próximo mês ou manter na mesma data (opcional)
+            // Aqui vamos manter simples: Atualiza o valor pago dessa parcela e joga o resto para uma nova parcela futura
+            
+            if(paidVal >= originalVal) {
+                // Pagou tudo desta parcela
+                arr[idx].amount = originalVal; // Mantem historico
+                arr[idx].paid = true;
+                
+                // Se pagou a mais, poderia abater da próxima, mas vamos simplificar
+            } else {
+                // Pagamento parcial
+                const remaining = originalVal - paidVal;
+                
+                // Atualiza a parcela atual para ser o valor QUE FOI PAGO e marca como paga
+                arr[idx].amount = paidVal;
+                arr[idx].paid = true;
+                arr[idx].note = "Pagto Parcial";
+                
+                // Cria uma nova parcela com o restante para o mesmo dia (ou 30 dias, depende da regra)
+                // Vamos colocar para o mesmo dia para ficar pendente visualmente
+                arr.splice(idx + 1, 0, {
+                    date: arr[idx].date,
+                    amount: remaining.toFixed(2),
+                    paid: false,
+                    is_remaining: true
+                });
+            }
+            
+            await sb.from('orders').update({ installments: JSON.stringify(arr) }).eq('id', oid);
+            app.success("Pagamento parcial registrado!");
+            app.closeModal('partial-pay-modal');
+            admin.renderPayments();
+        }
+    });
+};
+
+admin.resendEmail = (oid) => {
+    app.ask("Reenviar E-mail", "Deseja reenviar o comprovante do pedido para o cliente?", async () => {
+        const { data } = await sb.from('orders').select('*').eq('id', oid).single();
+        if(data) {
+            let items = [];
+            try { items = JSON.parse(data.items); } catch(e){}
+            await app.sendEmails(data, items, data.customer_email);
+            app.success("E-mail disparado para fila de envio.");
+        }
+    });
+};
+
+// SUBSTITUA A FUNÇÃO admin.renderPayments existente por esta versão melhorada
+admin.renderPayments = async () => {
+    const { data } = await sb.from('orders').select('*').neq('status', 'Cancelado').order('created_at', {ascending: false});
+    const div = document.getElementById('pay-list'); 
+    if(!div) return; 
+    div.innerHTML = "";
+    
+    if(!data || data.length === 0) { div.innerHTML = "<p>Nenhum registro.</p>"; return; }
+
+    const clients = {};
+    data.forEach(o => {
+        const key = o.customer_email && o.customer_email.includes('@') ? o.customer_email : o.customer_name;
+        if(!clients[key]) {
+            clients[key] = {
+                name: o.customer_name, email: o.customer_email, phone: "", 
+                total_debt: 0, total_paid: 0, orders: []
+            };
+        }
+        try { const addr = JSON.parse(o.address || '{}'); if(addr.phone) clients[key].phone = addr.phone; } catch(e){}
+        
+        let orderPaid = 0;
+        let orderTotal = o.total;
+        
+        if(o.payment_status === 'Pago') { 
+            orderPaid = o.total; 
+        } else if (o.installments) {
+            try {
+                const inst = JSON.parse(o.installments);
+                inst.forEach(i => { if(i.paid) orderPaid += parseFloat(i.amount); });
+            } catch(e){}
+        }
+        
+        clients[key].total_paid += orderPaid;
+        clients[key].total_debt += (orderTotal - orderPaid);
+        clients[key].orders.push(o);
+    });
+
+    Object.values(clients).forEach((c, index) => {
+        // Correção de precisão decimal
+        const debt = Math.max(0, c.total_debt);
+        const hasDebt = debt > 0.1; 
+        const debtColor = hasDebt ? 'var(--danger)' : 'var(--success)';
+        const debtLabel = hasDebt ? 'A PAGAR' : 'QUITADO';
+        const phoneClean = c.phone ? c.phone.replace(/\D/g, '') : '';
+        const ordersHTML = c.orders.map(o => admin.generateOrderCardHTML(o)).join('');
+
+        div.innerHTML += `
+        <div class="client-admin-card">
+            <div class="cac-header" onclick="document.getElementById('client-body-${index}').classList.toggle('open')">
+                <div class="cac-info">
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <h4>${c.name}</h4>
+                        ${phoneClean ? `<a href="https://wa.me/55${phoneClean}" target="_blank" onclick="event.stopPropagation()" class="admin-wa-btn" style="padding:4px 10px; font-size:0.75rem;"><i class="fab fa-whatsapp"></i></a>` : ''}
+                    </div>
+                    <small>${c.email || 'Sem e-mail'}</small>
+                    ${hasDebt ? `<div class="total-receivable-tag">Receber: R$ ${debt.toFixed(2)}</div>` : ''}
+                </div>
+                <div class="cac-stats">
+                    <div class="cac-stat-item">
+                        <div class="cac-stat-label">Total Pago</div>
+                        <div class="cac-stat-val" style="color:var(--success)">R$ ${c.total_paid.toFixed(2)}</div>
+                    </div>
+                    <div class="cac-stat-item">
+                        <div class="cac-stat-label">${debtLabel}</div>
+                        <div class="cac-stat-val" style="color:${debtColor}">R$ ${debt.toFixed(2)}</div>
+                    </div>
+                    <div style="align-self:center; color:#ccc;">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </div>
+            <div id="client-body-${index}" class="cac-body">
+                ${ordersHTML}
+            </div>
+        </div>`;
+    });
+};
+
+// SUBSTITUA A FUNÇÃO admin.generateOrderCardHTML existente por esta
+admin.generateOrderCardHTML = (o) => {
+    let items = []; try { items = JSON.parse(o.installments || '[]'); } catch(e) {}
+    let totalPaid = 0; 
+    const isPaidStatus = o.payment_status === 'Pago';
+    if(isPaidStatus) totalPaid = o.total;
+    if(items.length > 0) items.forEach(i => { if(i.paid) totalPaid += parseFloat(i.amount); });
+    const remaining = Math.max(0, o.total - totalPaid);
+    
+    // Botão de Email Manual
+    const btnEmail = `<button onclick="admin.resendEmail('${o.id}')" class="btn-action-icon" title="Reenviar Email"><i class="fas fa-envelope"></i></button>`;
+
+    let instHTML = '';
+    if(items.length > 0 && !isPaidStatus) {
+        instHTML = `<div style="margin-top:10px; background:white; padding:10px; border:1px solid #eee; border-radius:8px;">
+            <strong style="font-size:0.8rem; color:#666;">Parcelamento:</strong><br>
+            ${items.map((i, idx) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed #eee;">
+                    <span>
+                        <small style="font-weight:bold; color:#555;">${idx+1}x</small> 
+                        ${i.date.split('-').reverse().join('/')} 
+                        <b style="color:#333;">R$ ${parseFloat(i.amount).toFixed(2)}</b>
+                        ${i.is_remaining ? '<small style="color:orange">(Restante)</small>' : ''}
+                    </span>
+                    <div style="display:flex; gap:5px;">
+                        ${i.paid ? '<span style="color:green; font-weight:bold; font-size:0.8rem;"><i class="fas fa-check"></i> PAGO</span>' 
+                                 : `<button onclick="admin.openPartialPay('${o.id}', ${idx}, ${i.amount})" class="btn-chip-action" style="border-color:#f39c12; color:#f39c12;">Parcial</button>
+                                    <button onclick="admin.quickPayInst('${o.id}', ${idx}, true)" class="btn-chip-action"><i class="fas fa-check"></i> Total</button>`}
+                    </div>
+                </div>
+            `).join('')}
+        </div>`;
+    }
+
+    return `
+    <div class="debt-card ${isPaidStatus ? 'paid' : ''}" style="margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>Pedido #${o.id.slice(-4)} <span style="font-weight:normal; font-size:0.8rem;">(${o.date})</span></strong>
+            <div style="display:flex; gap:5px;">
+                ${btnEmail}
+                <span style="font-size:0.9rem; font-weight:bold;">Total: R$ ${o.total.toFixed(2)}</span>
+            </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+            <span style="color:${remaining > 0.1 ? 'red' : 'green'}; font-weight:bold; font-size:0.9rem;">
+                ${remaining > 0.1 ? `Falta: R$ ${remaining.toFixed(2)}` : 'QUITADO'}
+            </span>
+            ${!isPaidStatus ? `<button onclick="app.ask('Quitar Tudo?', 'Confirmar pagamento total?', () => admin.markAsPaidFull('${o.id}'))" class="btn-modern small success" style="padding:4px 10px; font-size:0.75rem;">Quitar Tudo</button>` : ''}
+        </div>
+        ${instHTML}
+    </div>`;
+};
     openPromoModal: () => {
         const promos = state.products.filter(p => p.is_promo);
         if(!promos.length) return alert("Sem promoções ativas.");
@@ -1110,4 +1471,5 @@ document.addEventListener('keydown', (e) => {
         history.back(); 
     } 
 });
+
 window.addEventListener('popstate', (e) => { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); });
