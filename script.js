@@ -1,5 +1,16 @@
+// Remove tela de carregamento após 4s (fallback de segurança)
 setTimeout(() => { const l = document.getElementById('loading-screen'); if(l) l.style.display='none'; }, 4000);
-window.onerror = function(msg) { const sb = document.getElementById('status-bar'); if(sb) { sb.style.display='flex'; sb.className='err'; sb.innerHTML = `⚠️ Erro: ${msg}`; } return false; };
+
+// Tratamento de erros global
+window.onerror = function(msg) { 
+    const sb = document.getElementById('status-bar'); 
+    if(sb) { 
+        sb.style.display='flex'; 
+        sb.className='err'; 
+        sb.innerHTML = `⚠️ Erro: ${msg}`; 
+    } 
+    return false; 
+};
 
 // ================= CONFIG =================
 const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
@@ -30,7 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // ================= AUTH =================
 const auth = {
     user: null,
-    // Verifica se já está logado ao abrir o site
+    
+    // Verifica login e carrega dados
     checkProfile: async () => {
         const { data } = await sb.auth.getSession();
         if(data.session) {
@@ -40,13 +52,11 @@ const auth = {
             if (profile) {
                 state.user = profile;
                 
-                // --- MÁGICA AQUI: Carrega endereços da nuvem para o app ---
+                // Carrega endereços da nuvem
                 if(profile.address) {
-                    // Se for string, converte para objeto, senão usa como está
                     const addrList = typeof profile.address === 'string' ? JSON.parse(profile.address) : profile.address;
                     localStorage.setItem('2a_addrs', JSON.stringify(addrList));
                     
-                    // Se tiver endereço padrão, define
                     if(addrList.length > 0) {
                         state.address = addrList[0];
                         localStorage.setItem('2a_active_addr', JSON.stringify(state.address));
@@ -56,15 +66,12 @@ const auth = {
                 state.user = { id: data.session.user.id, email: data.session.user.email, name: 'Cliente' };
             }
 
-            app.updateUI();
-            // Se o modal de login estiver aberto, fecha e abre o do cliente
+            app.updateUI(); // ATUALIZA O NOME NO HEADER AQUI
+            
             if(document.getElementById('auth-modal').classList.contains('active')) {
                 app.closeModal('auth-modal');
                 app.showModal('client-modal');
             }
-        } else {
-            // Se não tiver sessão e tentou abrir painel, pede login
-            // app.showModal('auth-modal'); // (Opcional: não abrir automático para não irritar)
         }
     },
 
@@ -78,7 +85,7 @@ const auth = {
         
         app.success("Login realizado!");
         app.closeModal('auth-modal');
-        await auth.checkProfile(); // Carrega dados e endereços
+        await auth.checkProfile();
     },
 
     register: async () => {
@@ -91,16 +98,11 @@ const auth = {
         if(error) return alert("Erro: " + error.message);
 
         if(data.user) {
-            // Cria o perfil no banco já com array de endereços vazio
             await sb.from('customers').insert([{ 
-                id: data.user.id, 
-                name: name, 
-                email: email,
-                address: [] // Inicializa vazio
+                id: data.user.id, name: name, email: email, address: [] 
             }]);
             
-            app.success("Conta criada! O sistema fará login automático ou faça login.");
-            // Tenta logar direto ou pede login
+            app.success("Conta criada! O sistema fará login automático.");
             const { error: loginErr } = await sb.auth.signInWithPassword({ email, password: pass });
             if(!loginErr) {
                 app.closeModal('auth-modal');
@@ -116,7 +118,7 @@ const auth = {
         state.user = null;
         state.address = null;
         localStorage.removeItem('2a_user');
-        localStorage.removeItem('2a_addrs'); // Limpa dados locais ao sair
+        localStorage.removeItem('2a_addrs');
         localStorage.removeItem('2a_active_addr');
         window.location.reload();
     },
@@ -132,10 +134,8 @@ const auth = {
         const div = document.getElementById('client-orders-list');
         div.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Carregando pedidos...</div>';
         
-        // Busca pedidos onde o customer_id é igual ao ID do usuário logado
         let query = sb.from('orders').select('*').eq('customer_id', state.user.id).order('created_at', {ascending: false});
         
-        // Filtros de data (se houver)
         const start = document.getElementById('client-date-start').value;
         const end = document.getElementById('client-date-end').value;
         if(start) query = query.gte('created_at', new Date(start).toISOString());
@@ -148,8 +148,6 @@ const auth = {
             data.forEach(o => {
                 let items = []; try { items = JSON.parse(o.items); } catch(e){}
                 const desc = items.map(i => `${i.qty}x ${i.name}`).join(', ');
-                
-                // Cor do Status
                 let stColor = '#f39c12'; // Pendente
                 if(o.status === 'Enviado') stColor = '#3498db';
                 if(o.status === 'Entregue') stColor = '#27ae60';
@@ -212,9 +210,9 @@ const app = {
         const yesBtn = document.getElementById('btn-confirm-yes');
         const noBtn = document.getElementById('btn-confirm-no');
         
+        // Remove listeners antigos
         const newYes = yesBtn.cloneNode(true);
         const newNo = noBtn.cloneNode(true);
-        
         yesBtn.parentNode.replaceChild(newYes, yesBtn);
         noBtn.parentNode.replaceChild(newNo, noBtn);
         
@@ -436,8 +434,6 @@ const app = {
         });
         app.showModal('address-modal');
     },
-    // DENTRO DO OBJETO app:
-
     addNewAddress: async () => {
         const val = id => document.getElementById(id).value;
         const a = { 
@@ -449,28 +445,24 @@ const app = {
         
         if(!a.name || !a.street || !a.number) return alert("Preencha campos obrigatórios.");
         
-        // 1. Pega lista atual
         let list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
         list.push(a);
         
-        // 2. Salva localmente
         localStorage.setItem('2a_addrs', JSON.stringify(list));
         state.address = a; 
         localStorage.setItem('2a_active_addr', JSON.stringify(a));
 
-        // 3. SALVA NA NUVEM (SUPABASE) SE TIVER LOGADO
         if(state.user) {
             const { error } = await sb.from('customers').update({ address: list }).eq('id', state.user.id);
             if(error) console.error("Erro ao salvar endereço na nuvem:", error);
             else app.success("Endereço salvo na sua conta!");
         } else {
-            app.success("Endereço salvo temporariamente (Faça login para salvar pra sempre)");
+            app.success("Endereço salvo temporariamente");
         }
 
         app.updateUI(); 
         app.closeModal('address-modal');
     },
-
     delAddress: async (i) => {
         if(!confirm("Remover este endereço?")) return;
         
@@ -479,14 +471,12 @@ const app = {
         
         localStorage.setItem('2a_addrs', JSON.stringify(list));
         
-        // SALVA NA NUVEM
         if(state.user) {
             await sb.from('customers').update({ address: list }).eq('id', state.user.id);
         }
         
-        app.openAddressModal(); // Recarrega a lista visual
+        app.openAddressModal(); 
     },
-
     editAddress: (i) => {
         const list = JSON.parse(localStorage.getItem('2a_addrs'));
         const a = list[i];
@@ -497,12 +487,7 @@ const app = {
         setVal('addr-num', a.number); setVal('addr-bairro', a.bairro); 
         setVal('addr-city', a.city); setVal('addr-uf', a.uf); setVal('addr-ref', a.ref);
         
-        // Remove o antigo (o usuário vai salvar o novo editado clicando em Salvar)
-        // Nota: Isso é um "hack" rápido. O ideal seria ter um botão 'Atualizar', 
-        // mas deletar e readicionar funciona para manter o código simples.
         app.delAddress(i); 
-        
-        // Fecha para não ficar piscando e reabre focado (opcional, ou apenas remove da lista)
     },
     setAddr: (i) => {
         const list = JSON.parse(localStorage.getItem('2a_addrs'));
@@ -512,13 +497,23 @@ const app = {
     updateUI: () => {
         const btn = document.getElementById('btn-address-trigger');
         if(btn && state.address) { btn.classList.add('filled'); btn.innerHTML = `📍 Entregar em: ${state.address.city}/${state.address.uf} (${state.address.street})`; }
+        
         const authArea = document.getElementById('cart-auth-area');
         if(authArea) {
             if(state.user) authArea.innerHTML = `<small style="color:#27ae60"><i class="fas fa-check-circle"></i> Olá, ${state.user.name}</small>`;
             else authArea.innerHTML = `<button onclick="app.showModal('auth-modal')" style="width:100%; padding:10px; background:#f0f0f0; border:none; border-radius:8px; color:#555; font-weight:bold;"><i class="fas fa-user-circle"></i> Login / Cadastro</button>`;
         }
+        
+        // --- LÓGICA DO "OLÁ NOME" NO CABEÇALHO ---
         const headerBtn = document.querySelector('.login-btn-header');
-        if(headerBtn && state.user) headerBtn.innerHTML = `<i class="fas fa-user-circle"></i> Olá, ${state.user.name.split(' ')[0]}!`;
+        if(headerBtn) {
+            if(state.user) {
+                const firstName = state.user.name.split(' ')[0];
+                headerBtn.innerHTML = `<i class="fas fa-user-circle"></i> Olá, ${firstName}!`;
+            } else {
+                headerBtn.innerHTML = `<i class="fas fa-user-circle"></i> Login / Cadastro`;
+            }
+        }
     },
     checkout: async (method) => {
         if(!state.cart.length) return alert("Carrinho vazio");
@@ -1048,7 +1043,7 @@ const admin = {
             const phoneRaw = addr.phone || '';
             const phoneClean = phoneRaw.replace(/\D/g, ''); 
             const fullAddrString = `${addr.street || ''}, ${addr.number || ''} - ${addr.bairro || ''}, ${addr.city || ''}`;
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(fullAddrString)}`;
+            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddrString)}`;
             let stClass = 'st-pendente';
             if(o.status.includes('Enviado')) stClass = 'st-enviado';
             if(o.status.includes('Entregue')) stClass = 'st-entregue';
@@ -1224,168 +1219,136 @@ const admin = {
             </div>`;
         });
     },
-    admin.generateOrderCardHTML = (o) => {
-    let items = []; try { items = JSON.parse(o.installments || '[]'); } catch(e) {}
-    let totalPaid = 0; 
-    const isPaidStatus = o.payment_status === 'Pago';
-    if(isPaidStatus) totalPaid = o.total;
-    if(items.length > 0) items.forEach(i => { if(i.paid) totalPaid += parseFloat(i.amount); });
     
-    // Cálculos
-    const remaining = Math.max(0, o.total - totalPaid);
-    const prodList = JSON.parse(o.items).map(i => `${i.qty}x ${i.name}`).join(', ');
+    // ============================================================
+    // ATUALIZAÇÃO GESTÃO COMPLETA - CORRIGIDA
+    // ============================================================
 
-    // Endereço e Mapa
-    let fullAddrString = "Sem endereço registrado";
-    let mapLink = "#";
-    try {
-        const addr = JSON.parse(o.address || '{}');
-        if(addr.street) {
-            fullAddrString = `${addr.street}, ${addr.number} - ${addr.bairro}, ${addr.city}/${addr.uf}`;
-            // Link universal do Google Maps
-            mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddrString)}`;
-        }
-    } catch(e) {}
-
-    // HTML das Parcelas (Editáveis)
-    let instHTML = '';
-    if(o.payment_status === 'Parcelado' && items.length > 0) {
-        instHTML = `<div style="margin-top:10px; background:#fafafa; padding:10px; border:1px solid #eee; border-radius:8px;">
-            <strong style="font-size:0.8rem; color:#666;">Editar Parcelas:</strong><br>
-            ${items.map((i, idx) => `
-                <div style="display:grid; grid-template-columns: 0.5fr 2fr 1.5fr auto; gap:5px; align-items:center; padding:8px 0; border-bottom:1px dashed #ddd;">
-                    <small style="font-weight:bold; color:#555;">${idx+1}x</small>
-                    
-                    <input type="date" value="${i.date}" class="input small-input" 
-                        onchange="admin.editInstField('${o.id}', ${idx}, 'date', this.value)" style="margin:0; font-size:0.8rem;">
-                    
-                    <input type="number" step="0.01" value="${parseFloat(i.amount).toFixed(2)}" class="input small-input" 
-                        onchange="admin.editInstField('${o.id}', ${idx}, 'amount', this.value)" style="margin:0; font-size:0.8rem;">
-                    
-                    ${i.paid 
-                        ? '<span style="color:green; font-weight:bold; font-size:0.8rem;"><i class="fas fa-check"></i></span>' 
-                        : `<button onclick="admin.quickPayInst('${o.id}', ${idx}, true)" class="btn-chip-action" title="Baixar"><i class="fas fa-check"></i></button>`
-                    }
-                </div>
-            `).join('')}
-        </div>`;
-    }
-
-    // Seletores de Status (Entrega e Pagamento)
-    const statusEntrega = `
-        <select onchange="admin.updateStatus('${o.id}', this.value)" class="status-selector small-select ${o.status === 'Cancelado' ? 'st-cancelado' : (o.status === 'Entregue' ? 'st-entregue' : 'st-pendente')}" style="margin-bottom:5px;">
-            <option value="Pendente" ${o.status.includes('Pendente')?'selected':''}>🚚 Entrega Pendente</option>
-            <option value="Enviado" ${o.status==='Enviado'?'selected':''}>🚀 Enviado</option>
-            <option value="Entregue" ${o.status==='Entregue'?'selected':''}>✅ Entregue</option>
-            <option value="Cancelado" ${o.status==='Cancelado'?'selected':''}>❌ Cancelado</option>
-        </select>
-    `;
-
-    const statusPagamento = `
-        <select onchange="admin.updatePaymentStatusSimple('${o.id}', this.value)" class="input small-select" style="margin:0; font-weight:bold; color:var(--accent);">
-            <option value="A_pagar" ${(o.payment_status==='Pendente' || o.payment_status==='A_pagar')?'selected':''}>⏳ À Pagar</option>
-            <option value="Pago" ${o.payment_status==='Pago'?'selected':''}>💰 Pago (Total)</option>
-            <option value="Parcelado" ${o.payment_status==='Parcelado'?'selected':''}>📅 Parcelado</option>
-        </select>
-    `;
-
-    return `
-    <div class="debt-card ${o.status === 'Cancelado' ? 'cancelled-order' : ''} ${isPaidStatus ? 'paid' : ''}" style="margin-bottom:15px; border-left:4px solid var(--accent);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <strong>Pedido #${o.id.slice(-4)} <span style="font-weight:normal; font-size:0.8rem;">(${o.date})</span></strong>
-            <button onclick="admin.resendEmail('${o.id}')" class="btn-action-icon" title="Reenviar Email"><i class="fas fa-envelope"></i></button>
-        </div>
-
-        <div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.85rem; border:1px solid #eee;">
-            <i class="fas fa-map-marker-alt" style="color:var(--danger)"></i> <strong>Entrega:</strong><br>
-            <span style="color:#555;">${fullAddrString}</span>
-            <br>
-            <a href="${mapLink}" target="_blank" class="btn-map" style="margin-top:5px; display:inline-block;">
-                <i class="fas fa-external-link-alt"></i> Ver no Google Maps
-            </a>
-        </div>
-
-        <div style="font-size:0.85rem; color:#666; margin:5px 0;">Itens: ${prodList}</div>
+    generateOrderCardHTML: (o) => {
+        let items = []; try { items = JSON.parse(o.installments || '[]'); } catch(e) {}
+        let totalPaid = 0; 
+        const isPaidStatus = o.payment_status === 'Pago';
+        if(isPaidStatus) totalPaid = o.total;
+        if(items.length > 0) items.forEach(i => { if(i.paid) totalPaid += parseFloat(i.amount); });
         
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-            <div><label style="font-size:0.7rem; font-weight:bold; color:#999;">STATUS ENTREGA</label>${statusEntrega}</div>
-            <div><label style="font-size:0.7rem; font-weight:bold; color:#999;">FINANCEIRO</label>${statusPagamento}</div>
-        </div>
+        // Cálculos
+        const remaining = Math.max(0, o.total - totalPaid);
+        const prodList = JSON.parse(o.items).map(i => `${i.qty}x ${i.name}`).join(', ');
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px dashed #eee; padding-top:10px;">
-            <span style="font-size:1.1rem; font-weight:bold;">Total: R$ ${o.total.toFixed(2)}</span>
-            <span style="color:${remaining > 0.1 ? 'var(--danger)' : 'var(--success)'}; font-weight:bold;">
-                ${remaining > 0.1 ? `Falta: R$ ${remaining.toFixed(2)}` : 'QUITADO'}
-            </span>
-        </div>
-        
-        ${instHTML}
-    </div>`;
-};
+        // Endereço e Mapa
+        let fullAddrString = "Sem endereço registrado";
+        let mapLink = "#";
+        try {
+            const addr = JSON.parse(o.address || '{}');
+            if(addr.street) {
+                fullAddrString = `${addr.street}, ${addr.number} - ${addr.bairro}, ${addr.city}/${addr.uf}`;
+                // Link universal do Google Maps
+                mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddrString)}`;
+            }
+        } catch(e) {}
 
-// 2. FUNÇÃO PARA EDITAR DATA OU VALOR DA PARCELA DIRETAMENTE
-admin.editInstField = async (oid, idx, field, val) => {
-    // Validação básica
-    if(field === 'amount' && (isNaN(val) || val < 0)) return alert("Valor inválido");
-    if(field === 'date' && !val) return alert("Data inválida");
-
-    const { data } = await sb.from('orders').select('installments').eq('id', oid).single();
-    if(data) {
-        const arr = JSON.parse(data.installments);
-        if(arr[idx]) {
-            arr[idx][field] = val; // Atualiza o campo (date ou amount)
-            
-            await sb.from('orders').update({ installments: JSON.stringify(arr) }).eq('id', oid);
-            
-            // Atualiza a tela sem recarregar tudo bruscamente
-            // (O ideal seria atualizar só o elemento, mas renderPayments é seguro)
-            // Pequeno delay para UX
-            setTimeout(() => admin.renderPayments(), 500); 
+        // HTML das Parcelas (Editáveis)
+        let instHTML = '';
+        if(o.payment_status === 'Parcelado' && items.length > 0) {
+            instHTML = `<div style="margin-top:10px; background:#fafafa; padding:10px; border:1px solid #eee; border-radius:8px;">
+                <strong style="font-size:0.8rem; color:#666;">Editar Parcelas:</strong><br>
+                ${items.map((i, idx) => `
+                    <div style="display:grid; grid-template-columns: 0.5fr 2fr 1.5fr auto; gap:5px; align-items:center; padding:8px 0; border-bottom:1px dashed #ddd;">
+                        <small style="font-weight:bold; color:#555;">${idx+1}x</small>
+                        
+                        <input type="date" value="${i.date}" class="input small-input" 
+                            onchange="admin.editInstField('${o.id}', ${idx}, 'date', this.value)" style="margin:0; font-size:0.8rem;">
+                        
+                        <input type="number" step="0.01" value="${parseFloat(i.amount).toFixed(2)}" class="input small-input" 
+                            onchange="admin.editInstField('${o.id}', ${idx}, 'amount', this.value)" style="margin:0; font-size:0.8rem;">
+                        
+                        ${i.paid 
+                            ? '<span style="color:green; font-weight:bold; font-size:0.8rem;"><i class="fas fa-check"></i></span>' 
+                            : `<button onclick="admin.quickPayInst('${o.id}', ${idx}, true)" class="btn-chip-action" title="Baixar"><i class="fas fa-check"></i></button>`
+                        }
+                    </div>
+                `).join('')}
+            </div>`;
         }
-    }
-};
 
-// 3. ATUALIZAÇÃO SIMPLIFICADA DE STATUS DE PAGAMENTO (Dropdown)
-admin.updatePaymentStatusSimple = async (id, status) => {
-    let updateObj = { payment_status: status };
-    
-    // Se mudar para PAGO, zera parcelas pendentes (opcional, aqui mantemos histórico mas marca como pago)
-    // Se mudar para PARCELADO e não tiver parcelas, o sistema vai pedir para gerar depois (na view do Pedido), 
-    // mas aqui apenas mudamos a "flag" do status.
-    
-    await sb.from('orders').update(updateObj).eq('id', id);
-    app.success("Financeiro atualizado!");
-    admin.renderPayments(); 
-};
+        // Seletores de Status (Entrega e Pagamento)
+        const statusEntrega = `
+            <select onchange="admin.updateStatus('${o.id}', this.value)" class="status-selector small-select ${o.status === 'Cancelado' ? 'st-cancelado' : (o.status === 'Entregue' ? 'st-entregue' : 'st-pendente')}" style="margin-bottom:5px;">
+                <option value="Pendente" ${o.status.includes('Pendente')?'selected':''}>🚚 Entrega Pendente</option>
+                <option value="Enviado" ${o.status==='Enviado'?'selected':''}>🚀 Enviado</option>
+                <option value="Entregue" ${o.status==='Entregue'?'selected':''}>✅ Entregue</option>
+                <option value="Cancelado" ${o.status==='Cancelado'?'selected':''}>❌ Cancelado</option>
+            </select>
+        `;
+
+        const statusPagamento = `
+            <select onchange="admin.updatePaymentStatusSimple('${o.id}', this.value)" class="input small-select" style="margin:0; font-weight:bold; color:var(--accent);">
+                <option value="A_pagar" ${(o.payment_status==='Pendente' || o.payment_status==='A_pagar')?'selected':''}>⏳ À Pagar</option>
+                <option value="Pago" ${o.payment_status==='Pago'?'selected':''}>💰 Pago (Total)</option>
+                <option value="Parcelado" ${o.payment_status==='Parcelado'?'selected':''}>📅 Parcelado</option>
+            </select>
+        `;
 
         return `
-        <div class="debt-card ${isPaidStatus ? 'paid' : ''}" style="margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="debt-card ${o.status === 'Cancelado' ? 'cancelled-order' : ''} ${isPaidStatus ? 'paid' : ''}" style="margin-bottom:15px; border-left:4px solid var(--accent);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <strong>Pedido #${o.id.slice(-4)} <span style="font-weight:normal; font-size:0.8rem;">(${o.date})</span></strong>
-                <div style="display:flex; gap:5px;">
-                    ${btnEmail}
-                    <span style="font-size:0.9rem; font-weight:bold;">Total: R$ ${o.total.toFixed(2)}</span>
-                </div>
+                <button onclick="admin.resendEmail('${o.id}')" class="btn-action-icon" title="Reenviar Email"><i class="fas fa-envelope"></i></button>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
-                <span style="color:${remaining > 0.1 ? 'red' : 'green'}; font-weight:bold; font-size:0.9rem;">
+
+            <div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.85rem; border:1px solid #eee;">
+                <i class="fas fa-map-marker-alt" style="color:var(--danger)"></i> <strong>Entrega:</strong><br>
+                <span style="color:#555;">${fullAddrString}</span>
+                <br>
+                <a href="${mapLink}" target="_blank" class="btn-map" style="margin-top:5px; display:inline-block;">
+                    <i class="fas fa-external-link-alt"></i> Ver no Google Maps
+                </a>
+            </div>
+
+            <div style="font-size:0.85rem; color:#666; margin:5px 0;">Itens: ${prodList}</div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+                <div><label style="font-size:0.7rem; font-weight:bold; color:#999;">STATUS ENTREGA</label>${statusEntrega}</div>
+                <div><label style="font-size:0.7rem; font-weight:bold; color:#999;">FINANCEIRO</label>${statusPagamento}</div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px dashed #eee; padding-top:10px;">
+                <span style="font-size:1.1rem; font-weight:bold;">Total: R$ ${o.total.toFixed(2)}</span>
+                <span style="color:${remaining > 0.1 ? 'var(--danger)' : 'var(--success)'}; font-weight:bold;">
                     ${remaining > 0.1 ? `Falta: R$ ${remaining.toFixed(2)}` : 'QUITADO'}
                 </span>
-                ${!isPaidStatus ? `<button onclick="app.ask('Quitar Tudo?', 'Confirmar pagamento total?', () => admin.markAsPaidFull('${o.id}'))" class="btn-modern small success" style="padding:4px 10px; font-size:0.75rem;">Quitar Tudo</button>` : ''}
             </div>
+            
             ${instHTML}
         </div>`;
     },
+
     editInstField: async (oid, idx, field, val) => {
+        // Validação básica
+        if(field === 'amount' && (isNaN(val) || val < 0)) return alert("Valor inválido");
+        if(field === 'date' && !val) return alert("Data inválida");
+
         const { data } = await sb.from('orders').select('installments').eq('id', oid).single();
         if(data) {
             const arr = JSON.parse(data.installments);
             if(arr[idx]) {
-                arr[idx][field] = val;
+                arr[idx][field] = val; // Atualiza o campo (date ou amount)
+                
                 await sb.from('orders').update({ installments: JSON.stringify(arr) }).eq('id', oid);
+                
+                // Atualiza a tela sem recarregar tudo bruscamente
+                setTimeout(() => admin.renderPayments(), 500); 
             }
         }
     },
+
+    updatePaymentStatusSimple: async (id, status) => {
+        let updateObj = { payment_status: status };
+        await sb.from('orders').update(updateObj).eq('id', id);
+        app.success("Financeiro atualizado!");
+        admin.renderPayments(); 
+    },
+
     expandInstallments: (id) => {
         const el = document.getElementById(`inst-manage-${id}`);
         if(el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
@@ -1503,6 +1466,3 @@ document.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('popstate', (e) => { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); });
-
-
-
