@@ -317,9 +317,160 @@ footer button:hover { background: #444; color: white; border-color: white; }
 #admin-auth-modal i { font-size: 3rem; color: var(--accent); margin-bottom: 20px; }
 
 #entry-modal { z-index: 10006; }
+/* --- MELHORIA CARRINHO DE COMPRAS --- */
+.cart-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px dashed #eee;
+    background: white;
+    transition: 0.3s;
+}
+
+.cart-thumb {
+    width: 60px;  /* Tamanho reduzido conforme solicitado */
+    height: 60px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid #f0f0f0;
+}
+
+.cart-details {
+    flex: 1;
+}
+
+.cart-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--accent);
+    line-height: 1.2;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.cart-variant {
+    font-size: 0.75rem;
+    color: #888;
+    background: #f5f5f5;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+/* Botões de Quantidade Modernos */
+.qty-selector {
+    display: inline-flex;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 20px;
+    padding: 2px;
+    border: 1px solid #eee;
+    margin-top: 5px;
+}
+
+.qty-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: white;
+    color: var(--accent);
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qty-btn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.qty-val {
+    width: 30px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+/* Lixeira Moderna */
+.btn-remove-modern {
+    width: 35px;
+    height: 35px;
+    border-radius: 10px;
+    background: #fff5f5;
+    color: #e74c3c;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    margin-left: auto; /* Empurra para direita */
+}
+
+.btn-remove-modern:hover {
+    background: #e74c3c;
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Botão Continuar Comprando */
+.btn-continue-shop {
+    width: 100%;
+    padding: 15px;
+    background: white;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    border-radius: 12px;
+    font-weight: 700;
+    margin-top: 15px;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-continue-shop:hover {
+    background: var(--accent);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* --- ADMIN EXTRAS --- */
+.total-receivable-tag {
+    background: #eef2ff;
+    color: #4f46e5;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border: 1px solid #e0e7ff;
+    margin-top: 5px;
+    display: inline-block;
+}
+
+.btn-action-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #555;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.btn-action-icon:hover { background: var(--primary); color: white; border-color: var(--primary); }
 
 @media(max-width:768px){ 
     .box{grid-template-columns:1fr;} 
     .product-modal-grid { display: block; overflow-y: auto; }
     .sidebar{width:100%;} .hero{padding-top:80px;} .oc-body, .manual-order-grid { grid-template-columns: 1fr; } .filter-wrapper { justify-content: flex-start; } .inst-gen-row { grid-template-columns: 1fr 1fr !important; } .inst-gen-row span { grid-column: span 2; } .track-step span { font-size: 0.6rem; } 
+
 }
