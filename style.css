@@ -32,7 +32,7 @@ button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
 .hero img { width:180px; height:180px; border-radius:50%; object-fit:cover; border:5px solid white; box-shadow:var(--shadow); margin-bottom:20px; }
 .hero h1 { font-size:3.5rem; margin-bottom:10px; color:var(--accent); }
 
-/* ANIMAÇÃO BOTÃO CTA (SHIMMER) */
+/* ANIMAÇÃO BOTÃO CTA */
 .btn-cta { 
     padding: 16px 50px; border-radius: 50px; border: none; font-weight: 700; font-size: 1.1rem; margin-top: 45px; color: white;
     background: linear-gradient(45deg, var(--accent), var(--primary), var(--accent));
@@ -50,7 +50,7 @@ button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
 .filter-btn:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-3px); }
 .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); transform: scale(1.05); }
 
-/* --- VITRINE MODERNA --- */
+/* VITRINE */
 .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:25px; }
 .card { 
     background:white; border-radius:20px; overflow:hidden; border:none; 
@@ -63,7 +63,7 @@ button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
 .tag-promo { position:absolute; top:12px; right:12px; background:linear-gradient(45deg, #e91e63, #ff6b6b); color:white; padding:5px 12px; border-radius:20px; font-size:0.65rem; font-weight:800; z-index: 2; box-shadow: 0 4px 10px rgba(233, 30, 99, 0.3); }
 .tag-delivery { font-size: 0.7rem; color: #27ae60; display: flex; align-items:center; gap:5px; margin-top: 8px; font-weight: 600; background: #e8f5e9; padding: 4px 10px; border-radius: 8px; width: fit-content; }
 
-/* --- MODAL PRODUTO --- */
+/* MODAL PRODUTO */
 .product-modal-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; height: 100%; }
 .pm-images { position: relative; background: #f0f2f5; border-radius: 24px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 .pm-details { padding: 10px 20px; display: flex; flex-direction: column; overflow-y: auto; }
@@ -84,20 +84,17 @@ button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
 .var-chip.disabled { opacity: 0.5; cursor: not-allowed; background: #f9f9f9; border-color: #eee; }
 .color-circle { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
 
-/* MODALS GENERAL */
+/* MODALS */
 .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
 .overlay.active { display:flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
 .box { background:white; width:100%; max-width:1000px; border-radius:24px; overflow:hidden; max-height:90vh; overflow-y:auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
 .box.single-col { display:block; max-width:500px; }
 
-/* LAYERS & SPECIFIC MODALS */
 #address-modal { z-index: 10005; background: rgba(0,0,0,0.9); }
 #admin-auth-modal .box { background: white; padding: 40px; text-align: center; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
 #admin-auth-modal h2 { margin-bottom: 20px; color: var(--accent); }
 #admin-auth-modal i { font-size: 3rem; color: var(--accent); margin-bottom: 20px; }
-
-/* MODAIS FLUTUANTES ACIMA DO ADMIN */
 #entry-modal { z-index: 10006; }
 #partial-pay-modal { z-index: 10010; }
 #custom-confirm-modal { z-index: 20000; }
@@ -122,7 +119,7 @@ button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
 .sidebar { position:fixed; top:0; right:-500px; width:450px; height:100%; background:white; z-index:3000; padding:30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s; display:flex; flex-direction:column; }
 .sidebar.open { right:0; }
 
-/* FORMS & INPUTS */
+/* FORMS */
 .input { width:100%; padding:12px 15px; border:1px solid #ddd; border-radius:12px; font-size:0.95rem; margin-bottom:10px; background: #fafafa; transition:0.3s; }
 .input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(196, 139, 120, 0.2); }
 .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -139,7 +136,7 @@ button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
 .main-tag { position: absolute; top: -8px; right: -8px; background: var(--success); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; display: none; font-weight: bold; }
 .file-preview-item.main-selected + .main-tag { display: block; }
 
-/* ADMIN COMPONENTS */
+/* ADMIN UI */
 .flatpickr-input { background: white !important; border: 1px solid #ddd !important; border-radius: 20px !important; padding: 8px 15px !important; font-weight: 600 !important; color: var(--accent) !important; cursor: pointer; text-align: center; width: 100%; font-size: 0.9rem !important; }
 .compact-date { max-width: 150px; }
 .chip-container { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
@@ -161,7 +158,7 @@ button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
 .btn-whatsapp { background: var(--whatsapp); color: white; border:none; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); }
 .btn-mp { background: var(--mp); color: white; border:none; box-shadow: 0 4px 15px rgba(0, 158, 227, 0.3); }
 
-/* FINANCE/DASHBOARD */
+/* DASHBOARD */
 .fin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
 .fin-card-modern { background: white; border-radius: 16px; padding: 25px; border: 1px solid #f0f0f0; position: relative; overflow: hidden; box-shadow: var(--shadow); }
 .fin-card-modern::after { content:''; position:absolute; top:0; right:0; width:6px; height:100%; background: #ccc; }
@@ -170,7 +167,7 @@ button { cursor:pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
 .fin-label { font-size: 0.8rem; text-transform: uppercase; color: #888; font-weight: bold; letter-spacing: 0.5px; }
 .fin-val-big { font-size: 1.8rem; font-weight: 800; color: var(--accent); margin-top: 8px; }
 
-/* ADMIN UI ELEMENTS */
+/* CLIENTES & ADMIN LIST */
 .client-admin-card { background: white; border: 1px solid #eee; border-radius: 16px; margin-bottom: 15px; overflow: hidden; transition: 0.3s; }
 .client-admin-card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.05); transform: translateY(-2px); }
 .cac-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: #fff; cursor: pointer; }
@@ -274,12 +271,36 @@ input:checked + .slider:before { transform: translateX(30px); }
 .promo-list-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 16px; margin-bottom: 12px; }
 .promo-price { color: var(--primary); font-weight: 800; font-size: 1.2rem; display: block; margin-top: 5px; }
 
-/* TRACKING */
-.status-selector { padding: 10px 15px; border-radius: 20px; border: none; font-weight: bold; font-size: 0.9rem; cursor: pointer; width: 100%; appearance: none; text-align: center; transition: 0.3s; }
-.st-pendente { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-.st-enviado { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-.st-entregue { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-.st-cancelado { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+/* RASTREIO */
+.client-track-card {
+    background: white; border: 1px solid #e0e0e0; border-radius: 16px; 
+    padding: 20px; margin-bottom: 20px; position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.03); transition: 0.3s;
+}
+.client-track-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+
+.track-header { display:flex; justify-content:space-between; margin-bottom:20px; border-bottom:1px dashed #eee; padding-bottom:10px; }
+.track-id { font-weight:800; font-size:1.1rem; color:var(--accent); }
+.track-date { color:#888; font-size:0.85rem; }
+
+.track-bar-container { position: relative; height: 6px; background: #eee; border-radius: 10px; margin: 40px 10px 20px; }
+.track-bar-fill { height: 100%; background: var(--success); border-radius: 10px; transition: width 1s ease-in-out; width: 0%; position: relative; }
+.track-truck { 
+    position: absolute; top: -28px; right: -15px; font-size: 1.5rem; 
+    color: var(--accent); transition: right 1s; 
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+}
+.track-bar-fill.cancelled { background: var(--danger); }
+.track-truck.cancelled { color: var(--danger); transform: rotate(180deg); }
+
+.track-labels { display:flex; justify-content:space-between; font-size:0.7rem; font-weight:bold; color:#ccc; margin-top:-10px; }
+.track-labels span.active { color:var(--success); }
+
+/* FINANCEIRO CLIENTE */
+.client-fin-box { background: #f9f9f9; padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 0.9rem; }
+.cf-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.cf-status-paid { color: var(--success); font-weight: bold; }
+.cf-status-pending { color: var(--warning); font-weight: bold; }
 
 /* MISC ADMIN */
 .admin-wa-btn { display: inline-flex; align-items: center; gap: 8px; background: #25D366; color: white; padding: 8px 15px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.85rem; margin-top: 5px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3); transition: 0.3s; }
@@ -293,7 +314,7 @@ input:checked + .slider:before { transform: translateX(30px); }
 
 .btn-addr-trigger { width: 100%; padding: 15px; background: white; border: 2px dashed #ccc; border-radius: 16px; color: #777; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; text-align: left; }
 .btn-addr-trigger:hover { border-color: var(--primary); background: #fffbf9; color: var(--primary); }
-.btn-addr-trigger.filled { border: 2px solid var(--primary); background: #fff5f2; color: var(--accent); justify-content: flex-start; }
+.btn-addr-trigger.filled { border: 2px solid var(--primary); background: #fff5f5; color: var(--accent); justify-content: flex-start; }
 .btn-addr-trigger.filled i { color: var(--primary); font-size: 1.2rem; }
 
 /* CARRINHO */
@@ -316,48 +337,7 @@ footer { background: #222; color: #888; text-align: center; padding: 40px 20px; 
 footer button { color: #ddd; text-decoration: none; font-size: 0.8rem; font-weight: bold; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; transition: 0.3s; cursor: pointer; background: transparent; }
 footer button:hover { background: #444; color: white; border-color: white; }
 
-@media(max-width:768px){ 
-    .box{grid-template-columns:1fr;} 
-    .product-modal-grid { display: block; overflow-y: auto; }
-    .sidebar{width:100%;} .hero{padding-top:80px;} .oc-body, .manual-order-grid { grid-template-columns: 1fr; } .filter-wrapper { justify-content: flex-start; } .inst-gen-row { grid-template-columns: 1fr 1fr !important; } .inst-gen-row span { grid-column: span 2; }
-}
-/* --- ÁREA DO CLIENTE & RASTREIO --- */
-.client-track-card {
-    background: white; border: 1px solid #e0e0e0; border-radius: 16px; 
-    padding: 20px; margin-bottom: 20px; position: relative;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.03); transition: 0.3s;
-}
-.client-track-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
-
-.track-header { display:flex; justify-content:space-between; margin-bottom:20px; border-bottom:1px dashed #eee; padding-bottom:10px; }
-.track-id { font-weight:800; font-size:1.1rem; color:var(--accent); }
-.track-date { color:#888; font-size:0.85rem; }
-
-/* BARRA DE PROGRESSO COM CAMINHÃO */
-.track-bar-container { position: relative; height: 6px; background: #eee; border-radius: 10px; margin: 40px 10px 20px; }
-.track-bar-fill { height: 100%; background: var(--success); border-radius: 10px; transition: width 1s ease-in-out; width: 0%; position: relative; }
-.track-truck { 
-    position: absolute; top: -28px; right: -15px; font-size: 1.5rem; 
-    color: var(--accent); transition: right 1s; 
-    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
-}
-.track-bar-fill.cancelled { background: var(--danger); }
-.track-truck.cancelled { color: var(--danger); transform: rotate(180deg); }
-
-.track-labels { display:flex; justify-content:space-between; font-size:0.7rem; font-weight:bold; color:#ccc; margin-top:-10px; }
-.track-labels span.active { color:var(--success); }
-
-/* FINANCEIRO NO CARD */
-.client-fin-box { background: #f9f9f9; padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 0.9rem; }
-.cf-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-.cf-status-paid { color: var(--success); font-weight: bold; }
-.cf-status-pending { color: var(--warning); font-weight: bold; }
-
-@media(max-width:768px){
-    #client-modal .box > div > div { grid-template-columns: 1fr; } 
-    .track-labels span { font-size: 0.6rem; }
-}
-/* ALERTA DE DÉBITO MODERNO NA LISTA */
+/* DEBT ALERT */
 .debt-alert-box {
     background: #fff0f0;
     border: 1px solid #ffcccc;
@@ -376,17 +356,14 @@ footer button:hover { background: #444; color: white; border-color: white; }
     100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
 }
 
-/* ESTOQUE ZERADO NA LISTA */
-.mini-prod.stock-zero {
-    background-color: #f9f9f9;
-    opacity: 0.7;
-}
-.mini-prod.stock-zero img {
-    filter: grayscale(100%);
-}
-.mini-prod.stock-zero strong {
-    color: #999;
-    text-decoration: line-through;
-}
+.mini-prod.stock-zero { background-color: #f9f9f9; opacity: 0.7; }
+.mini-prod.stock-zero img { filter: grayscale(100%); }
+.mini-prod.stock-zero strong { color: #999; text-decoration: line-through; }
 
-
+@media(max-width:768px){ 
+    .box{grid-template-columns:1fr;} 
+    .product-modal-grid { display: block; overflow-y: auto; }
+    .sidebar{width:100%;} .hero{padding-top:80px;} .oc-body, .manual-order-grid { grid-template-columns: 1fr; } .filter-wrapper { justify-content: flex-start; } .inst-gen-row { grid-template-columns: 1fr 1fr !important; } .inst-gen-row span { grid-column: span 2; }
+    #client-modal .box > div > div { grid-template-columns: 1fr; }
+    .track-labels span { font-size: 0.6rem; }
+}
