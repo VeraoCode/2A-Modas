@@ -1105,37 +1105,139 @@ const admin = {
             </div>`;
         });
     },
-    generateOrderCardHTML: (o) => {
-        let items = []; try { items = JSON.parse(o.installments || '[]'); } catch(e) {}
-        let totalPaid = 0; 
-        const isPaidStatus = o.payment_status === 'Pago';
-        if(isPaidStatus) totalPaid = o.total;
-        if(items.length > 0) items.forEach(i => { if(i.paid) totalPaid += parseFloat(i.amount); });
-        const remaining = Math.max(0, o.total - totalPaid);
-        
-        const btnEmail = `<button onclick="admin.resendEmail('${o.id}')" class="btn-action-icon" title="Reenviar Email"><i class="fas fa-envelope"></i></button>`;
+    admin.generateOrderCardHTML = (o) => {
+    let items = []; try { items = JSON.parse(o.installments || '[]'); } catch(e) {}
+    let totalPaid = 0; 
+    const isPaidStatus = o.payment_status === 'Pago';
+    if(isPaidStatus) totalPaid = o.total;
+    if(items.length > 0) items.forEach(i => { if(i.paid) totalPaid += parseFloat(i.amount); });
+    
+    // Cálculos
+    const remaining = Math.max(0, o.total - totalPaid);
+    const prodList = JSON.parse(o.items).map(i => `${i.qty}x ${i.name}`).join(', ');
 
-        let instHTML = '';
-        if(items.length > 0 && !isPaidStatus) {
-            instHTML = `<div style="margin-top:10px; background:white; padding:10px; border:1px solid #eee; border-radius:8px;">
-                <strong style="font-size:0.8rem; color:#666;">Parcelamento:</strong><br>
-                ${items.map((i, idx) => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed #eee;">
-                        <span>
-                            <small style="font-weight:bold; color:#555;">${idx+1}x</small> 
-                            ${i.date.split('-').reverse().join('/')} 
-                            <b style="color:#333;">R$ ${parseFloat(i.amount).toFixed(2)}</b>
-                            ${i.is_remaining ? '<small style="color:orange">(Restante)</small>' : ''}
-                        </span>
-                        <div style="display:flex; gap:5px;">
-                            ${i.paid ? '<span style="color:green; font-weight:bold; font-size:0.8rem;"><i class="fas fa-check"></i> PAGO</span>' 
-                                     : `<button onclick="admin.openPartialPay('${o.id}', ${idx}, ${i.amount})" class="btn-chip-action" style="border-color:#f39c12; color:#f39c12;">Parcial</button>
-                                        <button onclick="admin.quickPayInst('${o.id}', ${idx}, true)" class="btn-chip-action"><i class="fas fa-check"></i> Total</button>`}
-                        </div>
-                    </div>
-                `).join('')}
-            </div>`;
+    // Endereço e Mapa
+    let fullAddrString = "Sem endereço registrado";
+    let mapLink = "#";
+    try {
+        const addr = JSON.parse(o.address || '{}');
+        if(addr.street) {
+            fullAddrString = `${addr.street}, ${addr.number} - ${addr.bairro}, ${addr.city}/${addr.uf}`;
+            // Link universal do Google Maps
+            mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddrString)}`;
         }
+    } catch(e) {}
+
+    // HTML das Parcelas (Editáveis)
+    let instHTML = '';
+    if(o.payment_status === 'Parcelado' && items.length > 0) {
+        instHTML = `<div style="margin-top:10px; background:#fafafa; padding:10px; border:1px solid #eee; border-radius:8px;">
+            <strong style="font-size:0.8rem; color:#666;">Editar Parcelas:</strong><br>
+            ${items.map((i, idx) => `
+                <div style="display:grid; grid-template-columns: 0.5fr 2fr 1.5fr auto; gap:5px; align-items:center; padding:8px 0; border-bottom:1px dashed #ddd;">
+                    <small style="font-weight:bold; color:#555;">${idx+1}x</small>
+                    
+                    <input type="date" value="${i.date}" class="input small-input" 
+                        onchange="admin.editInstField('${o.id}', ${idx}, 'date', this.value)" style="margin:0; font-size:0.8rem;">
+                    
+                    <input type="number" step="0.01" value="${parseFloat(i.amount).toFixed(2)}" class="input small-input" 
+                        onchange="admin.editInstField('${o.id}', ${idx}, 'amount', this.value)" style="margin:0; font-size:0.8rem;">
+                    
+                    ${i.paid 
+                        ? '<span style="color:green; font-weight:bold; font-size:0.8rem;"><i class="fas fa-check"></i></span>' 
+                        : `<button onclick="admin.quickPayInst('${o.id}', ${idx}, true)" class="btn-chip-action" title="Baixar"><i class="fas fa-check"></i></button>`
+                    }
+                </div>
+            `).join('')}
+        </div>`;
+    }
+
+    // Seletores de Status (Entrega e Pagamento)
+    const statusEntrega = `
+        <select onchange="admin.updateStatus('${o.id}', this.value)" class="status-selector small-select ${o.status === 'Cancelado' ? 'st-cancelado' : (o.status === 'Entregue' ? 'st-entregue' : 'st-pendente')}" style="margin-bottom:5px;">
+            <option value="Pendente" ${o.status.includes('Pendente')?'selected':''}>🚚 Entrega Pendente</option>
+            <option value="Enviado" ${o.status==='Enviado'?'selected':''}>🚀 Enviado</option>
+            <option value="Entregue" ${o.status==='Entregue'?'selected':''}>✅ Entregue</option>
+            <option value="Cancelado" ${o.status==='Cancelado'?'selected':''}>❌ Cancelado</option>
+        </select>
+    `;
+
+    const statusPagamento = `
+        <select onchange="admin.updatePaymentStatusSimple('${o.id}', this.value)" class="input small-select" style="margin:0; font-weight:bold; color:var(--accent);">
+            <option value="A_pagar" ${(o.payment_status==='Pendente' || o.payment_status==='A_pagar')?'selected':''}>⏳ À Pagar</option>
+            <option value="Pago" ${o.payment_status==='Pago'?'selected':''}>💰 Pago (Total)</option>
+            <option value="Parcelado" ${o.payment_status==='Parcelado'?'selected':''}>📅 Parcelado</option>
+        </select>
+    `;
+
+    return `
+    <div class="debt-card ${o.status === 'Cancelado' ? 'cancelled-order' : ''} ${isPaidStatus ? 'paid' : ''}" style="margin-bottom:15px; border-left:4px solid var(--accent);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <strong>Pedido #${o.id.slice(-4)} <span style="font-weight:normal; font-size:0.8rem;">(${o.date})</span></strong>
+            <button onclick="admin.resendEmail('${o.id}')" class="btn-action-icon" title="Reenviar Email"><i class="fas fa-envelope"></i></button>
+        </div>
+
+        <div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.85rem; border:1px solid #eee;">
+            <i class="fas fa-map-marker-alt" style="color:var(--danger)"></i> <strong>Entrega:</strong><br>
+            <span style="color:#555;">${fullAddrString}</span>
+            <br>
+            <a href="${mapLink}" target="_blank" class="btn-map" style="margin-top:5px; display:inline-block;">
+                <i class="fas fa-external-link-alt"></i> Ver no Google Maps
+            </a>
+        </div>
+
+        <div style="font-size:0.85rem; color:#666; margin:5px 0;">Itens: ${prodList}</div>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+            <div><label style="font-size:0.7rem; font-weight:bold; color:#999;">STATUS ENTREGA</label>${statusEntrega}</div>
+            <div><label style="font-size:0.7rem; font-weight:bold; color:#999;">FINANCEIRO</label>${statusPagamento}</div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px dashed #eee; padding-top:10px;">
+            <span style="font-size:1.1rem; font-weight:bold;">Total: R$ ${o.total.toFixed(2)}</span>
+            <span style="color:${remaining > 0.1 ? 'var(--danger)' : 'var(--success)'}; font-weight:bold;">
+                ${remaining > 0.1 ? `Falta: R$ ${remaining.toFixed(2)}` : 'QUITADO'}
+            </span>
+        </div>
+        
+        ${instHTML}
+    </div>`;
+};
+
+// 2. FUNÇÃO PARA EDITAR DATA OU VALOR DA PARCELA DIRETAMENTE
+admin.editInstField = async (oid, idx, field, val) => {
+    // Validação básica
+    if(field === 'amount' && (isNaN(val) || val < 0)) return alert("Valor inválido");
+    if(field === 'date' && !val) return alert("Data inválida");
+
+    const { data } = await sb.from('orders').select('installments').eq('id', oid).single();
+    if(data) {
+        const arr = JSON.parse(data.installments);
+        if(arr[idx]) {
+            arr[idx][field] = val; // Atualiza o campo (date ou amount)
+            
+            await sb.from('orders').update({ installments: JSON.stringify(arr) }).eq('id', oid);
+            
+            // Atualiza a tela sem recarregar tudo bruscamente
+            // (O ideal seria atualizar só o elemento, mas renderPayments é seguro)
+            // Pequeno delay para UX
+            setTimeout(() => admin.renderPayments(), 500); 
+        }
+    }
+};
+
+// 3. ATUALIZAÇÃO SIMPLIFICADA DE STATUS DE PAGAMENTO (Dropdown)
+admin.updatePaymentStatusSimple = async (id, status) => {
+    let updateObj = { payment_status: status };
+    
+    // Se mudar para PAGO, zera parcelas pendentes (opcional, aqui mantemos histórico mas marca como pago)
+    // Se mudar para PARCELADO e não tiver parcelas, o sistema vai pedir para gerar depois (na view do Pedido), 
+    // mas aqui apenas mudamos a "flag" do status.
+    
+    await sb.from('orders').update(updateObj).eq('id', id);
+    app.success("Financeiro atualizado!");
+    admin.renderPayments(); 
+};
 
         return `
         <div class="debt-card ${isPaidStatus ? 'paid' : ''}" style="margin-bottom:10px;">
@@ -1282,3 +1384,4 @@ document.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('popstate', (e) => { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); });
+
