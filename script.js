@@ -42,21 +42,15 @@ document.addEventListener('DOMContentLoaded', () => {
 const auth = {
     user: null,
     
-    // Verifica login e carrega dados
     checkProfile: async () => {
         const { data } = await sb.auth.getSession();
         if(data.session) {
-            // Busca perfil completo no banco
             const { data: profile } = await sb.from('customers').select('*').eq('id', data.session.user.id).single();
-            
             if (profile) {
                 state.user = profile;
-                
-                // Carrega endereços da nuvem
                 if(profile.address) {
                     const addrList = typeof profile.address === 'string' ? JSON.parse(profile.address) : profile.address;
                     localStorage.setItem('2a_addrs', JSON.stringify(addrList));
-                    
                     if(addrList.length > 0) {
                         state.address = addrList[0];
                         localStorage.setItem('2a_active_addr', JSON.stringify(state.address));
@@ -65,13 +59,15 @@ const auth = {
             } else {
                 state.user = { id: data.session.user.id, email: data.session.user.email, name: 'Cliente' };
             }
-
-            app.updateUI(); // ATUALIZA O NOME NO HEADER AQUI
+            app.updateUI();
             
+            // Abre modal do cliente se foi clicado no botão
             if(document.getElementById('auth-modal').classList.contains('active')) {
                 app.closeModal('auth-modal');
-                app.showModal('client-modal');
+                auth.openClientArea();
             }
+        } else {
+            app.showModal('auth-modal');
         }
     },
 
@@ -85,24 +81,49 @@ const auth = {
         
         app.success("Login realizado!");
         app.closeModal('auth-modal');
-        await auth.checkProfile();
+        await auth.checkProfile(); // Carrega e abre área do cliente
     },
 
     register: async () => {
+        // Coleta dados
         const name = document.getElementById('r-name').value;
         const email = document.getElementById('r-email').value;
         const pass = document.getElementById('r-pass').value;
-        if(!name || !email || !pass) return alert("Preencha tudo");
+        const phone = document.getElementById('r-phone').value;
+        
+        // Coleta Endereço
+        const cep = document.getElementById('r-cep').value;
+        const street = document.getElementById('r-street').value;
+        const num = document.getElementById('r-num').value;
+        const bairro = document.getElementById('r-bairro').value;
+        const city = document.getElementById('r-city').value;
+        const uf = document.getElementById('r-uf').value;
 
+        if(!name || !email || !pass || !phone || !street || !num) return alert("Preencha todos os campos obrigatórios");
+
+        // Cria usuário no Auth
         const { data, error } = await sb.auth.signUp({ email, password: pass });
         if(error) return alert("Erro: " + error.message);
 
         if(data.user) {
+            // Monta objeto de endereço
+            const newAddr = {
+                name: name, phone: phone, cep: cep, street: street, number: num, 
+                bairro: bairro, city: city, uf: uf, type: 'Principal'
+            };
+
+            // Salva no banco customers
             await sb.from('customers').insert([{ 
-                id: data.user.id, name: name, email: email, address: [] 
+                id: data.user.id, 
+                name: name, 
+                email: email, 
+                phone: phone,
+                address: [newAddr] // Já salva como array JSON
             }]);
             
-            app.success("Conta criada! O sistema fará login automático.");
+            app.success("Conta criada! Fazendo login...");
+            
+            // Loga automaticamente
             const { error: loginErr } = await sb.auth.signInWithPassword({ email, password: pass });
             if(!loginErr) {
                 app.closeModal('auth-modal');
@@ -126,52 +147,123 @@ const auth = {
     toggle: (mode) => {
         document.getElementById('form-login').style.display = mode === 'login' ? 'block' : 'none';
         document.getElementById('form-register').style.display = mode === 'register' ? 'block' : 'none';
-        document.getElementById('auth-title').innerText = mode === 'login' ? 'Acesso' : 'Criar Conta';
+        document.getElementById('auth-title').innerText = mode === 'login' ? 'Acesso' : 'Criar Conta Completa';
+    },
+
+    // ABRE A TELA DO CLIENTE E PREENCHE OS INPUTS
+    openClientArea: () => {
+        if(!state.user) return;
+        
+        // Preenche Inputs
+        document.getElementById('c-profile-name').value = state.user.name || '';
+        document.getElementById('c-profile-email').value = state.user.email || '';
+        document.getElementById('c-profile-phone').value = state.user.phone || '';
+        
+        // Renderiza Endereços
+        const addrDiv = document.getElementById('c-profile-addrs');
+        addrDiv.innerHTML = '';
+        const addrs = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
+        addrs.forEach((a, i) => {
+            addrDiv.innerHTML += `<div style="font-size:0.8rem; padding:8px; border-bottom:1px dashed #eee;">
+                <b>${a.street}, ${a.number}</b> - ${a.city}/${a.uf} <br>
+                <small onclick="app.editAddress(${i}); app.closeModal('client-modal')" style="color:blue; cursor:pointer;">Editar</small>
+            </div>`;
+        });
+
+        // Carrega Pedidos
+        auth.loadClientOrders();
+        app.showModal('client-modal');
+    },
+
+    updateProfileData: async () => {
+        const name = document.getElementById('c-profile-name').value;
+        const phone = document.getElementById('c-profile-phone').value;
+        
+        await sb.from('customers').update({ name: name, phone: phone }).eq('id', state.user.id);
+        state.user.name = name;
+        state.user.phone = phone;
+        app.updateUI();
+        app.success("Dados atualizados!");
     },
 
     loadClientOrders: async () => {
-        if(!state.user) return;
         const div = document.getElementById('client-orders-list');
-        div.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Carregando pedidos...</div>';
+        div.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>';
         
-        let query = sb.from('orders').select('*').eq('customer_id', state.user.id).order('created_at', {ascending: false});
-        
-        const start = document.getElementById('client-date-start').value;
-        const end = document.getElementById('client-date-end').value;
-        if(start) query = query.gte('created_at', new Date(start).toISOString());
-        if(end) query = query.lte('created_at', new Date(end + 'T23:59:59').toISOString());
-
-        const { data } = await query;
+        const { data } = await sb.from('orders').select('*').eq('customer_id', state.user.id).order('created_at', {ascending: false});
         
         div.innerHTML = '';
-        if(data && data.length) {
-            data.forEach(o => {
-                let items = []; try { items = JSON.parse(o.items); } catch(e){}
-                const desc = items.map(i => `${i.qty}x ${i.name}`).join(', ');
-                let stColor = '#f39c12'; // Pendente
-                if(o.status === 'Enviado') stColor = '#3498db';
-                if(o.status === 'Entregue') stColor = '#27ae60';
-                if(o.status === 'Cancelado') stColor = '#e74c3c';
-
-                div.innerHTML += `
-                <div class="client-order" style="border-left: 4px solid ${stColor};">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <strong>Pedido #${o.id.slice(-4)}</strong>
-                        <span style="font-size:0.8rem;">${o.date.split(' ')[0]}</span>
-                    </div>
-                    <div style="font-size:0.85rem; color:#666; margin-bottom:8px;">${desc}</div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="badge" style="background:${stColor}; position:static; width:auto; padding:3px 8px; border-radius:4px;">${o.status}</span>
-                        <strong style="color:var(--accent);">R$ ${o.total.toFixed(2)}</strong>
-                    </div>
-                </div>`;
-            });
-        } else {
-            div.innerHTML = '<p style="text-align:center; color:#999;">Nenhum pedido encontrado.</p>';
+        if(!data || data.length === 0) {
+            div.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Você ainda não fez nenhum pedido.</p>';
+            return;
         }
+
+        data.forEach(o => {
+            // Lógica da Barra de Progresso do Caminhão
+            let progress = 5; // Começa um pouquinho
+            let truckClass = '';
+            let statusLabel = 'Processando';
+            
+            if(o.status.includes('Pendente')) { progress = 15; statusLabel = 'Separando'; }
+            if(o.status.includes('Enviado')) { progress = 60; statusLabel = 'Em Trânsito'; }
+            if(o.status.includes('Entregue')) { progress = 100; statusLabel = 'Entregue'; }
+            if(o.status.includes('Cancelado')) { progress = 100; truckClass = 'cancelled'; statusLabel = 'Cancelado'; }
+
+            // Finanças
+            let paidAmount = 0;
+            let installmentsHtml = '';
+            if(o.payment_status === 'Pago') {
+                paidAmount = o.total;
+            } else if (o.installments) {
+                try {
+                    const inst = JSON.parse(o.installments);
+                    inst.forEach(i => { if(i.paid) paidAmount += parseFloat(i.amount); });
+                    const next = inst.find(i => !i.paid);
+                    if(next) installmentsHtml = `<div style="color:#e67e22; font-size:0.8rem;">Próx. Parcela: ${next.date.split('-').reverse().join('/')} (R$ ${parseFloat(next.amount).toFixed(2)})</div>`;
+                } catch(e){}
+            }
+            const remaining = o.total - paidAmount;
+
+            div.innerHTML += `
+            <div class="client-track-card">
+                <div class="track-header">
+                    <span class="track-id">Pedido #${o.id.slice(-4)}</span>
+                    <span class="track-date">${o.date}</span>
+                </div>
+                
+                <div style="margin-bottom:20px;">
+                    <div class="track-bar-container">
+                        <div class="track-bar-fill ${truckClass}" style="width: ${progress}%">
+                            <i class="fas fa-truck track-truck ${truckClass}"></i>
+                        </div>
+                    </div>
+                    <div class="track-labels">
+                        <span class="${progress >= 15 ? 'active' : ''}">Pedido</span>
+                        <span class="${progress >= 60 ? 'active' : ''}">Enviado</span>
+                        <span class="${progress >= 100 && !truckClass ? 'active' : ''}">Entregue</span>
+                    </div>
+                    <div style="text-align:center; font-weight:bold; margin-top:5px; color:var(--accent); font-size:0.8rem;">
+                        Status: ${statusLabel}
+                    </div>
+                </div>
+
+                <div class="client-fin-box">
+                    <div class="cf-row">
+                        <span>Total:</span> <strong>R$ ${o.total.toFixed(2)}</strong>
+                    </div>
+                    <div class="cf-row">
+                        <span>Pago:</span> <span class="cf-status-paid">R$ ${paidAmount.toFixed(2)}</span>
+                    </div>
+                    ${remaining > 0.1 ? `
+                    <div class="cf-row">
+                        <span>Restante:</span> <span class="cf-status-pending">R$ ${remaining.toFixed(2)}</span>
+                    </div>` : '<div style="color:var(--success); font-weight:bold; text-align:center;">Pedido Quitado!</div>'}
+                    ${installmentsHtml}
+                </div>
+            </div>`;
+        });
     }
 };
-
 // ================= APP (STORE) =================
 const app = {
     load: async () => {
@@ -404,27 +496,29 @@ const app = {
     },
     cQty: (idx,n) => { state.cart[idx].qty+=n; if(state.cart[idx].qty<1) state.cart[idx].qty=1; app.renderCart(); },
     toggleCart: () => document.querySelector('.sidebar').classList.toggle('open'),
-    fetchCep: async (cep, prefix='addr') => {
+    fetchCep: async (cep, prefix) => {
+        // prefix pode ser 'addr' (modal endereço), 'manual' (admin) ou 'reg' (cadastro)
         cep = cep.replace(/\D/g, '');
         if(cep.length === 8) {
             try {
                 const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
                 const data = await res.json();
                 if(!data.erro) {
-                    const streetId = prefix === 'manual' ? 'm-client-street' : 'addr-street';
-                    const bairroId = prefix === 'manual' ? 'm-client-bairro' : 'addr-bairro';
-                    const cityId = prefix === 'manual' ? 'm-client-city' : 'addr-city';
-                    const ufId = prefix === 'manual' ? 'm-client-uf' : 'addr-uf';
-                    const numId = prefix === 'manual' ? 'm-client-num' : 'addr-num';
-                    if(document.getElementById(streetId)) document.getElementById(streetId).value = data.logradouro;
-                    if(document.getElementById(bairroId)) document.getElementById(bairroId).value = data.bairro;
-                    if(document.getElementById(cityId)) document.getElementById(cityId).value = data.localidade;
-                    if(document.getElementById(ufId)) document.getElementById(ufId).value = data.uf;
-                    if(document.getElementById(numId)) document.getElementById(numId).focus();
+                    let map = {};
+                    if(prefix === 'addr') map = { s:'addr-street', b:'addr-bairro', c:'addr-city', u:'addr-uf', n:'addr-num' };
+                    if(prefix === 'manual') map = { s:'m-client-street', b:'m-client-bairro', c:'m-client-city', u:'m-client-uf', n:'m-client-num' };
+                    if(prefix === 'reg') map = { s:'r-street', b:'r-bairro', c:'r-city', u:'r-uf', n:'r-num' };
+
+                    if(document.getElementById(map.s)) document.getElementById(map.s).value = data.logradouro;
+                    if(document.getElementById(map.b)) document.getElementById(map.b).value = data.bairro;
+                    if(document.getElementById(map.c)) document.getElementById(map.c).value = data.localidade;
+                    if(document.getElementById(map.u)) document.getElementById(map.u).value = data.uf;
+                    if(document.getElementById(map.n)) document.getElementById(map.n).focus();
                 } else { alert("CEP não encontrado."); }
             } catch(e) { console.error(e); }
         }
     },
+    
     openAddressModal: () => {
         const list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
         const div = document.getElementById('saved-addresses-list'); div.innerHTML="";
@@ -1466,3 +1560,4 @@ document.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('popstate', (e) => { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); });
+
