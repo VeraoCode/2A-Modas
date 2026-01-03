@@ -357,4 +357,36 @@ footer button:hover { background: #444; color: white; border-color: white; }
     #client-modal .box > div > div { grid-template-columns: 1fr; } 
     .track-labels span { font-size: 0.6rem; }
 }
+/* ALERTA DE DÉBITO MODERNO NA LISTA */
+.debt-alert-box {
+    background: #fff0f0;
+    border: 1px solid #ffcccc;
+    color: #d32f2f;
+    padding: 8px 15px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: pulseDebt 2s infinite;
+}
+.debt-alert-box i { font-size: 1.2rem; }
+@keyframes pulseDebt {
+    0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(231, 76, 60, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+}
+
+/* ESTOQUE ZERADO NA LISTA */
+.mini-prod.stock-zero {
+    background-color: #f9f9f9;
+    opacity: 0.7;
+}
+.mini-prod.stock-zero img {
+    filter: grayscale(100%);
+}
+.mini-prod.stock-zero strong {
+    color: #999;
+    text-decoration: line-through;
+}
+
 
