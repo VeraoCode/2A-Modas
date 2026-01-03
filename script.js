@@ -436,29 +436,73 @@ const app = {
         });
         app.showModal('address-modal');
     },
-    addNewAddress: () => {
+    // DENTRO DO OBJETO app:
+
+    addNewAddress: async () => {
         const val = id => document.getElementById(id).value;
-        const a = { name: val('addr-name'), phone: val('addr-phone'), cep: val('addr-cep'), street: val('addr-street'), number: val('addr-num'), bairro: val('addr-bairro'), city: val('addr-city'), uf: val('addr-uf'), ref: val('addr-ref'), type: document.getElementById('addr-type').value };
+        const a = { 
+            name: val('addr-name'), phone: val('addr-phone'), cep: val('addr-cep'), 
+            street: val('addr-street'), number: val('addr-num'), bairro: val('addr-bairro'), 
+            city: val('addr-city'), uf: val('addr-uf'), ref: val('addr-ref'), 
+            type: document.getElementById('addr-type').value 
+        };
+        
         if(!a.name || !a.street || !a.number) return alert("Preencha campos obrigatórios.");
-        const list = JSON.parse(localStorage.getItem('2a_addrs') || '[]'); list.push(a);
+        
+        // 1. Pega lista atual
+        let list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
+        list.push(a);
+        
+        // 2. Salva localmente
         localStorage.setItem('2a_addrs', JSON.stringify(list));
-        if(state.user) sb.from('customers').update({ address: list }).eq('id', state.user.id).then();
-        state.address = a; localStorage.setItem('2a_active_addr', JSON.stringify(a));
-        app.updateUI(); app.closeModal('address-modal');
+        state.address = a; 
+        localStorage.setItem('2a_active_addr', JSON.stringify(a));
+
+        // 3. SALVA NA NUVEM (SUPABASE) SE TIVER LOGADO
+        if(state.user) {
+            const { error } = await sb.from('customers').update({ address: list }).eq('id', state.user.id);
+            if(error) console.error("Erro ao salvar endereço na nuvem:", error);
+            else app.success("Endereço salvo na sua conta!");
+        } else {
+            app.success("Endereço salvo temporariamente (Faça login para salvar pra sempre)");
+        }
+
+        app.updateUI(); 
+        app.closeModal('address-modal');
     },
-    delAddress: (i) => {
-        const list = JSON.parse(localStorage.getItem('2a_addrs'));
+
+    delAddress: async (i) => {
+        if(!confirm("Remover este endereço?")) return;
+        
+        let list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
         list.splice(i, 1);
+        
         localStorage.setItem('2a_addrs', JSON.stringify(list));
-        if(state.user) sb.from('customers').update({ address: list }).eq('id', state.user.id).then();
-        app.openAddressModal();
+        
+        // SALVA NA NUVEM
+        if(state.user) {
+            await sb.from('customers').update({ address: list }).eq('id', state.user.id);
+        }
+        
+        app.openAddressModal(); // Recarrega a lista visual
     },
+
     editAddress: (i) => {
         const list = JSON.parse(localStorage.getItem('2a_addrs'));
         const a = list[i];
         const setVal = (id, v) => document.getElementById(id).value = safeVal(v);
-        setVal('addr-name', a.name); setVal('addr-phone', a.phone); setVal('addr-cep', a.cep); setVal('addr-street', a.street); setVal('addr-num', a.number); setVal('addr-bairro', a.bairro); setVal('addr-city', a.city); setVal('addr-uf', a.uf); setVal('addr-ref', a.ref);
+        
+        setVal('addr-name', a.name); setVal('addr-phone', a.phone); 
+        setVal('addr-cep', a.cep); setVal('addr-street', a.street); 
+        setVal('addr-num', a.number); setVal('addr-bairro', a.bairro); 
+        setVal('addr-city', a.city); setVal('addr-uf', a.uf); setVal('addr-ref', a.ref);
+        
+        // Remove o antigo (o usuário vai salvar o novo editado clicando em Salvar)
+        // Nota: Isso é um "hack" rápido. O ideal seria ter um botão 'Atualizar', 
+        // mas deletar e readicionar funciona para manter o código simples.
         app.delAddress(i); 
+        
+        // Fecha para não ficar piscando e reabre focado (opcional, ou apenas remove da lista)
     },
     setAddr: (i) => {
         const list = JSON.parse(localStorage.getItem('2a_addrs'));
@@ -1459,5 +1503,6 @@ document.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('popstate', (e) => { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); });
+
 
 
