@@ -36,7 +36,41 @@
             <button onclick="app.closeModal('entry-modal')" class="btn-modern outline" style="width: 100%;">Cancelar</button>
         </div>
     </div>
+<div id="custom-confirm-modal" class="overlay" style="z-index: 20000;">
+        <div class="box single-col" style="max-width: 400px; text-align: center; padding: 30px;">
+            <div class="st-icon-box" style="background: #fff3cd; color: #856404; margin: 0 auto 20px;">
+                <i class="fas fa-question"></i>
+            </div>
+            <h3 id="confirm-title" style="margin-bottom: 10px;">Tem certeza?</h3>
+            <p id="confirm-msg" style="color: #666; margin-bottom: 25px;">Essa ação não pode ser desfeita.</p>
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-confirm-no" class="btn-modern outline" style="flex: 1;">Cancelar</button>
+                <button id="btn-confirm-yes" class="btn-modern" style="flex: 1;">Sim, Confirmar</button>
+            </div>
+        </div>
+    </div>
 
+    <div id="partial-pay-modal" class="overlay" style="z-index: 10010;">
+        <div class="box single-col" style="max-width: 350px; padding: 25px; text-align: center;">
+            <h3>💸 Pagamento Parcial</h3>
+            <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">Abater valor de uma parcela específica.</p>
+            
+            <input type="hidden" id="pp-oid">
+            <input type="hidden" id="pp-idx">
+            
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin-bottom:5px;">Valor Total da Parcela:</label>
+            <input type="text" id="pp-total-show" class="input" disabled style="background:#eee;">
+            
+            <label style="display:block; text-align:left; font-size:0.8rem; font-weight:bold; margin-bottom:5px; margin-top:10px;">Valor a Pagar Agora:</label>
+            <input type="number" id="pp-val" class="input" placeholder="R$ 0,00" style="font-size: 1.2rem; font-weight: bold; color: var(--success);">
+            
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button onclick="app.closeModal('partial-pay-modal')" class="btn-modern outline" style="flex:1;">Cancelar</button>
+                <button onclick="admin.processPartialPay()" class="btn-modern success" style="flex:1;">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    
     <div id="loading-screen">
         <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--primary);"></i>
         <p style="margin-top:15px; color:#666;">Carregando loja...</p>
@@ -497,4 +531,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
