@@ -30,17 +30,44 @@ document.addEventListener('DOMContentLoaded', () => {
 // ================= AUTH =================
 const auth = {
     user: null,
+    // Verifica se já está logado ao abrir o site
     checkProfile: async () => {
         const { data } = await sb.auth.getSession();
         if(data.session) {
+            // Busca perfil completo no banco
             const { data: profile } = await sb.from('customers').select('*').eq('id', data.session.user.id).single();
-            state.user = profile || { id: data.session.user.id, email: data.session.user.email, name: 'Cliente' };
-            app.showModal('client-modal');
+            
+            if (profile) {
+                state.user = profile;
+                
+                // --- MÁGICA AQUI: Carrega endereços da nuvem para o app ---
+                if(profile.address) {
+                    // Se for string, converte para objeto, senão usa como está
+                    const addrList = typeof profile.address === 'string' ? JSON.parse(profile.address) : profile.address;
+                    localStorage.setItem('2a_addrs', JSON.stringify(addrList));
+                    
+                    // Se tiver endereço padrão, define
+                    if(addrList.length > 0) {
+                        state.address = addrList[0];
+                        localStorage.setItem('2a_active_addr', JSON.stringify(state.address));
+                    }
+                }
+            } else {
+                state.user = { id: data.session.user.id, email: data.session.user.email, name: 'Cliente' };
+            }
+
             app.updateUI();
+            // Se o modal de login estiver aberto, fecha e abre o do cliente
+            if(document.getElementById('auth-modal').classList.contains('active')) {
+                app.closeModal('auth-modal');
+                app.showModal('client-modal');
+            }
         } else {
-            app.showModal('auth-modal');
+            // Se não tiver sessão e tentou abrir painel, pede login
+            // app.showModal('auth-modal'); // (Opcional: não abrir automático para não irritar)
         }
     },
+
     login: async () => {
         const email = document.getElementById('l-email').value;
         const pass = document.getElementById('l-pass').value;
@@ -51,8 +78,9 @@ const auth = {
         
         app.success("Login realizado!");
         app.closeModal('auth-modal');
-        auth.checkProfile(); 
+        await auth.checkProfile(); // Carrega dados e endereços
     },
+
     register: async () => {
         const name = document.getElementById('r-name').value;
         const email = document.getElementById('r-email').value;
@@ -63,38 +91,85 @@ const auth = {
         if(error) return alert("Erro: " + error.message);
 
         if(data.user) {
-            await sb.from('customers').insert([{ id: data.user.id, name: name, email: email }]);
-            app.success("Conta criada! Faça login.");
-            auth.toggle('login');
+            // Cria o perfil no banco já com array de endereços vazio
+            await sb.from('customers').insert([{ 
+                id: data.user.id, 
+                name: name, 
+                email: email,
+                address: [] // Inicializa vazio
+            }]);
+            
+            app.success("Conta criada! O sistema fará login automático ou faça login.");
+            // Tenta logar direto ou pede login
+            const { error: loginErr } = await sb.auth.signInWithPassword({ email, password: pass });
+            if(!loginErr) {
+                app.closeModal('auth-modal');
+                auth.checkProfile();
+            } else {
+                auth.toggle('login');
+            }
         }
     },
+
     logout: async () => {
         await sb.auth.signOut();
         state.user = null;
+        state.address = null;
         localStorage.removeItem('2a_user');
+        localStorage.removeItem('2a_addrs'); // Limpa dados locais ao sair
+        localStorage.removeItem('2a_active_addr');
         window.location.reload();
     },
+
     toggle: (mode) => {
         document.getElementById('form-login').style.display = mode === 'login' ? 'block' : 'none';
         document.getElementById('form-register').style.display = mode === 'register' ? 'block' : 'none';
         document.getElementById('auth-title').innerText = mode === 'login' ? 'Acesso' : 'Criar Conta';
     },
+
     loadClientOrders: async () => {
         if(!state.user) return;
         const div = document.getElementById('client-orders-list');
-        div.innerHTML = '<p>Carregando...</p>';
-        const { data } = await sb.from('orders').select('*').eq('customer_id', state.user.id).order('created_at', {ascending: false});
+        div.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Carregando pedidos...</div>';
+        
+        // Busca pedidos onde o customer_id é igual ao ID do usuário logado
+        let query = sb.from('orders').select('*').eq('customer_id', state.user.id).order('created_at', {ascending: false});
+        
+        // Filtros de data (se houver)
+        const start = document.getElementById('client-date-start').value;
+        const end = document.getElementById('client-date-end').value;
+        if(start) query = query.gte('created_at', new Date(start).toISOString());
+        if(end) query = query.lte('created_at', new Date(end + 'T23:59:59').toISOString());
+
+        const { data } = await query;
+        
         div.innerHTML = '';
         if(data && data.length) {
             data.forEach(o => {
-                div.innerHTML += `<div style="border:1px solid #eee; padding:10px; margin-bottom:10px; border-radius:10px;">
-                    <b>#${o.id.slice(-4)}</b> - ${o.date} <br>
-                    Status: <span class="badge" style="position:static; display:inline-block; width:auto; padding:2px 8px; border-radius:4px;">${o.status}</span>
-                    <div style="text-align:right; font-weight:bold;">R$ ${o.total.toFixed(2)}</div>
+                let items = []; try { items = JSON.parse(o.items); } catch(e){}
+                const desc = items.map(i => `${i.qty}x ${i.name}`).join(', ');
+                
+                // Cor do Status
+                let stColor = '#f39c12'; // Pendente
+                if(o.status === 'Enviado') stColor = '#3498db';
+                if(o.status === 'Entregue') stColor = '#27ae60';
+                if(o.status === 'Cancelado') stColor = '#e74c3c';
+
+                div.innerHTML += `
+                <div class="client-order" style="border-left: 4px solid ${stColor};">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <strong>Pedido #${o.id.slice(-4)}</strong>
+                        <span style="font-size:0.8rem;">${o.date.split(' ')[0]}</span>
+                    </div>
+                    <div style="font-size:0.85rem; color:#666; margin-bottom:8px;">${desc}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="badge" style="background:${stColor}; position:static; width:auto; padding:3px 8px; border-radius:4px;">${o.status}</span>
+                        <strong style="color:var(--accent);">R$ ${o.total.toFixed(2)}</strong>
+                    </div>
                 </div>`;
             });
         } else {
-            div.innerHTML = '<p>Nenhum pedido encontrado.</p>';
+            div.innerHTML = '<p style="text-align:center; color:#999;">Nenhum pedido encontrado.</p>';
         }
     }
 };
@@ -1384,4 +1459,5 @@ document.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('popstate', (e) => { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); });
+
 
