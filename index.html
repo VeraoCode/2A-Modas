@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2A Modas e Perfumes</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
@@ -13,6 +14,7 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -30,8 +32,8 @@
             <input type="number" id="entry-val" class="input" placeholder="R$ 0,00" style="text-align: center; font-size: 1.4rem; font-weight: bold; color: var(--success); margin-bottom: 20px;">
             <input type="hidden" id="entry-oid">
             <input type="hidden" id="entry-total">
-            <button onclick="admin.confirmEntry()" class="btn-modern success" style="width: 100%;">Confirmar</button>
-            <button onclick="app.closeModal('entry-modal')" class="btn-modern outline" style="width: 100%; margin-top: 10px;">Cancelar</button>
+            <button onclick="admin.confirmEntry()" class="btn-cta" style="width: 100%; font-size: 0.9rem; margin-top:0;">Confirmar</button>
+            <button onclick="app.closeModal('entry-modal')" style="background:none; border:none; color:#999; margin-top: 15px; text-decoration: underline;">Cancelar</button>
         </div>
     </div>
 
@@ -73,7 +75,7 @@
                     <button onclick="app.closeModal('product-modal')" style="align-self: flex-end; border:none; background:none; font-size:1.5rem; color:#ccc;">&times;</button>
                     <small id="m-cat" style="color:var(--primary); font-weight:800; text-transform:uppercase; font-size: 0.75rem;">Categoria</small>
                     <h2 id="m-title" style="font-size: 1.8rem; margin: 5px 0;"></h2>
-                    <h3 id="m-price" style="font-size: 2rem; color: var(--accent); margin-bottom: 15px;"></h3>
+                    <h3 id="m-price" class="pm-price-tag"></h3>
                     <div style="background:#f9f9f9; padding:15px; border-radius:12px; margin-bottom:20px; font-size: 0.9rem; color: #555;">
                         <p id="m-desc"></p>
                     </div>
@@ -85,7 +87,7 @@
                             <span id="m-qty" style="font-weight:bold; width: 25px; text-align: center;">1</span>
                             <button onclick="app.updQty(1)" style="border:none; background:none; font-size: 1.2rem; padding: 0 10px;">+</button>
                         </div>
-                        <button onclick="app.addCart()" class="btn-modern" style="flex:1; height: 50px;">Adicionar</button>
+                        <button onclick="app.addCart()" class="btn-cta" style="flex:1; height: 50px; margin-top:0;">Adicionar</button>
                     </div>
                 </div>
             </div>
@@ -121,7 +123,7 @@
             <p>Acesso restrito a gestores</p>
             <input type="email" id="admin-email" class="input" placeholder="E-mail" value="loja@2amoda.com">
             <input type="password" id="admin-pass" class="input" placeholder="Senha" onkeydown="if(event.key==='Enter') admin.verifyLogin()">
-            <button onclick="admin.verifyLogin()" class="btn-modern" style="width:100%;">Entrar no Painel</button>
+            <button onclick="admin.verifyLogin()" class="btn-cta" style="width:100%; font-size:0.9rem; margin-top:10px;">Entrar no Painel</button>
             <button onclick="app.closeModal('admin-auth-modal')" style="background:none; border:none; color:#999; text-decoration:underline; margin-top:15px;">Voltar</button>
         </div>
     </div>
@@ -203,6 +205,12 @@
                                     <input type="number" id="m-prod-qty" class="input" value="1" style="margin:0; width:50px; text-align:center;">
                                     <button onclick="admin.addManualItem()" class="btn-modern small">+</button>
                                 </div>
+                                <div style="text-align:center; margin:5px 0; font-size:0.8rem; font-weight:bold; color:#888;">OU</div>
+                                <div class="manual-prod-adder" style="background:#fff5f2; border-color:#eec;">
+                                    <input type="text" id="m-custom-item" class="input" placeholder="Item avulso" style="margin:0; flex:2;">
+                                    <input type="number" id="m-custom-price" class="input" placeholder="R$" style="margin:0; width:80px;">
+                                    <button onclick="admin.addCustomItem()" class="btn-modern small success"><i class="fas fa-plus"></i></button>
+                                </div>
                                 <div class="manual-cart-list" id="manual-cart-list" style="margin-top:10px; min-height:100px; background:#f9f9f9; padding:10px; border-radius:10px;"></div>
                                 <div style="font-size:1.2rem; font-weight:800; text-align:right; margin-top:10px;">Total: <span id="m-total-display">R$ 0.00</span></div>
                             </div>
@@ -212,7 +220,7 @@
                             <select id="m-payment-method" class="input"><option value="Dinheiro">Dinheiro</option><option value="Pix">Pix</option><option value="Cartão">Cartão</option><option value="Crediário">Crediário</option></select>
                             <select id="m-payment-status" class="input"><option value="Pago">Já Pago (Total)</option><option value="Pendente">Pendente (A Pagar)</option></select>
                         </div>
-                        <button onclick="admin.saveManualOrder()" class="btn-modern" style="width:100%; margin-top:20px;">Salvar Pedido</button>
+                        <button onclick="admin.saveManualOrder()" class="btn-cta" style="width:100%; margin-top:20px; font-size:0.9rem;">Salvar Pedido</button>
                     </div>
                 </div>
 
@@ -240,7 +248,7 @@
                         </div>
                         <div id="file-preview-area" class="file-preview-grid"></div>
                         <hr style="margin:25px 0; border:0; border-top:1px solid #eee;">
-                        <label style="font-weight:bold; display:block; margin-bottom:10px;">Variações (Cores e Tamanhos):</label>
+                        <label style="font-weight:bold; display:block; margin-bottom:10px;">Variações:</label>
                         <span class="checkbox-section-title"><i class="fas fa-palette"></i> Cores</span><div class="modern-checkbox-grid" id="color-checks"></div>
                         <span class="checkbox-section-title"><i class="fas fa-ruler"></i> Tamanhos</span><div class="modern-checkbox-grid" id="volume-checks"></div>
                         <div id="active-vars-area"></div>
@@ -261,7 +269,6 @@
     </div>
 
     <div id="address-modal" class="overlay"><div class="box single-col" style="width:100%; max-width:500px; padding:30px;"><h3 style="margin-bottom:20px;">📍 Endereço</h3><div id="saved-addresses-list" style="margin-bottom:20px;"></div><div style="background:#f9f9f9; padding:20px; border-radius:16px;"><h4>Novo Endereço</h4><div class="input-cep-grid"><input type="text" id="addr-cep" class="input" placeholder="CEP" onblur="app.fetchCep(this.value)"><small>Auto</small></div><input type="text" id="addr-street" class="input" placeholder="Rua"><div class="input-row"><input type="text" id="addr-num" class="input" placeholder="Nº"><input type="text" id="addr-bairro" class="input" placeholder="Bairro"></div><div class="input-row"><input type="text" id="addr-city" class="input" placeholder="Cidade"><input type="text" id="addr-uf" class="input" placeholder="UF"></div><input type="text" id="addr-ref" class="input" placeholder="Referência"><input type="text" id="addr-name" class="input" placeholder="Quem recebe"><input type="text" id="addr-phone" class="input" placeholder="Telefone"><select id="addr-type" class="input"><option value="Casa">Casa</option><option value="Trabalho">Trabalho</option></select><button onclick="app.addNewAddress()" class="btn-modern" style="width:100%;">Salvar</button></div><button onclick="app.closeModal('address-modal')" class="btn-modern outline" style="width:100%; margin-top:10px;">Fechar</button></div></div>
-    
     <div id="promo-modal" class="overlay"><div class="box single-col" style="padding:20px;"><div style="display:flex; justify-content:space-between;"><h3>🔥 Ofertas</h3><button onclick="app.closeModal('promo-modal')" style="border:none; background:none; font-size:1.5rem;">&times;</button></div><div id="promo-track" class="promo-list-container"></div></div></div>
 
     <script src="script.js"></script>
