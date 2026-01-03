@@ -42,15 +42,9 @@ const app = {
         document.getElementById('confirm-title').innerText = title;
         document.getElementById('confirm-msg').innerText = msg;
         const btn = document.getElementById('btn-confirm-yes');
-        
-        // Remove listeners antigos (clone)
         const newBtn = btn.cloneNode(true);
         btn.parentNode.replaceChild(newBtn, btn);
-        
-        newBtn.onclick = () => {
-            callback();
-            app.closeModal('confirm-modal');
-        };
+        newBtn.onclick = () => { callback(); app.closeModal('confirm-modal'); };
         app.showModal('confirm-modal');
     },
     render: (list) => {
@@ -419,8 +413,6 @@ const admin = {
     openPanel: () => {
         setTimeout(() => { 
             app.showModal('admin-modal'); 
-            const today = new Date();
-            const prior = new Date(new Date().setDate(today.getDate() - 30));
             // Carrega dados iniciais da aba clientes
             admin.renderClientsAndOrders();
             admin.renderList(); admin.updateStats();
