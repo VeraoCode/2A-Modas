@@ -321,3 +321,40 @@ footer button:hover { background: #444; color: white; border-color: white; }
     .product-modal-grid { display: block; overflow-y: auto; }
     .sidebar{width:100%;} .hero{padding-top:80px;} .oc-body, .manual-order-grid { grid-template-columns: 1fr; } .filter-wrapper { justify-content: flex-start; } .inst-gen-row { grid-template-columns: 1fr 1fr !important; } .inst-gen-row span { grid-column: span 2; }
 }
+/* --- ÁREA DO CLIENTE & RASTREIO --- */
+.client-track-card {
+    background: white; border: 1px solid #e0e0e0; border-radius: 16px; 
+    padding: 20px; margin-bottom: 20px; position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.03); transition: 0.3s;
+}
+.client-track-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+
+.track-header { display:flex; justify-content:space-between; margin-bottom:20px; border-bottom:1px dashed #eee; padding-bottom:10px; }
+.track-id { font-weight:800; font-size:1.1rem; color:var(--accent); }
+.track-date { color:#888; font-size:0.85rem; }
+
+/* BARRA DE PROGRESSO COM CAMINHÃO */
+.track-bar-container { position: relative; height: 6px; background: #eee; border-radius: 10px; margin: 40px 10px 20px; }
+.track-bar-fill { height: 100%; background: var(--success); border-radius: 10px; transition: width 1s ease-in-out; width: 0%; position: relative; }
+.track-truck { 
+    position: absolute; top: -28px; right: -15px; font-size: 1.5rem; 
+    color: var(--accent); transition: right 1s; 
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+}
+.track-bar-fill.cancelled { background: var(--danger); }
+.track-truck.cancelled { color: var(--danger); transform: rotate(180deg); }
+
+.track-labels { display:flex; justify-content:space-between; font-size:0.7rem; font-weight:bold; color:#ccc; margin-top:-10px; }
+.track-labels span.active { color:var(--success); }
+
+/* FINANCEIRO NO CARD */
+.client-fin-box { background: #f9f9f9; padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 0.9rem; }
+.cf-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.cf-status-paid { color: var(--success); font-weight: bold; }
+.cf-status-pending { color: var(--warning); font-weight: bold; }
+
+@media(max-width:768px){
+    #client-modal .box > div > div { grid-template-columns: 1fr; } 
+    .track-labels span { font-size: 0.6rem; }
+}
+
