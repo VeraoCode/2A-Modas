@@ -42,7 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
 const auth = {
     user: null,
     
-    checkProfile: async () => {
+    // Verifica sessão silenciosamente ao carregar a página
+    checkProfile: async (openModal = false) => {
         const { data } = await sb.auth.getSession();
         if(data.session) {
             const { data: profile } = await sb.from('customers').select('*').eq('id', data.session.user.id).single();
@@ -51,21 +52,24 @@ const auth = {
                 if(profile.address) {
                     const addrList = typeof profile.address === 'string' ? JSON.parse(profile.address) : profile.address;
                     localStorage.setItem('2a_addrs', JSON.stringify(addrList));
-                    if(addrList.length > 0) {
+                    if(addrList.length > 0 && !state.address) {
                         state.address = addrList[0];
                         localStorage.setItem('2a_active_addr', JSON.stringify(state.address));
                     }
                 }
-            } else {
-                state.user = { id: data.session.user.id, email: data.session.user.email, name: 'Cliente' };
             }
             app.updateUI();
-            
-            // Abre modal do cliente se foi clicado no botão
-            if(document.getElementById('auth-modal').classList.contains('active')) {
-                app.closeModal('auth-modal');
-                auth.openClientArea();
-            }
+            if(openModal) auth.openClientArea();
+        } else {
+            state.user = null;
+            app.updateUI();
+            if(openModal) app.showModal('auth-modal');
+        }
+    },
+
+handleHeaderClick: () => {
+        if(state.user) {
+            auth.openClientArea();
         } else {
             app.showModal('auth-modal');
         }
@@ -81,17 +85,16 @@ const auth = {
         
         app.success("Login realizado!");
         app.closeModal('auth-modal');
-        await auth.checkProfile(); // Carrega e abre área do cliente
+        await auth.checkProfile(true); // Carrega e abre modal
     },
 
     register: async () => {
-        // Coleta dados
+        // (MANTENHA O CÓDIGO DE REGISTRO DO PASSO ANTERIOR AQUI - SEM ALTERAÇÕES)
+        // Apenas certifique-se de chamar auth.checkProfile(true) no final
         const name = document.getElementById('r-name').value;
         const email = document.getElementById('r-email').value;
         const pass = document.getElementById('r-pass').value;
         const phone = document.getElementById('r-phone').value;
-        
-        // Coleta Endereço
         const cep = document.getElementById('r-cep').value;
         const street = document.getElementById('r-street').value;
         const num = document.getElementById('r-num').value;
@@ -99,38 +102,19 @@ const auth = {
         const city = document.getElementById('r-city').value;
         const uf = document.getElementById('r-uf').value;
 
-        if(!name || !email || !pass || !phone || !street || !num) return alert("Preencha todos os campos obrigatórios");
+        if(!name || !email || !pass || !phone || !street || !num) return alert("Preencha campos obrigatórios");
 
-        // Cria usuário no Auth
         const { data, error } = await sb.auth.signUp({ email, password: pass });
         if(error) return alert("Erro: " + error.message);
 
         if(data.user) {
-            // Monta objeto de endereço
-            const newAddr = {
-                name: name, phone: phone, cep: cep, street: street, number: num, 
-                bairro: bairro, city: city, uf: uf, type: 'Principal'
-            };
-
-            // Salva no banco customers
-            await sb.from('customers').insert([{ 
-                id: data.user.id, 
-                name: name, 
-                email: email, 
-                phone: phone,
-                address: [newAddr] // Já salva como array JSON
-            }]);
+            const newAddr = { name: name, phone: phone, cep: cep, street: street, number: num, bairro: bairro, city: city, uf: uf, type: 'Principal' };
+            await sb.from('customers').insert([{ id: data.user.id, name: name, email: email, phone: phone, address: [newAddr] }]);
             
-            app.success("Conta criada! Fazendo login...");
-            
-            // Loga automaticamente
+            app.success("Conta criada! Entrando...");
             const { error: loginErr } = await sb.auth.signInWithPassword({ email, password: pass });
-            if(!loginErr) {
-                app.closeModal('auth-modal');
-                auth.checkProfile();
-            } else {
-                auth.toggle('login');
-            }
+            if(!loginErr) { app.closeModal('auth-modal'); auth.checkProfile(true); } 
+            else { auth.toggle('login'); }
         }
     },
 
@@ -150,27 +134,18 @@ const auth = {
         document.getElementById('auth-title').innerText = mode === 'login' ? 'Acesso' : 'Criar Conta Completa';
     },
 
-    // ABRE A TELA DO CLIENTE E PREENCHE OS INPUTS
     openClientArea: () => {
         if(!state.user) return;
-        
-        // Preenche Inputs
         document.getElementById('c-profile-name').value = state.user.name || '';
         document.getElementById('c-profile-email').value = state.user.email || '';
         document.getElementById('c-profile-phone').value = state.user.phone || '';
         
-        // Renderiza Endereços
         const addrDiv = document.getElementById('c-profile-addrs');
         addrDiv.innerHTML = '';
         const addrs = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
         addrs.forEach((a, i) => {
-            addrDiv.innerHTML += `<div style="font-size:0.8rem; padding:8px; border-bottom:1px dashed #eee;">
-                <b>${a.street}, ${a.number}</b> - ${a.city}/${a.uf} <br>
-                <small onclick="app.editAddress(${i}); app.closeModal('client-modal')" style="color:blue; cursor:pointer;">Editar</small>
-            </div>`;
+            addrDiv.innerHTML += `<div style="font-size:0.8rem; padding:8px; border-bottom:1px dashed #eee;"><b>${a.street}, ${a.number}</b> - ${a.city}/${a.uf} <br><small onclick="app.editAddress(${i}); app.closeModal('client-modal')" style="color:blue; cursor:pointer;">Editar</small></div>`;
         });
-
-        // Carrega Pedidos
         auth.loadClientOrders();
         app.showModal('client-modal');
     },
@@ -178,89 +153,31 @@ const auth = {
     updateProfileData: async () => {
         const name = document.getElementById('c-profile-name').value;
         const phone = document.getElementById('c-profile-phone').value;
-        
         await sb.from('customers').update({ name: name, phone: phone }).eq('id', state.user.id);
-        state.user.name = name;
-        state.user.phone = phone;
-        app.updateUI();
-        app.success("Dados atualizados!");
+        state.user.name = name; state.user.phone = phone;
+        app.updateUI(); app.success("Dados atualizados!");
     },
 
     loadClientOrders: async () => {
+        // (MANTENHA A FUNÇÃO DO CAMINHÃOZINHO AQUI - SEM ALTERAÇÕES)
+        // ... código do caminhãozinho do passo anterior ...
         const div = document.getElementById('client-orders-list');
         div.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>';
-        
         const { data } = await sb.from('orders').select('*').eq('customer_id', state.user.id).order('created_at', {ascending: false});
-        
         div.innerHTML = '';
-        if(!data || data.length === 0) {
-            div.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Você ainda não fez nenhum pedido.</p>';
-            return;
-        }
-
+        if(!data || data.length === 0) { div.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Nenhum pedido.</p>'; return; }
         data.forEach(o => {
-            // Lógica da Barra de Progresso do Caminhão
-            let progress = 5; // Começa um pouquinho
-            let truckClass = '';
-            let statusLabel = 'Processando';
-            
+            let progress = 5; let truckClass = ''; let statusLabel = 'Processando';
             if(o.status.includes('Pendente')) { progress = 15; statusLabel = 'Separando'; }
             if(o.status.includes('Enviado')) { progress = 60; statusLabel = 'Em Trânsito'; }
             if(o.status.includes('Entregue')) { progress = 100; statusLabel = 'Entregue'; }
             if(o.status.includes('Cancelado')) { progress = 100; truckClass = 'cancelled'; statusLabel = 'Cancelado'; }
-
-            // Finanças
-            let paidAmount = 0;
-            let installmentsHtml = '';
-            if(o.payment_status === 'Pago') {
-                paidAmount = o.total;
-            } else if (o.installments) {
-                try {
-                    const inst = JSON.parse(o.installments);
-                    inst.forEach(i => { if(i.paid) paidAmount += parseFloat(i.amount); });
-                    const next = inst.find(i => !i.paid);
-                    if(next) installmentsHtml = `<div style="color:#e67e22; font-size:0.8rem;">Próx. Parcela: ${next.date.split('-').reverse().join('/')} (R$ ${parseFloat(next.amount).toFixed(2)})</div>`;
-                } catch(e){}
+            let paidAmount = 0; let installmentsHtml = '';
+            if(o.payment_status === 'Pago') { paidAmount = o.total; } else if (o.installments) {
+                try { const inst = JSON.parse(o.installments); inst.forEach(i => { if(i.paid) paidAmount += parseFloat(i.amount); }); const next = inst.find(i => !i.paid); if(next) installmentsHtml = `<div style="color:#e67e22; font-size:0.8rem;">Próx. Parcela: ${next.date.split('-').reverse().join('/')} (R$ ${parseFloat(next.amount).toFixed(2)})</div>`; } catch(e){}
             }
             const remaining = o.total - paidAmount;
-
-            div.innerHTML += `
-            <div class="client-track-card">
-                <div class="track-header">
-                    <span class="track-id">Pedido #${o.id.slice(-4)}</span>
-                    <span class="track-date">${o.date}</span>
-                </div>
-                
-                <div style="margin-bottom:20px;">
-                    <div class="track-bar-container">
-                        <div class="track-bar-fill ${truckClass}" style="width: ${progress}%">
-                            <i class="fas fa-truck track-truck ${truckClass}"></i>
-                        </div>
-                    </div>
-                    <div class="track-labels">
-                        <span class="${progress >= 15 ? 'active' : ''}">Pedido</span>
-                        <span class="${progress >= 60 ? 'active' : ''}">Enviado</span>
-                        <span class="${progress >= 100 && !truckClass ? 'active' : ''}">Entregue</span>
-                    </div>
-                    <div style="text-align:center; font-weight:bold; margin-top:5px; color:var(--accent); font-size:0.8rem;">
-                        Status: ${statusLabel}
-                    </div>
-                </div>
-
-                <div class="client-fin-box">
-                    <div class="cf-row">
-                        <span>Total:</span> <strong>R$ ${o.total.toFixed(2)}</strong>
-                    </div>
-                    <div class="cf-row">
-                        <span>Pago:</span> <span class="cf-status-paid">R$ ${paidAmount.toFixed(2)}</span>
-                    </div>
-                    ${remaining > 0.1 ? `
-                    <div class="cf-row">
-                        <span>Restante:</span> <span class="cf-status-pending">R$ ${remaining.toFixed(2)}</span>
-                    </div>` : '<div style="color:var(--success); font-weight:bold; text-align:center;">Pedido Quitado!</div>'}
-                    ${installmentsHtml}
-                </div>
-            </div>`;
+            div.innerHTML += `<div class="client-track-card"><div class="track-header"><span class="track-id">Pedido #${o.id.slice(-4)}</span><span class="track-date">${o.date}</span></div><div style="margin-bottom:20px;"><div class="track-bar-container"><div class="track-bar-fill ${truckClass}" style="width: ${progress}%"><i class="fas fa-truck track-truck ${truckClass}"></i></div></div><div class="track-labels"><span class="${progress >= 15 ? 'active' : ''}">Pedido</span><span class="${progress >= 60 ? 'active' : ''}">Enviado</span><span class="${progress >= 100 && !truckClass ? 'active' : ''}">Entregue</span></div><div style="text-align:center; font-weight:bold; margin-top:5px; color:var(--accent); font-size:0.8rem;">Status: ${statusLabel}</div></div><div class="client-fin-box"><div class="cf-row"><span>Total:</span> <strong>R$ ${o.total.toFixed(2)}</strong></div><div class="cf-row"><span>Pago:</span> <span class="cf-status-paid">R$ ${paidAmount.toFixed(2)}</span></div>${remaining > 0.1 ? `<div class="cf-row"><span>Restante:</span> <span class="cf-status-pending">R$ ${remaining.toFixed(2)}</span></div>` : '<div style="color:var(--success); font-weight:bold; text-align:center;">Pedido Quitado!</div>'}${installmentsHtml}</div></div>`;
         });
     }
 };
@@ -961,25 +878,62 @@ const admin = {
             } else { alert("Ação cancelada."); }
         }
     },
-    renderList: () => {
-        const div = document.getElementById('admin-list'); div.innerHTML="";
-        state.products.forEach(p => {
-            const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-            let stock = 0; if(vars) vars.forEach(v => stock += parseInt(v.stock||0));
-            let mainImg = "https://via.placeholder.com/50";
-            try { const m = JSON.parse(p.image_url); if(Array.isArray(m)) mainImg = m[0]; else mainImg = p.image_url; } catch(e){}
-            const tag = stock === 0 ? '<span class="tag-soldout">ESGOTADO</span>' : `<span class="stock-info">Estoque: ${stock}</span>`;
-            div.innerHTML += `
-            <div class="mini-prod ${stock===0?'sold-out':''}">
-                <img src="${mainImg}" onerror="this.src='https://via.placeholder.com/50'"> 
-                <div style="flex:1"><strong>${p.name}</strong><br>${tag}</div>
-                <div>
-                    <button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-chip-edit"><i class="fas fa-pen"></i> Editar</button> 
-                    <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none; margin-left:10px;"><i class="fas fa-trash"></i></button>
-                </div>
-            </div>`;
+    admin.renderList = () => {
+    const div = document.getElementById('admin-list'); div.innerHTML="";
+    state.products.forEach(p => {
+        const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+        let stock = 0; if(vars) vars.forEach(v => stock += parseInt(v.stock||0));
+        let mainImg = "https://via.placeholder.com/50";
+        try { const m = JSON.parse(p.image_url); if(Array.isArray(m)) mainImg = m[0]; else mainImg = p.image_url; } catch(e){}
+        
+        const isSoldOut = stock === 0;
+        
+        div.innerHTML += `
+        <div class="mini-prod ${isSoldOut ? 'stock-zero' : ''}">
+            <img src="${mainImg}" onerror="this.src='https://via.placeholder.com/50'"> 
+            <div style="flex:1">
+                <strong>${p.name}</strong><br>
+                ${isSoldOut 
+                    ? '<span style="background:#ddd; color:#666; padding:2px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">ESGOTADO</span>' 
+                    : `<span class="stock-info" style="color:var(--success)">Estoque: ${stock}</span>`
+                }
+            </div>
+            <div>
+                <button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-chip-edit"><i class="fas fa-pen"></i></button> 
+                <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none; margin-left:10px;"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>`;
+    });
+};
+
+admin.updateStats = () => {
+    // (MESMA LÓGICA ANTERIOR, APENAS GARANTINDO O ESTILO CINZA)
+    const grid = document.getElementById('dash-stock-grid'); if(!grid) return; grid.innerHTML = "";
+    let grandTotalStock = 0, grandTotalValue = 0, grandTotalCost = 0;
+    state.products.forEach(p => {
+        const vars = typeof p.variations === 'string' ? JSON.parse(p.variations || '[]') : (p.variations || []);
+        let pStock = 0, pValue = 0; 
+        vars.forEach(v => {
+            const q = parseInt(v.stock||0); const price = parseFloat(v.price||0); const cost = parseFloat(v.cost) || parseFloat(p.cost_price) || 0;
+            pStock += q; pValue += (q * price); grandTotalStock += q; grandTotalValue += (q * price); grandTotalCost += (q * cost);
         });
-    },
+        const isSoldOut = pStock === 0;
+        
+        // Estilo cinza direto no HTML se esgotado
+        const cardStyle = isSoldOut ? 'background:#f0f0f0; opacity:0.8; filter:grayscale(1);' : '';
+        const color = isSoldOut ? '#888' : (pStock < 5 ? '#f39c12' : '#27ae60');
+        let mainImg = "https://via.placeholder.com/60";
+        try { const m = JSON.parse(p.image_url); if(Array.isArray(m)) mainImg = m[0]; else mainImg = p.image_url; } catch(e) {}
+        
+        grid.innerHTML += `<div class="dash-card" style="${cardStyle}">
+            ${isSoldOut ? '<span class="tag-dashboard-sold">ESGOTADO</span>' : ''}
+            <img src="${mainImg}">
+            <div style="flex:1"><strong style="font-size:0.95rem; display:block;">${p.name}</strong><small style="color:#666;">${vars.length} Var.</small><div style="margin-top:5px; font-weight:bold; color:${color}"><i class="fas fa-box"></i> ${pStock} un.</div></div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;"><div style="text-align:right; font-size:0.8rem; color:#888;">Est. Venda:<br><span style="color:var(--accent); font-weight:bold;">R$ ${pValue.toFixed(2)}</span></div><button class="btn-modern small outline" onclick="admin.edit('${p.id}')">Editar</button></div>
+        </div>`;
+    });
+    setSafe('st-rev', `R$ ${grandTotalValue.toFixed(2)}`); setSafe('st-cost', `R$ ${grandTotalCost.toFixed(2)}`); setSafe('st-qty', grandTotalStock);
+};
     filterOrders: (status, btn) => {
         state.filterStatus = status;
         document.querySelectorAll('#order-filters .chip').forEach(c => c.classList.remove('active'));
@@ -1238,81 +1192,91 @@ const admin = {
         app.success("Financeiro salvo com sucesso!");
         admin.renderPayments();
     },
-    renderPayments: async () => {
-        const { data } = await sb.from('orders').select('*').neq('status', 'Cancelado').order('created_at', {ascending: false});
-        const div = document.getElementById('pay-list'); 
-        if(!div) return; 
-        div.innerHTML = "";
+    admin.renderPayments = async () => {
+    const { data } = await sb.from('orders').select('*').neq('status', 'Cancelado').order('created_at', {ascending: false});
+    const div = document.getElementById('pay-list'); 
+    if(!div) return; 
+    div.innerHTML = "";
+    
+    if(!data || data.length === 0) { div.innerHTML = "<p>Nenhum registro.</p>"; return; }
+
+    const clients = {};
+    data.forEach(o => {
+        const key = o.customer_email && o.customer_email.includes('@') ? o.customer_email : o.customer_name;
+        if(!clients[key]) {
+            clients[key] = {
+                name: o.customer_name, email: o.customer_email, phone: "", 
+                total_debt: 0, total_paid: 0, orders: []
+            };
+        }
+        try { const addr = JSON.parse(o.address || '{}'); if(addr.phone) clients[key].phone = addr.phone; } catch(e){}
+        // Fallback: se não achou telefone no endereço, tenta usar do cadastro do cliente (se tivermos essa info no futuro)
         
-        if(!data || data.length === 0) { div.innerHTML = "<p>Nenhum registro.</p>"; return; }
+        let orderPaid = 0;
+        let orderTotal = o.total;
+        
+        if(o.payment_status === 'Pago') { 
+            orderPaid = o.total; 
+        } else if (o.installments) {
+            try {
+                const inst = JSON.parse(o.installments);
+                inst.forEach(i => { if(i.paid) orderPaid += parseFloat(i.amount); });
+            } catch(e){}
+        }
+        
+        clients[key].total_paid += orderPaid;
+        clients[key].total_debt += (orderTotal - orderPaid);
+        clients[key].orders.push(o);
+    });
 
-        const clients = {};
-        data.forEach(o => {
-            const key = o.customer_email && o.customer_email.includes('@') ? o.customer_email : o.customer_name;
-            if(!clients[key]) {
-                clients[key] = {
-                    name: o.customer_name, email: o.customer_email, phone: "", 
-                    total_debt: 0, total_paid: 0, orders: []
-                };
-            }
-            try { const addr = JSON.parse(o.address || '{}'); if(addr.phone) clients[key].phone = addr.phone; } catch(e){}
-            
-            let orderPaid = 0;
-            let orderTotal = o.total;
-            
-            if(o.payment_status === 'Pago') { 
-                orderPaid = o.total; 
-            } else if (o.installments) {
-                try {
-                    const inst = JSON.parse(o.installments);
-                    inst.forEach(i => { if(i.paid) orderPaid += parseFloat(i.amount); });
-                } catch(e){}
-            }
-            
-            clients[key].total_paid += orderPaid;
-            clients[key].total_debt += (orderTotal - orderPaid);
-            clients[key].orders.push(o);
-        });
+    Object.values(clients).forEach((c, index) => {
+        const debt = Math.max(0, c.total_debt);
+        const hasDebt = debt > 0.1; 
+        const debtColor = hasDebt ? 'var(--danger)' : 'var(--success)';
+        const phoneClean = c.phone ? c.phone.replace(/\D/g, '') : '';
+        const ordersHTML = c.orders.map(o => admin.generateOrderCardHTML(o)).join('');
 
-        Object.values(clients).forEach((c, index) => {
-            const debt = Math.max(0, c.total_debt);
-            const hasDebt = debt > 0.1; 
-            const debtColor = hasDebt ? 'var(--danger)' : 'var(--success)';
-            const debtLabel = hasDebt ? 'A PAGAR' : 'QUITADO';
-            const phoneClean = c.phone ? c.phone.replace(/\D/g, '') : '';
-            const ordersHTML = c.orders.map(o => admin.generateOrderCardHTML(o)).join('');
-
-            div.innerHTML += `
-            <div class="client-admin-card">
-                <div class="cac-header" onclick="document.getElementById('client-body-${index}').classList.toggle('open')">
-                    <div class="cac-info">
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <h4>${c.name}</h4>
-                            ${phoneClean ? `<a href="https://wa.me/55${phoneClean}" target="_blank" onclick="event.stopPropagation()" class="admin-wa-btn" style="padding:4px 10px; font-size:0.75rem;"><i class="fab fa-whatsapp"></i></a>` : ''}
-                        </div>
-                        <small>${c.email || 'Sem e-mail'}</small>
-                        ${hasDebt ? `<div class="total-receivable-tag">Receber: R$ ${debt.toFixed(2)}</div>` : ''}
-                    </div>
-                    <div class="cac-stats">
-                        <div class="cac-stat-item">
-                            <div class="cac-stat-label">Total Pago</div>
-                            <div class="cac-stat-val" style="color:var(--success)">R$ ${c.total_paid.toFixed(2)}</div>
-                        </div>
-                        <div class="cac-stat-item">
-                            <div class="cac-stat-label">${debtLabel}</div>
-                            <div class="cac-stat-val" style="color:${debtColor}">R$ ${debt.toFixed(2)}</div>
-                        </div>
-                        <div style="align-self:center; color:#ccc;">
-                            <i class="fas fa-chevron-down"></i>
+        // LAYOUT NOVO DO CARD DE CLIENTE
+        div.innerHTML += `
+        <div class="client-admin-card">
+            <div class="cac-header" onclick="document.getElementById('client-body-${index}').classList.toggle('open')">
+                <div class="cac-info">
+                    <div style="display:flex; flex-direction:column;">
+                        <h4 style="font-size:1.1rem; margin-bottom:5px;">${c.name}</h4>
+                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                            ${phoneClean ? `
+                                <span style="font-size:0.9rem; color:#555;"><i class="fas fa-phone"></i> ${c.phone}</span>
+                                <a href="https://wa.me/55${phoneClean}" target="_blank" onclick="event.stopPropagation()" class="admin-wa-btn">
+                                    <i class="fab fa-whatsapp"></i> Conversar
+                                </a>` : '<span style="color:#999;">Sem telefone</span>'}
                         </div>
                     </div>
                 </div>
-                <div id="client-body-${index}" class="cac-body">
-                    ${ordersHTML}
+                
+                <div class="cac-stats">
+                    ${hasDebt ? `
+                        <div class="debt-alert-box">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <div>
+                                <small>RECEBER</small><br>
+                                <strong>R$ ${debt.toFixed(2)}</strong>
+                            </div>
+                        </div>
+                    ` : `
+                        <div style="text-align:right;">
+                            <small style="color:var(--success); font-weight:bold;">TUDO PAGO</small><br>
+                            <span style="color:#999; font-size:0.8rem;">Histórico OK</span>
+                        </div>
+                    `}
+                    <div style="margin-left:15px; color:#ccc;"><i class="fas fa-chevron-down"></i></div>
                 </div>
-            </div>`;
-        });
-    },
+            </div>
+            <div id="client-body-${index}" class="cac-body">
+                ${ordersHTML}
+            </div>
+        </div>`;
+    });
+};
     
     // ============================================================
     // ATUALIZAÇÃO GESTÃO COMPLETA - CORRIGIDA
@@ -1560,4 +1524,5 @@ document.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('popstate', (e) => { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); });
+
 
