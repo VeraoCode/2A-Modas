@@ -82,13 +82,14 @@
     <div id="status-bar"></div>
 
     <div class="header-floating">
-        <button class="login-btn-header" onclick="auth.checkProfile()">
-            <i class="fas fa-user-circle"></i> Login / Cadastro
-        </button>
-        <button class="icon-btn" onclick="app.toggleCart()">
-            <i class="fas fa-shopping-bag"></i><span class="badge" id="cart-count">0</span>
-        </button>
-    </div>
+    <button class="login-btn-header" onclick="auth.handleHeaderClick()">
+        <i class="fas fa-user-circle"></i> Login / Cadastro
+    </button>
+    <button class="icon-btn" onclick="app.toggleCart()">
+        <i class="fas fa-shopping-bag"></i><span class="badge" id="cart-count">0</span>
+    </button>
+</div>
+    
 
     <div class="hero">
         <img src="logo.jpg" onerror="this.src='https://via.placeholder.com/200?text=2A'">
@@ -346,15 +347,19 @@
     <div id="admin-modal" class="overlay" style="z-index:2001; background:#f4f6f9; align-items:flex-start; padding:0;">
         <div class="box" style="max-width:100%; height:100%; border-radius:0; padding:0; display:flex; flex-direction:column;">
             <div class="admin-nav">
-                <h3 style="margin-right:20px; align-self:center;">Admin 2A</h3>
-                <button onclick="admin.tab('dash')" class="admin-tab active">Estoque</button>
-                <button onclick="admin.tab('orders')" class="admin-tab">Pedidos</button>
-                <button onclick="admin.tab('new-order')" class="admin-tab" style="color:var(--primary); border-color:var(--primary);"><i class="fas fa-plus-circle"></i> Novo Pedido</button>
-                <button onclick="admin.tab('pay')" class="admin-tab">Gestão Completa</button>
-                <button onclick="admin.tab('prod')" class="admin-tab">Produtos</button>
-                <button onclick="admin.resetData()" class="btn-modern danger small" style="margin-left:20px;">Resetar</button>
-                <button onclick="admin.logout()" class="btn-modern outline small" style="margin-left:auto;">Sair (Logout)</button>
-            </div>
+    <h3 style="margin-right:20px; align-self:center;">Admin 2A</h3>
+    <button onclick="admin.tab('new-order')" class="admin-tab" style="color:var(--primary); border-color:var(--primary);"><i class="fas fa-plus-circle"></i> Novo Pedido</button>
+    
+    <button onclick="admin.tab('dash')" class="admin-tab active">Estoque</button>
+    
+    <button onclick="admin.tab('pay')" class="admin-tab">Gestão Completa</button>
+    
+    <button onclick="admin.tab('prod')" class="admin-tab">Produtos</button>
+    
+    <button onclick="admin.resetData()" class="btn-modern danger small" style="margin-left:20px;">Resetar</button>
+    <button onclick="admin.logout()" class="btn-modern outline small" style="margin-left:auto;">Sair (Logout)</button>
+</div>
+            
             <div style="flex:1; overflow-y:auto; padding:30px; width:100%; max-width:1200px; margin:0 auto;">
                 
                 <div id="tab-dash">
@@ -567,5 +572,6 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
