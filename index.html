@@ -37,9 +37,9 @@
         .ok { background:var(--success) !important; } .err { background:var(--danger) !important; }
 
         /* TOAST NOTIFICATION MODERN */
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 20000; }
         .toast-box {
-            background: white; width: 300px; padding: 20px; border-radius: 12px;
+            background: white; width: 320px; padding: 20px; border-radius: 12px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.15); margin-bottom: 15px;
             position: relative; overflow: hidden; animation: slideInRight 0.5s ease-out;
             border-left: 5px solid var(--success); display: flex; align-items: center; gap: 15px;
@@ -47,7 +47,7 @@
         .toast-box.hide { animation: fadeOut 0.5s forwards; }
         .toast-icon { color: var(--success); font-size: 1.5rem; }
         .toast-content strong { display: block; font-size: 0.95rem; color: #333; margin-bottom: 3px; }
-        .toast-content span { font-size: 0.8rem; color: #666; }
+        .toast-content span { font-size: 0.85rem; color: #666; }
         .toast-progress {
             position: absolute; bottom: 0; left: 0; height: 4px; background: var(--success);
             width: 100%; animation: progress 5s linear forwards;
@@ -88,9 +88,9 @@
         .tag-delivery { font-size: 0.7rem; color: #27ae60; display: block; margin-top: 5px; font-weight: 600; }
 
         /* --- MODERN PRODUCT MODAL LAYOUT --- */
-        .product-modal-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; height: 100%; }
+        .product-modal-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; height: 100%; padding-top: 50px; } /* Added padding top for header */
         .pm-images { position: relative; background: #f4f4f4; border-radius: 16px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .pm-details { padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
+        .pm-details { padding: 10px; display: flex; flex-direction: column; overflow-y: auto; }
         
         .carousel-main-container { width: 100%; height: 100%; min-height: 400px; position: relative; display: flex; align-items: center; justify-content: center; }
         .carousel-main-container img, .carousel-main-container video { width: 100%; height: 100%; object-fit: contain; transition: opacity 0.5s ease-in-out; }
@@ -106,23 +106,32 @@
         .var-chip.disabled { opacity: 0.5; cursor: not-allowed; background: #f9f9f9; border-color: #eee; }
         .color-circle { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
 
-        /* MODALS */
+        /* MODALS & NAVIGATION HEADER */
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:2000; display:none; align-items:center; justify-content:center; padding:20px; }
         .overlay.active { display:flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
-        .box { background:white; width:100%; max-width:1000px; border-radius:24px; overflow:hidden; max-height:90vh; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-        .box.single-col { display:block; max-width:500px; }
         
-        /* FOOTER NAV BUTTONS IN MODAL */
-        .modal-nav-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid #eee; display: flex; justify-content: space-between; gap: 15px; }
-        .btn-nav-action { flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; text-transform: uppercase; border: none; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
-        .btn-nav-close { background: #ffebee; color: #c62828; }
-        .btn-nav-close:hover { background: #ffcdd2; }
-        .btn-nav-back { background: #e3f2fd; color: #1565c0; }
-        .btn-nav-back:hover { background: #bbdefb; }
+        .box { background:white; width:100%; max-width:1000px; border-radius:24px; overflow:hidden; max-height:90vh; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative; }
+        .box.single-col { display:block; max-width:500px; padding-top: 50px; }
+        
+        /* NEW FIXED NAV BUTTONS */
+        .modal-header-fixed {
+            position: absolute; top: 0; left: 0; width: 100%; height: 50px;
+            background: white; border-bottom: 1px solid #eee; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center; padding: 0 15px;
+        }
+        .btn-nav-fixed {
+            border: none; background: transparent; font-weight: 800; font-size: 0.75rem;
+            cursor: pointer; display: flex; align-items: center; gap: 6px;
+            text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 12px; border-radius: 20px; transition: 0.2s;
+        }
+        .btn-nav-fixed.back { color: var(--info); background: #f0f8ff; }
+        .btn-nav-fixed.back:hover { background: #e3f2fd; }
+        .btn-nav-fixed.close { color: var(--danger); background: #fff0f0; }
+        .btn-nav-fixed.close:hover { background: #ffebee; }
 
         /* SIDEBAR (SACOLA) */
-        .sidebar { position:fixed; top:0; right:-500px; width:450px; height:100%; background:white; z-index:3000; padding:30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s; display:flex; flex-direction:column; }
+        .sidebar { position:fixed; top:0; right:-500px; width:450px; height:100%; background:white; z-index:3000; padding:60px 30px 30px; box-shadow:-10px 0 50px rgba(0,0,0,0.1); transition:0.4s; display:flex; flex-direction:column; }
         .sidebar.open { right:0; }
         
         /* ADMIN/FORMS */
@@ -304,10 +313,8 @@
         .track-line-bg { width: 100%; height: 4px; background: #eee; border-radius: 10px; position: absolute; top: 0; left: 0; z-index: 1; }
         .track-fill { height: 4px; background: var(--success); border-radius: 10px; position: absolute; top: 0; left: 0; z-index: 2; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(39, 174, 96, 0.3); }
         .track-fill.cancelled { background: var(--danger); box-shadow: 0 0 10px rgba(231, 76, 60, 0.3); }
-        
         .truck-icon-3d { position: absolute; top: -35px; z-index: 5; font-size: 1.8rem; color: var(--accent); transition: left 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(-50%); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); animation: drive 1s infinite alternate ease-in-out; }
         @keyframes drive { from { transform: translateX(-50%) translateY(0) rotate(-2deg); } to { transform: translateX(-50%) translateY(-2px) rotate(2deg); } }
-
         .track-steps { display: flex; justify-content: space-between; position: relative; z-index: 3; margin-top: 15px; }
         .track-step { text-align: center; position: relative; width: 33%; }
         .track-step .dot { width: 12px; height: 12px; background: #ddd; border-radius: 50%; margin: -23px auto 10px; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.4s; }
@@ -329,7 +336,7 @@
         .btn-map { background: #fff; border: 1px solid #ddd; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; text-decoration: none; color: #555; display: inline-flex; align-items: center; gap: 5px; margin-top: 5px; font-weight: bold; transition: 0.2s; }
         .btn-map:hover { background: #e8f0fe; color: #1a73e8; border-color: #1a73e8; }
 
-        /* PARTIAL PAY CARD & MODERN INPUT */
+        /* PARTIAL PAY CARD */
         .partial-pay-card { background: #fff; border: 1px solid #ffeeba; background-color: #fffdf5; padding: 15px; border-radius: 12px; margin-top: 10px; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .partial-pay-card.show { display: block; animation: slideDown 0.3s ease; }
         
@@ -353,6 +360,10 @@
         .btn-addr-trigger:hover { border-color: var(--primary); background: #fffbf9; color: var(--primary); }
         .btn-addr-trigger.filled { border: 2px solid var(--primary); background: #fff5f2; color: var(--accent); justify-content: flex-start; }
         .btn-addr-trigger.filled i { color: var(--primary); font-size: 1.2rem; }
+
+        /* MODERN INPUT LARGE */
+        .modern-input-large { width: 100%; padding: 15px; font-size: 1.2rem; border: 2px solid #eee; border-radius: 12px; text-align: center; font-weight: bold; color: var(--accent); outline: none; transition: 0.3s; }
+        .modern-input-large:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(196, 139, 120, 0.1); }
 
         footer { background: #222; color: #888; text-align: center; padding: 40px 20px; margin-top: auto; }
         footer button { color: #ddd; text-decoration: none; font-size: 0.8rem; font-weight: bold; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; transition: 0.3s; cursor: pointer; background: transparent; }
@@ -415,21 +426,25 @@
 
     <div id="promo-modal" class="overlay">
         <div class="box single-col" style="background:var(--bg); overflow:hidden; max-width:800px;">
-            <div style="padding:20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee;">
+            <div class="modal-header-fixed">
+                <button onclick="app.closeModal('promo-modal')" class="btn-nav-fixed back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+                <button onclick="app.closeModal('promo-modal')" class="btn-nav-fixed close">FECHAR <i class="fas fa-times"></i></button>
+            </div>
+            <div style="padding:20px; margin-top: 50px;">
                 <h3>🔥 Ofertas Especiais</h3>
             </div>
-            <div class="carousel-wrapper" style="padding: 20px;">
+            <div class="carousel-wrapper" style="padding: 0 20px 20px;">
                 <div id="promo-track" class="promo-list-container"></div>
-            </div>
-            <div class="modal-nav-footer" style="padding: 15px; background: white;">
-                <button onclick="app.closeModal('promo-modal')" class="btn-nav-action btn-nav-back">Voltar</button>
-                <button onclick="app.closeModal('promo-modal')" class="btn-nav-action btn-nav-close">Fechar</button>
             </div>
         </div>
     </div>
 
     <div id="product-modal" class="overlay">
         <div class="box" style="padding: 20px; height: 85vh; max-height: 700px;">
+            <div class="modal-header-fixed">
+                <button onclick="app.closeModal('product-modal')" class="btn-nav-fixed back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+                <button onclick="app.closeModal('product-modal')" class="btn-nav-fixed close">FECHAR <i class="fas fa-times"></i></button>
+            </div>
             <div class="product-modal-grid">
                 <div class="pm-images" id="m-media-area"></div>
                 <div class="pm-details">
@@ -458,16 +473,16 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-nav-footer">
-                <button onclick="app.closeModal('product-modal')" class="btn-nav-action btn-nav-back">Voltar</button>
-                <button onclick="app.closeModal('product-modal')" class="btn-nav-action btn-nav-close">Fechar</button>
-            </div>
         </div>
     </div>
 
     <div id="address-modal" class="overlay" style="justify-content:flex-start; padding-left:20px; z-index:10001;">
         <div class="box single-col" style="width:100%; max-width:500px; height:auto; overflow-y: auto;">
-            <div style="padding:25px;">
+            <div class="modal-header-fixed">
+                <button onclick="app.closeModal('address-modal')" class="btn-nav-fixed back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+                <button onclick="app.closeModal('address-modal')" class="btn-nav-fixed close">FECHAR <i class="fas fa-times"></i></button>
+            </div>
+            <div style="padding:25px; margin-top: 50px;">
                 <h3>📍 Onde entregar?</h3>
                 <div id="saved-addresses-list" style="margin-bottom:20px; max-height:150px; overflow-y:auto;"></div>
                 <div style="background:#f9f9f9; padding:20px; border-radius:16px;">
@@ -497,16 +512,16 @@
                     <button onclick="app.addNewAddress()" class="btn-modern" style="width:100%;">Salvar Endereço</button>
                 </div>
             </div>
-            <div class="modal-nav-footer" style="padding:20px;">
-                <button onclick="app.closeModal('address-modal')" class="btn-nav-action btn-nav-back">Voltar</button>
-                <button onclick="app.closeModal('address-modal')" class="btn-nav-action btn-nav-close">Fechar</button>
-            </div>
         </div>
     </div>
 
     <div id="client-modal" class="overlay">
         <div class="box single-col" style="max-width:600px;">
-            <div style="padding:30px;">
+            <div class="modal-header-fixed">
+                <button onclick="app.closeModal('client-modal')" class="btn-nav-fixed back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+                <button onclick="app.closeModal('client-modal')" class="btn-nav-fixed close">FECHAR <i class="fas fa-times"></i></button>
+            </div>
+            <div style="padding:30px; margin-top: 50px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                     <h2>Minha Conta</h2>
                 </div>
@@ -520,75 +535,104 @@
                     <h3>Meus Pedidos</h3>
                 </div>
                 <div class="filter-wrapper">
-                    <div class="date-group"><label>De:</label><input type="text" id="client-date-start" class="flatpickr-input compact-date" onchange="auth.loadClientOrders()"></div>
-                    <div class="date-group"><label>Até:</label><input type="text" id="client-date-end" class="flatpickr-input compact-date" onchange="auth.loadClientOrders()"></div>
+                    <div class="date-group">
+                        <label>De:</label>
+                        <input type="text" id="client-date-start" class="flatpickr-input compact-date" onchange="auth.loadClientOrders()">
+                    </div>
+                    <div class="date-group">
+                        <label>Até:</label>
+                        <input type="text" id="client-date-end" class="flatpickr-input compact-date" onchange="auth.loadClientOrders()">
+                    </div>
                 </div>
                 
                 <div id="client-orders-list" style="max-height:450px; overflow-y:auto; margin-top:15px;"></div>
-            </div>
-            <div class="modal-nav-footer" style="padding:20px;">
-                <button onclick="app.closeModal('client-modal')" class="btn-nav-action btn-nav-back">Voltar</button>
-                <button onclick="app.closeModal('client-modal')" class="btn-nav-action btn-nav-close">Fechar</button>
             </div>
         </div>
     </div>
 
     <div class="sidebar">
+        <div class="modal-header-fixed">
+            <button onclick="app.toggleCart()" class="btn-nav-fixed back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+            <button onclick="app.toggleCart()" class="btn-nav-fixed close">FECHAR <i class="fas fa-times"></i></button>
+        </div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;">
             <h2 style="margin:0;">Sua Sacola</h2>
         </div>
+        
         <div style="background: white; border: 1px solid #eee; padding: 15px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 10px;">
             <i class="fas fa-truck" style="color: var(--success); font-size: 1.2rem;"></i>
-            <div><strong style="display: block; font-size: 0.9rem;">Entrega Rápida</strong><small style="color: #666;">Receba em 03 a 05 dias úteis</small></div>
+            <div>
+                <strong style="display: block; font-size: 0.9rem;">Entrega Rápida</strong>
+                <small style="color: #666;">Receba em 03 a 05 dias úteis</small>
+            </div>
         </div>
-        <div style="flex:1; overflow-y:auto;"><ul id="cart-list" style="list-style:none;"></ul></div>
+
+        <div style="flex:1; overflow-y:auto;">
+            <ul id="cart-list" style="list-style:none;"></ul>
+        </div>
+        
         <div style="border-top:1px solid #eee; padding-top:25px;">
             <div id="cart-auth-area" style="margin-bottom:15px;">
-                <button onclick="app.showModal('auth-modal')" style="width:100%; padding:12px; background:#f0f0f0; border:none; border-radius:12px; color:#555; font-weight:bold;"><i class="fas fa-user-circle"></i> Fazer Login / Cadastro</button>
+                <button onclick="app.showModal('auth-modal')" style="width:100%; padding:12px; background:#f0f0f0; border:none; border-radius:12px; color:#555; font-weight:bold;">
+                    <i class="fas fa-user-circle"></i> Fazer Login / Cadastro
+                </button>
             </div>
-            <button id="btn-address-trigger" onclick="app.openAddressModal()" class="btn-addr-trigger"><i class="fas fa-map-marker-alt"></i> Cadastrar local de entrega</button>
+            
+            <button id="btn-address-trigger" onclick="app.openAddressModal()" class="btn-addr-trigger">
+                <i class="fas fa-map-marker-alt"></i> Cadastrar local de entrega
+            </button>
+            
             <div style="background: #fafafa; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.1rem; color: var(--accent);"><span>Total</span> <span id="cart-total">R$ 0.00</span></div>
+                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.1rem; color: var(--accent);">
+                    <span>Total</span> <span id="cart-total">R$ 0.00</span>
+                </div>
             </div>
-            <button onclick="app.checkout('whatsapp')" class="btn-modern btn-whatsapp btn-pulse" style="width: 100%; margin-bottom: 10px;"><i class="fab fa-whatsapp"></i> Falar Via WhatsApp</button>
-            <button onclick="app.checkout('mercadopago')" class="btn-modern btn-mp btn-pulse" style="width: 100%;"><i class="fas fa-qrcode"></i> Pagar via Pix/Cartão</button>
-        </div>
-        <div class="modal-nav-footer" style="padding:15px; border:none;">
-            <button onclick="app.toggleCart()" class="btn-nav-action btn-nav-back">Continuar Comprando</button>
-            <button onclick="app.toggleCart()" class="btn-nav-action btn-nav-close">Fechar Sacola</button>
+
+            <button onclick="app.checkout('whatsapp')" class="btn-modern btn-whatsapp btn-pulse" style="width: 100%; margin-bottom: 10px;">
+                <i class="fab fa-whatsapp"></i> Falar Via WhatsApp
+            </button>
+            <button onclick="app.checkout('mercadopago')" class="btn-modern btn-mp btn-pulse" style="width: 100%;">
+                <i class="fas fa-qrcode"></i> Pagar via Pix/Cartão
+            </button>
         </div>
     </div>
 
     <div id="auth-modal" class="overlay" style="z-index:10002;">
         <div class="box single-col" style="padding:40px; text-align:center; max-width:400px;">
-            <h2 id="auth-title" style="margin-bottom:25px;">Acesso</h2>
-            <div id="form-login">
-                <input type="email" id="l-email" class="input" placeholder="E-mail"><input type="password" id="l-pass" class="input" placeholder="Senha">
-                <button onclick="auth.login()" class="btn-modern" style="width:100%;">Entrar</button>
-                <p style="margin-top:20px; font-size:0.9rem;">Não tem conta? <a href="#" onclick="auth.toggle('register')">Cadastre-se</a></p>
+            <div class="modal-header-fixed">
+                <button onclick="app.closeModal('auth-modal')" class="btn-nav-fixed back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+                <button onclick="app.closeModal('auth-modal')" class="btn-nav-fixed close">FECHAR <i class="fas fa-times"></i></button>
             </div>
-            <div id="form-register" style="display:none;">
-                <input type="text" id="r-name" class="input" placeholder="Nome"><input type="email" id="r-email" class="input" placeholder="E-mail"><input type="password" id="r-pass" class="input" placeholder="Senha">
-                <button onclick="auth.register()" class="btn-modern" style="width:100%;">Cadastrar</button>
-                <p style="margin-top:20px; font-size:0.9rem;"><a href="#" onclick="auth.toggle('login')">Voltar</a></p>
-            </div>
-            <div class="modal-nav-footer" style="padding:20px 0 0;">
-                <button onclick="app.closeModal('auth-modal')" class="btn-nav-action btn-nav-back">Voltar</button>
-                <button onclick="app.closeModal('auth-modal')" class="btn-nav-action btn-nav-close">Fechar</button>
+            <div style="margin-top: 50px;">
+                <h2 id="auth-title" style="margin-bottom:25px;">Acesso</h2>
+                <div id="form-login">
+                    <input type="email" id="l-email" class="input" placeholder="E-mail">
+                    <input type="password" id="l-pass" class="input" placeholder="Senha">
+                    <button onclick="auth.login()" class="btn-modern" style="width:100%;">Entrar</button>
+                    <p style="margin-top:20px; font-size:0.9rem;">Não tem conta? <a href="#" onclick="auth.toggle('register')">Cadastre-se</a></p>
+                </div>
+                <div id="form-register" style="display:none;">
+                    <input type="text" id="r-name" class="input" placeholder="Nome">
+                    <input type="email" id="r-email" class="input" placeholder="E-mail">
+                    <input type="password" id="r-pass" class="input" placeholder="Senha">
+                    <button onclick="auth.register()" class="btn-modern" style="width:100%;">Cadastrar</button>
+                    <p style="margin-top:20px; font-size:0.9rem;"><a href="#" onclick="auth.toggle('login')">Voltar</a></p>
+                </div>
             </div>
         </div>
     </div>
 
     <div id="admin-auth-modal" class="overlay" style="z-index:10003;">
         <div class="box single-col" style="max-width: 350px;">
-            <div style="padding:30px; text-align: center;">
+            <div class="modal-header-fixed">
+                <button onclick="app.closeModal('admin-auth-modal')" class="btn-nav-fixed back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+                <button onclick="app.closeModal('admin-auth-modal')" class="btn-nav-fixed close">FECHAR <i class="fas fa-times"></i></button>
+            </div>
+            <div style="padding:30px; text-align: center; margin-top: 50px;">
                 <i class="fas fa-lock"></i>
                 <h2>Área Restrita</h2>
                 <input type="password" id="admin-pass" class="input" placeholder="Digite a senha" style="text-align:center; font-size:1.2rem;" onkeydown="if(event.key==='Enter') admin.verifyLogin()">
                 <button onclick="admin.verifyLogin()" class="btn-modern" style="width:100%;">Entrar</button>
-            </div>
-            <div class="modal-nav-footer" style="padding:15px;">
-                <button onclick="app.closeModal('admin-auth-modal')" class="btn-nav-action btn-nav-close">Cancelar</button>
             </div>
         </div>
     </div>
@@ -711,8 +755,9 @@
                 </div>
             </div>
             
-            <div class="modal-nav-footer" style="background:white; padding:15px; border-top:1px solid #eee;">
-                <button onclick="app.closeModal('admin-modal')" class="btn-nav-action btn-nav-close" style="width:100%">Fechar Admin</button>
+            <div class="modal-header-fixed" style="top: auto; bottom: 0; border-top: 1px solid #eee; border-bottom: none;">
+                <button onclick="app.closeModal('admin-modal')" class="btn-nav-fixed back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+                <button onclick="app.closeModal('admin-modal')" class="btn-nav-fixed close">FECHAR <i class="fas fa-times"></i></button>
             </div>
         </div>
     </div>
@@ -1008,7 +1053,7 @@
                     } else if(o.payment_status === 'Pendente') { pendingInst = 1; } // Considera 1 pendencia
                     
                     const badge = remaining < 0.1 ? '<span class="cust-badge ok">Quitado</span>' : '<span class="cust-badge warn">Pendente</span>';
-                    html += `<tr><td>${o.customer_name}</td><td style="color:var(--success)">R$ ${paid.toFixed(2)}</td><td style="color:var(--danger)">R$ ${remaining.toFixed(2)}</td><td>${remaining > 0.1 ? pendingInst + 'x' : '-'}</td><td><button onclick="alert('Detalhes: ${o.id}')" class="btn-modern small outline">Ver</button></td></tr>`;
+                    html += `<tr><td>${o.customer_name}</td><td style="color:var(--success)">R$ ${paid.toFixed(2)}</td><td style="color:var(--danger)">R$ ${remaining.toFixed(2)}</td><td>${remaining > 0.1 ? pendingInst + 'x' : '-'}</td><td><button onclick="alert('Detalhes do pedido #${o.id}')" class="btn-modern small outline">Ver</button></td></tr>`;
                 });
                 html += `</tbody></table>`;
                 div.innerHTML = html;
@@ -1104,8 +1149,9 @@
                         <div class="box single-col" style="max-width:350px; padding:30px; text-align:center;">
                             <h3>Registrar Entrada</h3>
                             <p>Valor total do pedido: <strong>R$ ${total.toFixed(2)}</strong></p>
-                            <input type="number" id="partial-val-input" class="input" placeholder="R$ 0,00" style="font-size:1.5rem; text-align:center; padding:15px; border:2px solid var(--accent);">
-                            <button onclick="admin.confirmPartialLogic('${id}', ${total})" class="btn-modern success" style="width:100%; margin-top:15px;">Confirmar Entrada</button>
+                            <input type="number" id="partial-val-input" class="modern-input-large" placeholder="R$ 0,00" style="margin:20px 0;">
+                            
+                            <button onclick="admin.confirmPartialLogic('${id}', ${total})" class="btn-modern success" style="width:100%;">Confirmar Entrada</button>
                             <button onclick="document.getElementById('partial-modal').remove()" class="btn-nav-action btn-nav-close" style="margin-top:10px;">Cancelar</button>
                         </div>
                     </div>`;
