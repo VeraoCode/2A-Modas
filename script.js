@@ -1,28 +1,27 @@
 // ============================================================
-// 1. CONFIGURAÇÕES E PROTEÇÃO CONTRA TRAVAMENTO
+// 1. FAILSAFE (SEGURANÇA CONTRA LOOP INFINITO)
 // ============================================================
 
-// Trava de segurança: Se nada acontecer em 3 segundos, remove a tela de carregamento
+// Se o site não carregar em 3 segundos, forçamos a abertura
 setTimeout(() => { 
     const l = document.getElementById('loading-screen'); 
-    if(l) l.style.display='none'; 
+    if(l) {
+        l.style.opacity = '0';
+        setTimeout(() => l.style.display='none', 500);
+        console.warn("Failsafe: Carregamento forçado após tempo limite.");
+    }
 }, 3000);
 
-// Mostra erros na barra preta superior para facilitar o diagnóstico
+// Tratamento de erros visual
 window.onerror = function(msg) { 
     const sb = document.getElementById('status-bar'); 
-    if(sb) { 
-        sb.style.display='flex'; 
-        sb.className='err'; 
-        sb.innerHTML = `⚠️ Erro Detectado: ${msg}`; 
-    } 
-    // Força a remoção da tela de carregamento se der erro
-    const l = document.getElementById('loading-screen'); 
-    if(l) l.style.display='none';
+    if(sb) { sb.style.display='flex'; sb.className='err'; sb.innerHTML = `⚠️ ${msg}`; } 
+    // Em caso de erro crítico, remove o loader para o usuário não ficar preso
+    document.getElementById('loading-screen').style.display='none';
     return false; 
 };
 
-// CONFIGURAÇÕES
+// ================= CONFIG =================
 const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
 const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
@@ -31,9 +30,20 @@ const EMAILJS_SERVICE_ID = 'service_3x4ghcd';
 const EMAILJS_TEMPLATE_CLIENTE = 'template_rwf0bay';
 const EMAILJS_TEMPLATE_ADMIN = 'template_rwf0bay';
 
-// INICIALIZAÇÃO
+// ================= STATE & INIT =================
 let sb = null; 
-try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.error("Supabase Error:", e); }
+try { 
+    // Configuração explícita para salvar login no LocalStorage
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: {
+            persistSession: true,
+            storageKey: '2a_auth_token',
+            storage: window.localStorage,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+        }
+    }); 
+} catch(e) { console.error("Erro Supabase:", e); }
 
 const state = { products: [], cart: [], current: null, var: null, qty: 1, user: null, address: null, adminOrders: [], filterStatus: 'all', filterPay: 'all', selectedFiles: [], mainImageIndex: 0 };
 const PRESETS_VOL = ['25ml','50ml','75ml','100ml','200ml','P','M','G','GG','Unico'];
@@ -46,31 +56,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if(window.flatpickr) flatpickr(".flatpickr-input", { dateFormat: "Y-m-d", locale: "pt", altInput: true, altFormat: "d/m/Y" });
 });
 
-// ============================================================
-// 2. AUTENTICAÇÃO
-// ============================================================
+// ================= AUTH =================
 const auth = {
     user: null,
     
+    // Verifica sessão e carrega perfil
     checkProfile: async (openModal = false) => {
         try {
             const { data } = await sb.auth.getSession();
+            
             if(data.session) {
-                // Tenta buscar no banco
+                // Tenta buscar perfil no banco
                 const { data: profile, error } = await sb.from('customers').select('*').eq('id', data.session.user.id).single();
                 
                 if (profile) {
                     state.user = profile;
+                    // Carrega endereços
                     if(profile.address) {
-                        const addrList = typeof profile.address === 'string' ? JSON.parse(profile.address) : profile.address;
-                        localStorage.setItem('2a_addrs', JSON.stringify(addrList));
-                        if(addrList.length > 0 && !state.address) {
-                            state.address = addrList[0];
-                            localStorage.setItem('2a_active_addr', JSON.stringify(state.address));
-                        }
+                        try {
+                            const addrList = typeof profile.address === 'string' ? JSON.parse(profile.address) : profile.address;
+                            localStorage.setItem('2a_addrs', JSON.stringify(addrList));
+                            // Define padrão se não houver
+                            if(addrList.length > 0 && !state.address) {
+                                state.address = addrList[0];
+                                localStorage.setItem('2a_active_addr', JSON.stringify(state.address));
+                            }
+                        } catch(e) { console.error("Erro parsing address", e); }
                     }
                 } else {
-                    // Fallback
+                    // Fallback se não existir no banco
                     state.user = { 
                         id: data.session.user.id, 
                         email: data.session.user.email, 
@@ -85,8 +99,8 @@ const auth = {
                 app.updateUI();
                 if(openModal) app.showModal('auth-modal');
             }
-        } catch (error) {
-            console.error("Erro no checkProfile:", error);
+        } catch (err) {
+            console.error("Erro fatal checkProfile:", err);
         }
     },
 
@@ -105,7 +119,7 @@ const auth = {
         
         app.success("Login realizado!");
         app.closeModal('auth-modal');
-        // O listener cuidará do resto
+        // onAuthStateChange vai disparar
     },
 
     register: async () => {
@@ -113,6 +127,8 @@ const auth = {
         const email = document.getElementById('r-email').value;
         const pass = document.getElementById('r-pass').value;
         const phone = document.getElementById('r-phone').value;
+        
+        // Endereço
         const cep = document.getElementById('r-cep').value;
         const street = document.getElementById('r-street').value;
         const num = document.getElementById('r-num').value;
@@ -130,8 +146,11 @@ const auth = {
 
         if(data.user) {
             const newAddr = { name, phone, cep, street, number: num, bairro, city, uf, type: 'Principal' };
+            // Tenta criar perfil
             await sb.from('customers').insert([{ id: data.user.id, name, email, phone, address: [newAddr] }]);
+            
             app.success("Conta criada! Entrando...");
+            // Login automático
             await sb.auth.signInWithPassword({ email, password: pass });
             app.closeModal('auth-modal');
         }
@@ -199,14 +218,25 @@ const auth = {
             }
             const remaining = Math.max(0, o.total - paidAmount);
 
-            div.innerHTML += `<div class="client-track-card"><div class="track-header"><span class="track-id">Pedido #${o.id.slice(-4)}</span><span class="track-date">${o.date}</span></div><div style="margin-bottom:20px;"><div class="track-bar-container"><div class="track-bar-fill ${truckClass}" style="width: ${progress}%"><i class="fas fa-truck track-truck ${truckClass}"></i></div></div><div class="track-labels"><span class="${progress >= 15 ? 'active' : ''}">Pedido</span><span class="${progress >= 60 ? 'active' : ''}">Enviado</span><span class="${progress >= 100 && !truckClass ? 'active' : ''}">Entregue</span></div><div style="text-align:center; font-weight:bold; margin-top:5px; color:var(--accent); font-size:0.8rem;">Status: ${statusLabel}</div></div><div class="client-fin-box"><div class="cf-row"><span>Total:</span> <strong>R$ ${o.total.toFixed(2)}</strong></div><div class="cf-row"><span>Pago:</span> <span class="cf-status-paid">R$ ${paidAmount.toFixed(2)}</span></div>${remaining > 0.1 ? `<div class="cf-row"><span>Restante:</span> <span class="cf-status-pending">R$ ${remaining.toFixed(2)}</span></div>` : '<div style="color:var(--success); font-weight:bold; text-align:center;">Quitado!</div>'}${installmentsHtml}</div></div>`;
+            div.innerHTML += `
+            <div class="client-track-card">
+                <div class="track-header"><span class="track-id">Pedido #${o.id.slice(-4)}</span><span class="track-date">${o.date}</span></div>
+                <div style="margin-bottom:20px;">
+                    <div class="track-bar-container"><div class="track-bar-fill ${truckClass}" style="width: ${progress}%"><i class="fas fa-truck track-truck ${truckClass}"></i></div></div>
+                    <div class="track-labels"><span class="${progress >= 15 ? 'active' : ''}">Pedido</span><span class="${progress >= 60 ? 'active' : ''}">Enviado</span><span class="${progress >= 100 && !truckClass ? 'active' : ''}">Entregue</span></div>
+                    <div style="text-align:center; font-weight:bold; margin-top:5px; color:var(--accent); font-size:0.8rem;">Status: ${statusLabel}</div>
+                </div>
+                <div class="client-fin-box">
+                    <div class="cf-row"><span>Total:</span> <strong>R$ ${o.total.toFixed(2)}</strong></div>
+                    <div class="cf-row"><span>Pago:</span> <span class="cf-status-paid">R$ ${paidAmount.toFixed(2)}</span></div>
+                    ${remaining > 0.1 ? `<div class="cf-row"><span>Restante:</span> <span class="cf-status-pending">R$ ${remaining.toFixed(2)}</span></div>` : '<div style="color:var(--success); font-weight:bold; text-align:center;">Quitado!</div>'}${installmentsHtml}
+                </div>
+            </div>`;
         });
     }
 };
 
-// ============================================================
-// 3. APP (LOJA)
-// ============================================================
+// ================= APP (LOJA) =================
 const app = {
     load: async () => {
         if(!sb) return;
@@ -457,9 +487,7 @@ const app = {
     closeModal: (id) => document.getElementById(id).classList.remove('active')
 };
 
-// ============================================================
-// 4. ADMINISTRAÇÃO (GESTÃO COMPLETA)
-// ============================================================
+// ================= ADMIN =================
 const admin = {
     showLogin: async () => {
         const { data } = await sb.auth.getSession();
@@ -476,6 +504,7 @@ const admin = {
         const today = new Date();
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
         
+        // AUTO-REFRESH ON FILTER CHANGE
         const bindDate = (id, d) => {
             const el = document.getElementById(id);
             if(el && el._flatpickr) {
@@ -620,6 +649,7 @@ const admin = {
         if(o.status.includes('Entregue')) stClass = 'st-entregue';
         if(o.status.includes('Cancelado')) stClass = 'st-cancelado';
         
+        // Renderiza itens com miniatura
         let prodListHTML = '';
         try {
             const prods = JSON.parse(o.items);
@@ -761,7 +791,7 @@ const admin = {
         document.getElementById('edit-id').value = p.id;
         document.getElementById('f-name').value = safeVal(p.name); document.getElementById('f-desc').value = safeVal(p.description);
         document.getElementById('f-cost').value = safeVal(p.cost_price); document.getElementById('f-promo').checked = p.is_promo;
-        admin.clear(); document.getElementById('edit-id').value = p.id; 
+        admin.clear(); document.getElementById('edit-id').value = p.id; // Clear soft
         const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
         if(vars) vars.forEach(v => {
             if(v.name === 'Padrão') { document.getElementById('f-price-global').value = v.price; document.getElementById('f-stock-global').value = v.stock; }
