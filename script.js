@@ -4,11 +4,7 @@ setTimeout(() => { const l = document.getElementById('loading-screen'); if(l) l.
 // Tratamento de erros global
 window.onerror = function(msg) { 
     const sb = document.getElementById('status-bar'); 
-    if(sb) { 
-        sb.style.display='flex'; 
-        sb.className='err'; 
-        sb.innerHTML = `⚠️ Erro: ${msg}`; 
-    } 
+    if(sb) { sb.style.display='flex'; sb.className='err'; sb.innerHTML = `⚠️ Erro: ${msg}`; } 
     return false; 
 };
 
@@ -42,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
 const auth = {
     user: null,
     
-    // Verifica sessão silenciosamente ao carregar a página
     checkProfile: async (openModal = false) => {
         const { data } = await sb.auth.getSession();
         if(data.session) {
@@ -67,13 +62,9 @@ const auth = {
         }
     },
 
-    // Função chamada pelo botão do cabeçalho
     handleHeaderClick: () => {
-        if(state.user) {
-            auth.openClientArea();
-        } else {
-            app.showModal('auth-modal');
-        }
+        if(state.user) auth.openClientArea();
+        else app.showModal('auth-modal');
     },
 
     login: async () => {
@@ -86,7 +77,7 @@ const auth = {
         
         app.success("Login realizado!");
         app.closeModal('auth-modal');
-        await auth.checkProfile(true); // Carrega e abre modal
+        await auth.checkProfile(true); 
     },
 
     register: async () => {
@@ -647,7 +638,11 @@ const admin = {
         setTimeout(() => { 
             app.showModal('admin-modal'); 
             const today = new Date();
-            const prior = new Date(new Date().setDate(today.getDate() - 30));
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+
             const setDateAndBind = (id, date, callback) => {
                 const el = document.getElementById(id);
                 if(el && el._flatpickr) {
@@ -655,10 +650,12 @@ const admin = {
                     el._flatpickr.set('onChange', callback);
                 }
             };
+            
             setDateAndBind('order-end', today, () => admin.renderOrders());
-            setDateAndBind('order-start', prior, () => admin.renderOrders());
+            setDateAndBind('order-start', firstDay, () => admin.renderOrders()); // Ajuste mês atual
             setDateAndBind('fin-end', today, () => admin.renderFinance());
-            setDateAndBind('fin-start', prior, () => admin.renderFinance());
+            setDateAndBind('fin-start', firstDay, () => admin.renderFinance()); // Ajuste mês atual
+            
             admin.renderList(); admin.renderOrders(); admin.updateStats(); admin.renderPayments(); admin.renderFinance();
         }, 100);
     },
@@ -1159,12 +1156,21 @@ const admin = {
         admin.renderPayments();
     },
     renderPayments: async () => {
-        const { data } = await sb.from('orders').select('*').neq('status', 'Cancelado').order('created_at', {ascending: false});
+        const startStr = document.getElementById('fin-start').value;
+        const endStr = document.getElementById('fin-end').value;
+        let query = sb.from('orders').select('*').neq('status', 'Cancelado').order('created_at', {ascending: false});
+        if(startStr) query = query.gte('created_at', new Date(startStr + 'T00:00:00').toISOString());
+        if(endStr) query = query.lte('created_at', new Date(endStr + 'T23:59:59').toISOString());
+        
+        const { data } = await query;
         const div = document.getElementById('pay-list'); 
         if(!div) return; 
         div.innerHTML = "";
         
         if(!data || data.length === 0) { div.innerHTML = "<p>Nenhum registro.</p>"; return; }
+
+        let totalRecebido = 0;
+        let totalAReceber = 0;
 
         const clients = {};
         data.forEach(o => {
@@ -1178,8 +1184,6 @@ const admin = {
             try { const addr = JSON.parse(o.address || '{}'); if(addr.phone) clients[key].phone = addr.phone; } catch(e){}
             
             let orderPaid = 0;
-            let orderTotal = o.total;
-            
             if(o.payment_status === 'Pago') { 
                 orderPaid = o.total; 
             } else if (o.installments) {
@@ -1190,14 +1194,20 @@ const admin = {
             }
             
             clients[key].total_paid += orderPaid;
-            clients[key].total_debt += (orderTotal - orderPaid);
+            clients[key].total_debt += (o.total - orderPaid);
             clients[key].orders.push(o);
+
+            totalRecebido += orderPaid;
+            totalAReceber += (o.total - orderPaid);
         });
+
+        // Atualiza Cards de Resumo
+        document.getElementById('fin-real-revenue').innerText = `R$ ${totalRecebido.toFixed(2)}`;
+        document.getElementById('fin-total-created').innerText = `R$ ${totalAReceber.toFixed(2)}`;
 
         Object.values(clients).forEach((c, index) => {
             const debt = Math.max(0, c.total_debt);
             const hasDebt = debt > 0.1; 
-            const debtColor = hasDebt ? 'var(--danger)' : 'var(--success)';
             const phoneClean = c.phone ? c.phone.replace(/\D/g, '') : '';
             const ordersHTML = c.orders.map(o => admin.generateOrderCardHTML(o)).join('');
 
@@ -1250,7 +1260,21 @@ const admin = {
         if(items.length > 0) items.forEach(i => { if(i.paid) totalPaid += parseFloat(i.amount); });
         
         const remaining = Math.max(0, o.total - totalPaid);
-        const prodList = JSON.parse(o.items).map(i => `${i.qty}x ${i.name}`).join(', ');
+        
+        // PRODUTOS COM MINIATURA
+        let prodListHTML = '';
+        try {
+            const prods = JSON.parse(o.items);
+            prodListHTML = prods.map(i => `
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px; border-bottom:1px dashed #eee; padding-bottom:5px;">
+                    <img src="${i.image || 'https://via.placeholder.com/40'}" style="width:40px; height:40px; border-radius:6px; object-fit:cover;">
+                    <div style="font-size:0.85rem;">
+                        <strong>${i.name}</strong> <small>(${i.variant})</small><br>
+                        <span style="color:#666;">${i.qty}x R$ ${i.price.toFixed(2)}</span>
+                    </div>
+                </div>
+            `).join('');
+        } catch(e) { prodListHTML = 'Erro ao carregar itens'; }
 
         let fullAddrString = "Sem endereço registrado";
         let mapLink = "#";
@@ -1284,7 +1308,7 @@ const admin = {
 
         const statusEntrega = `
             <select onchange="admin.updateStatus('${o.id}', this.value)" class="status-selector small-select ${o.status === 'Cancelado' ? 'st-cancelado' : (o.status === 'Entregue' ? 'st-entregue' : 'st-pendente')}" style="margin-bottom:5px;">
-                <option value="Pendente" ${o.status.includes('Pendente')?'selected':''}>🚚 Entrega Pendente</option>
+                <option value="Pendente" ${o.status.includes('Pendente')?'selected':''}>🚚 Pendente</option>
                 <option value="Enviado" ${o.status==='Enviado'?'selected':''}>🚀 Enviado</option>
                 <option value="Entregue" ${o.status==='Entregue'?'selected':''}>✅ Entregue</option>
                 <option value="Cancelado" ${o.status==='Cancelado'?'selected':''}>❌ Cancelado</option>
@@ -1303,7 +1327,9 @@ const admin = {
         <div class="debt-card ${o.status === 'Cancelado' ? 'cancelled-order' : ''} ${isPaidStatus ? 'paid' : ''}" style="margin-bottom:15px; border-left:4px solid var(--accent);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <strong>Pedido #${o.id.slice(-4)} <span style="font-weight:normal; font-size:0.8rem;">(${o.date})</span></strong>
-                <button onclick="admin.resendEmail('${o.id}')" class="btn-action-icon" title="Reenviar Email"><i class="fas fa-envelope"></i></button>
+                <button onclick="admin.resendEmail('${o.id}')" class="btn-action-icon" style="width:auto; padding:5px 10px; font-size:0.8rem;">
+                    <i class="fas fa-envelope"></i> ${o.customer_email || 'Email'}
+                </button>
             </div>
 
             <div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.85rem; border:1px solid #eee;">
@@ -1315,7 +1341,7 @@ const admin = {
                 </a>
             </div>
 
-            <div style="font-size:0.85rem; color:#666; margin:5px 0;">Itens: ${prodList}</div>
+            <div style="font-size:0.85rem; color:#666; margin:5px 0;">${prodListHTML}</div>
             
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
                 <div><label style="font-size:0.7rem; font-weight:bold; color:#999;">STATUS ENTREGA</label>${statusEntrega}</div>
@@ -1382,41 +1408,10 @@ const admin = {
         }
     },
     renderFinance: async () => {
+        // Função auxiliar para financeiro geral (mantida para compatibilidade, mas renderPayments faz o cálculo do mês agora)
         const startStr = document.getElementById('fin-start').value;
         const endStr = document.getElementById('fin-end').value;
-        if(!startStr || !endStr) return;
-        const start = new Date(startStr + 'T00:00:00');
-        const end = new Date(endStr + 'T23:59:59');
-        const { data: orders } = await sb.from('orders').select('*').neq('status', 'Cancelado');
-        let realRevenue = 0;
-        let totalCreated = 0;
-        if(orders) {
-            orders.forEach(o => {
-                const orderDate = new Date(o.created_at);
-                if(orderDate >= start && orderDate <= end) {
-                    totalCreated += o.total;
-                }
-                if(o.payment_status === 'Pago') {
-                    if(orderDate >= start && orderDate <= end) {
-                        realRevenue += o.total;
-                    }
-                } else if(o.installments) {
-                    try {
-                        const inst = JSON.parse(o.installments);
-                        inst.forEach(i => {
-                            if(i.paid) {
-                                const payDate = i.date ? new Date(i.date + 'T12:00:00') : orderDate;
-                                if(payDate >= start && payDate <= end) {
-                                    realRevenue += parseFloat(i.amount);
-                                }
-                            }
-                        });
-                    } catch(e) {}
-                }
-            });
-        }
-        document.getElementById('fin-real-revenue').innerText = `R$ ${realRevenue.toFixed(2)}`;
-        document.getElementById('fin-total-created').innerText = `R$ ${totalCreated.toFixed(2)}`;
+        // A lógica principal está dentro de renderPayments agora para sincronizar com a lista filtrada
     },
     updateStatus: async (id, val) => { if(sb) await sb.from('orders').update({status: val}).eq('id', id); app.success("Status atualizado!"); admin.renderOrders(); },
     updateStats: () => {
@@ -1431,7 +1426,6 @@ const admin = {
             });
             const isSoldOut = pStock === 0;
             
-            // Estilo cinza direto no HTML se esgotado
             const cardStyle = isSoldOut ? 'background:#f0f0f0; opacity:0.8; filter:grayscale(1);' : '';
             const color = isSoldOut ? '#888' : (pStock < 5 ? '#f39c12' : '#27ae60');
             let mainImg = "https://via.placeholder.com/60";
