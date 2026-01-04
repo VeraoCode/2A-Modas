@@ -1,5 +1,5 @@
-// Remove tela de carregamento após 4s (fallback de segurança)
-setTimeout(() => { const l = document.getElementById('loading-screen'); if(l) l.style.display='none'; }, 4000);
+// Remove tela de carregamento (será chamada no final do init)
+const hideLoading = () => { const l = document.getElementById('loading-screen'); if(l) l.style.display='none'; };
 
 // Tratamento de erros global
 window.onerror = function(msg) { 
@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const auth = {
     user: null,
     
+    // Verifica sessão silenciosamente
     checkProfile: async (openModal = false) => {
         const { data } = await sb.auth.getSession();
         if(data.session) {
@@ -63,8 +64,11 @@ const auth = {
     },
 
     handleHeaderClick: () => {
-        if(state.user) auth.openClientArea();
-        else app.showModal('auth-modal');
+        if(state.user) {
+            auth.openClientArea();
+        } else {
+            app.showModal('auth-modal');
+        }
     },
 
     login: async () => {
@@ -641,8 +645,7 @@ const admin = {
             const year = today.getFullYear();
             const month = today.getMonth();
             const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-
+            
             const setDateAndBind = (id, date, callback) => {
                 const el = document.getElementById(id);
                 if(el && el._flatpickr) {
@@ -652,11 +655,11 @@ const admin = {
             };
             
             setDateAndBind('order-end', today, () => admin.renderOrders());
-            setDateAndBind('order-start', firstDay, () => admin.renderOrders()); // Ajuste mês atual
-            setDateAndBind('fin-end', today, () => admin.renderFinance());
-            setDateAndBind('fin-start', firstDay, () => admin.renderFinance()); // Ajuste mês atual
+            setDateAndBind('order-start', firstDay, () => admin.renderOrders());
+            setDateAndBind('fin-end', today, () => admin.renderPayments()); // AGORA CHAMA RENDER PAYMENTS
+            setDateAndBind('fin-start', firstDay, () => admin.renderPayments()); // AGORA CHAMA RENDER PAYMENTS
             
-            admin.renderList(); admin.renderOrders(); admin.updateStats(); admin.renderPayments(); admin.renderFinance();
+            admin.renderList(); admin.renderOrders(); admin.updateStats(); admin.renderPayments(); 
         }, 100);
     },
     logout: async () => {
@@ -678,17 +681,13 @@ const admin = {
         const oid = document.getElementById('pp-oid').value;
         const idx = parseInt(document.getElementById('pp-idx').value);
         const valStr = document.getElementById('pp-val').value;
-        
         if(!valStr || isNaN(valStr) || parseFloat(valStr) <= 0) return alert("Valor inválido");
-        
         const paidVal = parseFloat(valStr);
-        
         app.ask("Confirmar Pagamento", `Confirma o recebimento de R$ ${paidVal.toFixed(2)}?`, async () => {
             const { data } = await sb.from('orders').select('installments').eq('id', oid).single();
             if(data) {
                 const arr = JSON.parse(data.installments);
                 const originalVal = parseFloat(arr[idx].amount);
-                
                 if(paidVal >= originalVal) {
                     arr[idx].amount = originalVal;
                     arr[idx].paid = true;
@@ -697,7 +696,6 @@ const admin = {
                     arr[idx].amount = paidVal;
                     arr[idx].paid = true;
                     arr[idx].note = "Pagto Parcial";
-                    
                     arr.splice(idx + 1, 0, {
                         date: arr[idx].date,
                         amount: remaining.toFixed(2),
@@ -705,7 +703,6 @@ const admin = {
                         is_remaining: true
                     });
                 }
-                
                 await sb.from('orders').update({ installments: JSON.stringify(arr) }).eq('id', oid);
                 app.success("Pagamento parcial registrado!");
                 app.closeModal('partial-pay-modal');
@@ -753,8 +750,6 @@ const admin = {
     handleFileSelect: (input) => {
         const files = Array.from(input.files);
         if(files.length > 5) { alert("Máximo 5 arquivos"); input.value=""; return; }
-        const sizeErr = files.some(f => f.size > 5*1024*1024);
-        if(sizeErr) { alert("Arquivos devem ser menores que 5MB"); input.value=""; return; }
         state.selectedFiles = files;
         state.mainImageIndex = 0; 
         const area = document.getElementById('file-preview-area');
@@ -863,7 +858,6 @@ const admin = {
                         document.getElementById('pay-list').innerHTML = '';
                         admin.renderOrders(); 
                         admin.renderPayments(); 
-                        admin.renderFinance(); 
                     }
                     else alert("Erro ao resetar: " + error.message);
                 }
@@ -1005,26 +999,20 @@ const admin = {
         const oid = document.getElementById('entry-oid').value;
         const total = parseFloat(document.getElementById('entry-total').value);
         const valStr = document.getElementById('entry-val').value;
-        
         if(!valStr || isNaN(valStr)) return alert("Digite um valor válido");
         const paid = parseFloat(valStr);
         const rest = total - paid;
-        
         if(paid >= total) return alert("Valor igual ou maior que o total. Use 'Quitar Tudo'.");
         if(paid <= 0) return alert("Valor inválido.");
-        
         const today = new Date().toISOString().split('T')[0];
         const nextMonth = new Date(); nextMonth.setDate(nextMonth.getDate() + 30);
-        
         const installments = [
             { date: today, amount: paid.toFixed(2), paid: true },
             { date: nextMonth.toISOString().split('T')[0], amount: rest.toFixed(2), paid: false }
         ];
-        
         await sb.from('orders').update({
             payment_status: 'Parcelado', installments: JSON.stringify(installments)
         }).eq('id', oid);
-        
         app.closeModal('entry-modal');
         app.success("Valor de Entrada inserido com sucesso!");
         admin.renderOrders(); admin.renderPayments();
@@ -1408,10 +1396,41 @@ const admin = {
         }
     },
     renderFinance: async () => {
-        // Função auxiliar para financeiro geral (mantida para compatibilidade, mas renderPayments faz o cálculo do mês agora)
         const startStr = document.getElementById('fin-start').value;
         const endStr = document.getElementById('fin-end').value;
-        // A lógica principal está dentro de renderPayments agora para sincronizar com a lista filtrada
+        if(!startStr || !endStr) return;
+        const start = new Date(startStr + 'T00:00:00');
+        const end = new Date(endStr + 'T23:59:59');
+        const { data: orders } = await sb.from('orders').select('*').neq('status', 'Cancelado');
+        let realRevenue = 0;
+        let totalCreated = 0;
+        if(orders) {
+            orders.forEach(o => {
+                const orderDate = new Date(o.created_at);
+                if(orderDate >= start && orderDate <= end) {
+                    totalCreated += o.total;
+                }
+                if(o.payment_status === 'Pago') {
+                    if(orderDate >= start && orderDate <= end) {
+                        realRevenue += o.total;
+                    }
+                } else if(o.installments) {
+                    try {
+                        const inst = JSON.parse(o.installments);
+                        inst.forEach(i => {
+                            if(i.paid) {
+                                const payDate = i.date ? new Date(i.date + 'T12:00:00') : orderDate;
+                                if(payDate >= start && payDate <= end) {
+                                    realRevenue += parseFloat(i.amount);
+                                }
+                            }
+                        });
+                    } catch(e) {}
+                }
+            });
+        }
+        document.getElementById('fin-real-revenue').innerText = `R$ ${realRevenue.toFixed(2)}`;
+        document.getElementById('fin-total-created').innerText = `R$ ${totalCreated.toFixed(2)}`;
     },
     updateStatus: async (id, val) => { if(sb) await sb.from('orders').update({status: val}).eq('id', id); app.success("Status atualizado!"); admin.renderOrders(); },
     updateStats: () => {
