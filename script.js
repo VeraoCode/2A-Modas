@@ -1,17 +1,28 @@
-// Remove tela de carregamento após 5s (Segurança)
+// ============================================================
+// 1. CONFIGURAÇÕES E PROTEÇÃO CONTRA TRAVAMENTO
+// ============================================================
+
+// Trava de segurança: Se nada acontecer em 3 segundos, remove a tela de carregamento
 setTimeout(() => { 
     const l = document.getElementById('loading-screen'); 
     if(l) l.style.display='none'; 
-}, 5000);
+}, 3000);
 
-// Tratamento de erros
+// Mostra erros na barra preta superior para facilitar o diagnóstico
 window.onerror = function(msg) { 
     const sb = document.getElementById('status-bar'); 
-    if(sb) { sb.style.display='flex'; sb.className='err'; sb.innerHTML = `⚠️ Erro: ${msg}`; } 
+    if(sb) { 
+        sb.style.display='flex'; 
+        sb.className='err'; 
+        sb.innerHTML = `⚠️ Erro Detectado: ${msg}`; 
+    } 
+    // Força a remoção da tela de carregamento se der erro
+    const l = document.getElementById('loading-screen'); 
+    if(l) l.style.display='none';
     return false; 
 };
 
-// ================= CONFIG =================
+// CONFIGURAÇÕES
 const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
 const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
@@ -20,15 +31,9 @@ const EMAILJS_SERVICE_ID = 'service_3x4ghcd';
 const EMAILJS_TEMPLATE_CLIENTE = 'template_rwf0bay';
 const EMAILJS_TEMPLATE_ADMIN = 'template_rwf0bay';
 
+// INICIALIZAÇÃO
 let sb = null; 
-try { 
-    sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-        auth: {
-            persistSession: true, // FORÇA SALVAR SESSÃO
-            autoRefreshToken: true,
-        }
-    }); 
-} catch(e) { console.error("Supabase Error:", e); }
+try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.error("Supabase Error:", e); }
 
 const state = { products: [], cart: [], current: null, var: null, qty: 1, user: null, address: null, adminOrders: [], filterStatus: 'all', filterPay: 'all', selectedFiles: [], mainImageIndex: 0 };
 const PRESETS_VOL = ['25ml','50ml','75ml','100ml','200ml','P','M','G','GG','Unico'];
@@ -41,49 +46,47 @@ document.addEventListener('DOMContentLoaded', () => {
     if(window.flatpickr) flatpickr(".flatpickr-input", { dateFormat: "Y-m-d", locale: "pt", altInput: true, altFormat: "d/m/Y" });
 });
 
-// ================= AUTH =================
+// ============================================================
+// 2. AUTENTICAÇÃO
+// ============================================================
 const auth = {
     user: null,
     
     checkProfile: async (openModal = false) => {
-        // Pega sessão do cache local
-        const { data: { session } } = await sb.auth.getSession();
-        
-        if(session) {
-            console.log("Sessão ativa:", session.user.email);
-            
-            // Tenta buscar dados do banco
-            // IMPORTANTE: O cast ::text foi resolvido no SQL, aqui usamos string normal
-            const { data: profile, error } = await sb.from('customers').select('*').eq('id', session.user.id).single();
-            
-            if(error) console.error("Erro ao buscar perfil:", error);
-
-            if (profile) {
-                state.user = profile;
-                if(profile.address) {
-                    const addrList = typeof profile.address === 'string' ? JSON.parse(profile.address) : profile.address;
-                    localStorage.setItem('2a_addrs', JSON.stringify(addrList));
-                    if(addrList.length > 0 && !state.address) {
-                        state.address = addrList[0];
-                        localStorage.setItem('2a_active_addr', JSON.stringify(state.address));
+        try {
+            const { data } = await sb.auth.getSession();
+            if(data.session) {
+                // Tenta buscar no banco
+                const { data: profile, error } = await sb.from('customers').select('*').eq('id', data.session.user.id).single();
+                
+                if (profile) {
+                    state.user = profile;
+                    if(profile.address) {
+                        const addrList = typeof profile.address === 'string' ? JSON.parse(profile.address) : profile.address;
+                        localStorage.setItem('2a_addrs', JSON.stringify(addrList));
+                        if(addrList.length > 0 && !state.address) {
+                            state.address = addrList[0];
+                            localStorage.setItem('2a_active_addr', JSON.stringify(state.address));
+                        }
                     }
+                } else {
+                    // Fallback
+                    state.user = { 
+                        id: data.session.user.id, 
+                        email: data.session.user.email, 
+                        name: data.session.user.user_metadata.name || 'Cliente', 
+                        phone: '' 
+                    };
                 }
+                app.updateUI();
+                if(openModal) auth.openClientArea();
             } else {
-                // Fallback se não tiver no banco ainda
-                state.user = { 
-                    id: session.user.id, 
-                    email: session.user.email, 
-                    name: session.user.user_metadata.name || 'Cliente',
-                    phone: session.user.user_metadata.phone || ''
-                };
+                state.user = null;
+                app.updateUI();
+                if(openModal) app.showModal('auth-modal');
             }
-            app.updateUI();
-            if(openModal) auth.openClientArea();
-        } else {
-            console.log("Sem sessão.");
-            state.user = null;
-            app.updateUI();
-            if(openModal) app.showModal('auth-modal');
+        } catch (error) {
+            console.error("Erro no checkProfile:", error);
         }
     },
 
@@ -102,7 +105,7 @@ const auth = {
         
         app.success("Login realizado!");
         app.closeModal('auth-modal');
-        // O listener onAuthStateChange fará o resto
+        // O listener cuidará do resto
     },
 
     register: async () => {
@@ -123,52 +126,31 @@ const auth = {
             email, password: pass, options: { data: { name, phone } } 
         });
         
-        if(error) return alert("Erro no cadastro: " + error.message);
+        if(error) return alert("Erro: " + error.message);
 
         if(data.user) {
-            // Cria no banco customers explicitamente
             const newAddr = { name, phone, cep, street, number: num, bairro, city, uf, type: 'Principal' };
-            const { error: dbErr } = await sb.from('customers').insert([{ 
-                id: data.user.id, // ID do Auth
-                name, email, phone, address: [newAddr] 
-            }]);
-
-            if(dbErr) console.error("Erro BD:", dbErr);
-
+            await sb.from('customers').insert([{ id: data.user.id, name, email, phone, address: [newAddr] }]);
             app.success("Conta criada! Entrando...");
-            const { error: loginErr } = await sb.auth.signInWithPassword({ email, password: pass });
-            if(!loginErr) { app.closeModal('auth-modal'); } 
-            else { auth.toggle('login'); }
+            await sb.auth.signInWithPassword({ email, password: pass });
+            app.closeModal('auth-modal');
         }
     },
 
     logout: async () => {
         await sb.auth.signOut();
-        localStorage.clear(); // Limpa tudo
+        state.user = null;
+        state.address = null;
+        localStorage.clear();
         window.location.reload();
     },
 
-    updateProfileData: async () => {
-        if(!state.user) return;
-        const name = document.getElementById('c-profile-name').value;
-        const phone = document.getElementById('c-profile-phone').value;
-        
-        const { error } = await sb.from('customers').update({ name, phone }).eq('id', state.user.id);
-        
-        if(!error) {
-            state.user.name = name; state.user.phone = phone;
-            app.updateUI(); app.success("Dados salvos!");
-        } else {
-            alert("Erro ao salvar: " + error.message);
-        }
-    },
-
-    // ... Restante das funções de auth mantidas (openClientArea, loadClientOrders, etc) ...
     toggle: (mode) => {
         document.getElementById('form-login').style.display = mode === 'login' ? 'block' : 'none';
         document.getElementById('form-register').style.display = mode === 'register' ? 'block' : 'none';
         document.getElementById('auth-title').innerText = mode === 'login' ? 'Acesso' : 'Criar Conta';
     },
+
     openClientArea: () => {
         if(!state.user) return;
         document.getElementById('c-profile-name').value = state.user.name || '';
@@ -185,12 +167,24 @@ const auth = {
         auth.loadClientOrders();
         app.showModal('client-modal');
     },
+
+    updateProfileData: async () => {
+        const name = document.getElementById('c-profile-name').value;
+        const phone = document.getElementById('c-profile-phone').value;
+        const { error } = await sb.from('customers').update({ name, phone }).eq('id', state.user.id);
+        if(!error) {
+            state.user.name = name; state.user.phone = phone;
+            app.updateUI(); app.success("Dados salvos!");
+        } else alert("Erro: " + error.message);
+    },
+
     loadClientOrders: async () => {
         const div = document.getElementById('client-orders-list');
         div.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>';
-        const { data } = await sb.from('orders').select('*').eq('customer_id', String(state.user.id)).order('created_at', {ascending: false});
+        const uid = String(state.user.id);
+        const { data } = await sb.from('orders').select('*').eq('customer_id', uid).order('created_at', {ascending: false});
         div.innerHTML = '';
-        if(!data || !data.length) { div.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Sem pedidos.</p>'; return; }
+        if(!data || !data.length) { div.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Você ainda não fez pedidos.</p>'; return; }
         
         data.forEach(o => {
             let progress = 5; let truckClass = ''; let statusLabel = 'Processando';
@@ -210,7 +204,9 @@ const auth = {
     }
 };
 
-// ================= APP (LOJA) =================
+// ============================================================
+// 3. APP (LOJA)
+// ============================================================
 const app = {
     load: async () => {
         if(!sb) return;
@@ -332,156 +328,6 @@ const app = {
                 const data = await res.json();
                 if(!data.erro) {
                     const map = prefix === 'addr' ? {s:'addr-street', b:'addr-bairro', c:'addr-city', u:'addr-uf', n:'addr-num'} : 
-                                prefix === 'manual' ? {s:'m-client-street', b:'m-client-bairro', c:'m-cltusLabel = 'Em Trânsito'; }
-            if(o.status.includes('Entregue')) { progress = 100; statusLabel = 'Entregue'; }
-            if(o.status.includes('Cancelado')) { progress = 100; truckClass = 'cancelled'; statusLabel = 'Cancelado'; }
-            
-            let paidAmount = 0; let installmentsHtml = '';
-            if(o.payment_status === 'Pago') { paidAmount = o.total; } else if (o.installments) {
-                try { const inst = JSON.parse(o.installments); inst.forEach(i => { if(i.paid) paidAmount += parseFloat(i.amount); }); const next = inst.find(i => !i.paid); if(next) installmentsHtml = `<div style="color:#e67e22; font-size:0.8rem;">Próx. Parcela: ${next.date.split('-').reverse().join('/')} (R$ ${parseFloat(next.amount).toFixed(2)})</div>`; } catch(e){}
-            }
-            const remaining = Math.max(0, o.total - paidAmount);
-
-            div.innerHTML += `
-            <div class="client-track-card">
-                <div class="track-header"><span class="track-id">Pedido #${o.id.slice(-4)}</span><span class="track-date">${o.date}</span></div>
-                <div style="margin-bottom:20px;">
-                    <div class="track-bar-container"><div class="track-bar-fill ${truckClass}" style="width: ${progress}%"><i class="fas fa-truck track-truck ${truckClass}"></i></div></div>
-                    <div class="track-labels"><span class="${progress >= 15 ? 'active' : ''}">Pedido</span><span class="${progress >= 60 ? 'active' : ''}">Enviado</span><span class="${progress >= 100 && !truckClass ? 'active' : ''}">Entregue</span></div>
-                    <div style="text-align:center; font-weight:bold; margin-top:5px; color:var(--accent); font-size:0.8rem;">Status: ${statusLabel}</div>
-                </div>
-                <div class="client-fin-box">
-                    <div class="cf-row"><span>Total:</span> <strong>R$ ${o.total.toFixed(2)}</strong></div>
-                    <div class="cf-row"><span>Pago:</span> <span class="cf-status-paid">R$ ${paidAmount.toFixed(2)}</span></div>
-                    ${remaining > 0.1 ? `<div class="cf-row"><span>Restante:</span> <span class="cf-status-pending">R$ ${remaining.toFixed(2)}</span></div>` : '<div style="color:var(--success); font-weight:bold; text-align:center;">Quitado!</div>'}${installmentsHtml}
-                </div>
-            </div>`;
-        });
-    }
-};
-
-// ================= APP (LOJA) =================
-const app = {
-    load: async () => {
-        if(!sb) return;
-        const { data, error } = await sb.from('products').select('*');
-        if(!error) { state.products = data || []; app.render(state.products); }
-    },
-    success: (msg) => {
-        const toast = document.getElementById('success-toast');
-        document.getElementById('st-text').innerText = msg;
-        toast.classList.add('active');
-        setTimeout(() => toast.classList.remove('active'), 5000);
-    },
-    render: (list) => {
-        const div = document.getElementById('products-list'); if(!div) return; div.innerHTML = "";
-        if(list.length === 0) div.innerHTML = '<p style="grid-column:1/-1;text-align:center">Nenhum produto cadastrado.</p>';
-        list.forEach(p => {
-            const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-            const minP = (vars && vars.length) ? Math.min(...vars.map(v => parseFloat(v.price))) : 0;
-            const isPromo = p.is_promo ? '<span class="tag-promo">OFERTA</span>' : '';
-            let mainImg = "https://via.placeholder.com/300";
-            try { const media = JSON.parse(p.image_url); mainImg = Array.isArray(media) ? media[0] : p.image_url; } catch(e) { mainImg = p.image_url; }
-            div.innerHTML += `<div class="card" onclick="app.openModal('${p.id}')">${isPromo}<img src="${mainImg}" onerror="this.src='https://via.placeholder.com/300'"><div class="card-info"><span style="font-size:0.8rem;color:#999;text-transform:uppercase;">${p.category}</span><div style="font-weight:bold;margin:5px 0;">${p.name}</div><div style="color:var(--primary);font-weight:bold;">A partir R$ ${minP.toFixed(2)}</div><span class="tag-delivery">🚚 03 a 05 dias úteis</span></div></div>`;
-        });
-    },
-    ask: (title, msg, onYes) => {
-        document.getElementById('confirm-title').innerText = title;
-        document.getElementById('confirm-msg').innerText = msg;
-        const modal = document.getElementById('custom-confirm-modal');
-        modal.classList.add('active');
-        const yesBtn = document.getElementById('btn-confirm-yes');
-        const noBtn = document.getElementById('btn-confirm-no');
-        const newYes = yesBtn.cloneNode(true);
-        const newNo = noBtn.cloneNode(true);
-        yesBtn.parentNode.replaceChild(newYes, yesBtn);
-        noBtn.parentNode.replaceChild(newNo, noBtn);
-        newYes.addEventListener('click', () => { modal.classList.remove('active'); if(onYes) onYes(); });
-        newNo.addEventListener('click', () => { modal.classList.remove('active'); });
-    },
-    renderCart: () => {
-        const ul = document.getElementById('cart-list'); if(!ul) return; ul.innerHTML=""; let t=0;
-        if(state.cart.length === 0) ul.innerHTML = `<div style="text-align:center; padding:40px 0; color:#999;"><i class="fas fa-shopping-basket" style="font-size:3rem; margin-bottom:10px; opacity:0.3;"></i><p>Sua sacola está vazia</p></div>`;
-        state.cart.forEach((i,idx) => {
-            t += i.price*i.qty;
-            ul.innerHTML += `<li class="cart-item"><img src="${i.image || 'https://via.placeholder.com/60'}" class="cart-thumb"><div class="cart-details"><span class="cart-name">${i.name}</span><span class="cart-variant">${i.variant}</span><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;"><div class="qty-selector"><button class="qty-btn" onclick="app.cQty(${idx},-1)">-</button><div class="qty-val">${i.qty}</div><button class="qty-btn" onclick="app.cQty(${idx},1)">+</button></div><div style="font-weight:bold; color:var(--accent);">R$ ${(i.price*i.qty).toFixed(2)}</div></div></div><button class="btn-remove-modern" onclick="app.removeFromCart(${idx})"><i class="fas fa-trash-alt"></i></button></li>`;
-        });
-        if(state.cart.length > 0) ul.innerHTML += `<button onclick="app.toggleCart()" class="btn-continue-shop"><i class="fas fa-arrow-left"></i> Continuar Comprando</button>`;
-        document.getElementById('cart-total').innerText = `R$ ${t.toFixed(2)}`;
-        document.getElementById('cart-count').innerText = state.cart.length;
-    },
-    removeFromCart: (idx) => { state.cart.splice(idx,1); app.renderCart(); },
-    openPromoModal: () => {
-        const promos = state.products.filter(p => p.is_promo);
-        if(!promos.length) return alert("Sem promoções ativas.");
-        const cDiv = document.getElementById('promo-track'); cDiv.innerHTML = "";
-        const shownIds = new Set();
-        promos.forEach(p => {
-            if(shownIds.has(p.id)) return;
-            shownIds.add(p.id);
-            const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-            const minP = Math.min(...vars.map(v => v.price));
-            let mainImg = "https://via.placeholder.com/100";
-            try { const m = JSON.parse(p.image_url); mainImg = Array.isArray(m) ? m[0] : p.image_url; } catch(e) { mainImg = p.image_url; }
-            cDiv.innerHTML += `<div class="promo-list-card" onclick="app.closeModal('promo-modal'); setTimeout(() => app.openModal('${p.id}'), 100)"><img src="${mainImg}"><div><small class="promo-price">R$ ${minP.toFixed(2)}</small><br><strong>${p.name}</strong></div></div>`;
-        });
-        app.showModal('promo-modal');
-    },
-    openModal: (id) => {
-        const p = state.products.find(x => String(x.id) === String(id));
-        if(!p) return;
-        state.current = p; state.qty=1; state.var=null;
-        let media = []; try { media = JSON.parse(p.image_url); } catch(e) { media = [p.image_url]; }
-        if(!Array.isArray(media)) media = [p.image_url];
-        app.renderCarousel(media);
-        setSafe('m-title', p.name); setSafe('m-cat', p.category); setSafe('m-desc', p.description); setSafe('m-price', "Selecione...");
-        const vDiv = document.getElementById('m-vars'); vDiv.innerHTML = "";
-        const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-        if(vars) {
-            vars.forEach(v => {
-                const hasStock = parseInt(v.stock) > 0;
-                const chip = document.createElement('div');
-                chip.className = `var-chip ${!hasStock ? 'disabled' : ''}`;
-                let dot = COLOR_MAP[v.name] ? `<div class="color-circle" style="background:${COLOR_MAP[v.name]}"></div>` : "";
-                chip.innerHTML = `${dot}<span>${v.name}</span><small style="opacity:0.8">R$ ${parseFloat(v.price).toFixed(2)}</small>`;
-                if(hasStock) {
-                    chip.onclick = () => {
-                        state.var = v;
-                        document.getElementById('m-price').innerText = `R$ ${parseFloat(v.price).toFixed(2)}`;
-                        Array.from(vDiv.children).forEach(c => c.classList.remove('selected'));
-                        chip.classList.add('selected');
-                    };
-                }
-                vDiv.appendChild(chip);
-            });
-        }
-        app.showModal('product-modal');
-    },
-    renderCarousel: (media) => {
-        const area = document.getElementById('m-media-area');
-        if(!media.length) { area.innerHTML = ''; return; }
-        const renderMain = (url) => `<img src="${url}">`;
-        area.innerHTML = `<div class="carousel-main-container">${renderMain(media[0])}</div>`;
-    },
-    updQty: (n) => { 
-        if (n > 0) {
-            if (!state.var) return alert("Selecione a variação primeiro.");
-            if (state.qty + n > parseInt(state.var.stock)) return alert("Estoque máximo atingido.");
-        }
-        state.qty += n; if(state.qty<1) state.qty=1; 
-        document.getElementById('m-qty').innerText = state.qty; 
-    },
-    cQty: (idx,n) => { state.cart[idx].qty+=n; if(state.cart[idx].qty<1) state.cart[idx].qty=1; app.renderCart(); },
-    toggleCart: () => document.querySelector('.sidebar').classList.toggle('open'),
-    
-    fetchCep: async (cep, prefix) => {
-        cep = cep.replace(/\D/g, '');
-        if(cep.length === 8) {
-            try {
-                const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-                const data = await res.json();
-                if(!data.erro) {
-                    const map = prefix === 'addr' ? {s:'addr-street', b:'addr-bairro', c:'addr-city', u:'addr-uf', n:'addr-num'} : 
                                 prefix === 'manual' ? {s:'m-client-street', b:'m-client-bairro', c:'m-client-city', u:'m-client-uf', n:'m-client-num'} :
                                 {s:'r-street', b:'r-bairro', c:'r-city', u:'r-uf', n:'r-num'};
                     
@@ -495,7 +341,6 @@ const app = {
         }
     },
     openAddressModal: () => { app.showModal('address-modal'); },
-    
     addNewAddress: async () => {
         const val = id => document.getElementById(id).value;
         const a = { name: val('addr-name'), phone: val('addr-phone'), cep: val('addr-cep'), street: val('addr-street'), number: val('addr-num'), bairro: val('addr-bairro'), city: val('addr-city'), uf: val('addr-uf'), ref: val('addr-ref'), type: document.getElementById('addr-type').value };
@@ -506,16 +351,9 @@ const app = {
         localStorage.setItem('2a_addrs', JSON.stringify(list));
         state.address = a; localStorage.setItem('2a_active_addr', JSON.stringify(a));
 
-        if(state.user) {
-            const { error } = await sb.from('customers').update({ address: list }).eq('id', state.user.id);
-            if(error) console.error(error);
-            else app.success("Endereço salvo na nuvem!");
-        } else {
-            app.success("Endereço salvo localmente");
-        }
+        if(state.user) await sb.from('customers').update({ address: list }).eq('id', state.user.id);
         app.updateUI(); app.closeModal('address-modal');
     },
-
     delAddress: async (i) => {
         if(!confirm("Remover este endereço?")) return;
         let list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
@@ -619,7 +457,9 @@ const app = {
     closeModal: (id) => document.getElementById(id).classList.remove('active')
 };
 
-// ================= ADMIN =================
+// ============================================================
+// 4. ADMINISTRAÇÃO (GESTÃO COMPLETA)
+// ============================================================
 const admin = {
     showLogin: async () => {
         const { data } = await sb.auth.getSession();
@@ -636,7 +476,6 @@ const admin = {
         const today = new Date();
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
         
-        // AUTO-REFRESH ON FILTER CHANGE
         const bindDate = (id, d) => {
             const el = document.getElementById(id);
             if(el && el._flatpickr) {
@@ -843,6 +682,7 @@ const admin = {
         if(t === 'clients') admin.renderClients();
     },
     
+    // ... FUNÇÕES CRUD ...
     handleFileSelect: (input) => {
         const files = Array.from(input.files);
         if(files.length > 5) { alert("Máximo 5 arquivos"); input.value=""; return; }
@@ -921,7 +761,7 @@ const admin = {
         document.getElementById('edit-id').value = p.id;
         document.getElementById('f-name').value = safeVal(p.name); document.getElementById('f-desc').value = safeVal(p.description);
         document.getElementById('f-cost').value = safeVal(p.cost_price); document.getElementById('f-promo').checked = p.is_promo;
-        admin.clear(); document.getElementById('edit-id').value = p.id; // Clear soft
+        admin.clear(); document.getElementById('edit-id').value = p.id; 
         const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
         if(vars) vars.forEach(v => {
             if(v.name === 'Padrão') { document.getElementById('f-price-global').value = v.price; document.getElementById('f-stock-global').value = v.stock; }
@@ -1028,9 +868,6 @@ const admin = {
         app.success("Pedido Salvo!");
         admin.manualCart = []; admin.renderManualCart(); admin.renderOrders();
     },
-    // End of restored functions
-    
-    // Funções de pagamento (parcial e total)
     openEntryModal: (oid, total) => {
         document.getElementById('entry-oid').value = oid;
         document.getElementById('entry-total').value = total;
@@ -1153,20 +990,25 @@ const admin = {
 
 // ================= EXECUTION =================
 (async function init() {
-    // LISTENER DE AUTH: Mantém login persistente
+    // 1. Configura o listener ANTES de checar o perfil
     sb.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-            auth.checkProfile(); // Atualiza UI e state
+            // Só carrega se o usuário não estiver carregado para evitar loops
+            if (!state.user || state.user.id !== session.user.id) {
+                auth.checkProfile();
+            }
         } else if (event === 'SIGNED_OUT') {
             state.user = null;
             app.updateUI();
         }
     });
 
-    // Verificação inicial
-    await auth.checkProfile(); 
+    // 2. Carrega estado inicial
+    await auth.checkProfile(); // Tenta recuperar sessão existente
     await app.load(); 
     admin.initCheckboxes(); 
     app.updateUI();
+    
+    // 3. Libera tela
     document.getElementById('loading-screen').style.display='none';
 })();
