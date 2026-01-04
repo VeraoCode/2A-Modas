@@ -1,5 +1,5 @@
-// Remove tela de carregamento (será chamada no final do init)
-const hideLoading = () => { const l = document.getElementById('loading-screen'); if(l) l.style.display='none'; };
+// Remove tela de carregamento após 4s (fallback de segurança)
+setTimeout(() => { const l = document.getElementById('loading-screen'); if(l) l.style.display='none'; }, 4000);
 
 // Tratamento de erros global
 window.onerror = function(msg) { 
@@ -41,9 +41,15 @@ const auth = {
     // Verifica sessão silenciosamente
     checkProfile: async (openModal = false) => {
         const { data } = await sb.auth.getSession();
+        
         if(data.session) {
-            const { data: profile } = await sb.from('customers').select('*').eq('id', data.session.user.id).single();
+            console.log("Sessão encontrada:", data.session.user.id);
+            
+            // Tenta buscar perfil completo no banco
+            const { data: profile, error } = await sb.from('customers').select('*').eq('id', data.session.user.id).single();
+            
             if (profile) {
+                // Perfil existe no banco, usa ele
                 state.user = profile;
                 if(profile.address) {
                     const addrList = typeof profile.address === 'string' ? JSON.parse(profile.address) : profile.address;
@@ -53,10 +59,21 @@ const auth = {
                         localStorage.setItem('2a_active_addr', JSON.stringify(state.address));
                     }
                 }
+            } else {
+                // FALLBACK: Se não achou no banco (erro RLS ou cadastro incompleto), usa dados da sessão
+                console.warn("Perfil não encontrado no banco, usando dados da sessão.");
+                state.user = { 
+                    id: data.session.user.id, 
+                    email: data.session.user.email, 
+                    name: data.session.user.user_metadata.name || 'Cliente',
+                    phone: data.session.user.user_metadata.phone || ''
+                };
             }
+
             app.updateUI();
             if(openModal) auth.openClientArea();
         } else {
+            console.log("Nenhuma sessão ativa.");
             state.user = null;
             app.updateUI();
             if(openModal) app.showModal('auth-modal');
@@ -89,6 +106,8 @@ const auth = {
         const email = document.getElementById('r-email').value;
         const pass = document.getElementById('r-pass').value;
         const phone = document.getElementById('r-phone').value;
+        
+        // Endereço
         const cep = document.getElementById('r-cep').value;
         const street = document.getElementById('r-street').value;
         const num = document.getElementById('r-num').value;
@@ -96,19 +115,35 @@ const auth = {
         const city = document.getElementById('r-city').value;
         const uf = document.getElementById('r-uf').value;
 
-        if(!name || !email || !pass || !phone || !street || !num) return alert("Preencha campos obrigatórios");
+        if(!name || !email || !pass) return alert("Preencha dados de acesso");
 
-        const { data, error } = await sb.auth.signUp({ email, password: pass });
+        const { data, error } = await sb.auth.signUp({ 
+            email, 
+            password: pass,
+            options: {
+                data: { name: name, phone: phone } // Salva no metadata também
+            }
+        });
+        
         if(error) return alert("Erro: " + error.message);
 
         if(data.user) {
+            // Tenta salvar na tabela customers
             const newAddr = { name: name, phone: phone, cep: cep, street: street, number: num, bairro: bairro, city: city, uf: uf, type: 'Principal' };
-            await sb.from('customers').insert([{ id: data.user.id, name: name, email: email, phone: phone, address: [newAddr] }]);
+            const { error: dbError } = await sb.from('customers').insert([{ id: data.user.id, name: name, email: email, phone: phone, address: [newAddr] }]);
             
+            if(dbError) console.error("Erro ao criar perfil no banco (Trigger deve resolver):", dbError);
+
             app.success("Conta criada! Entrando...");
+            
+            // Faz login automático após criar
             const { error: loginErr } = await sb.auth.signInWithPassword({ email, password: pass });
-            if(!loginErr) { app.closeModal('auth-modal'); auth.checkProfile(true); } 
-            else { auth.toggle('login'); }
+            if(!loginErr) { 
+                app.closeModal('auth-modal'); 
+                auth.checkProfile(true); 
+            } else { 
+                auth.toggle('login'); 
+            }
         }
     },
 
@@ -137,6 +172,9 @@ const auth = {
         const addrDiv = document.getElementById('c-profile-addrs');
         addrDiv.innerHTML = '';
         const addrs = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
+        
+        if(addrs.length === 0) addrDiv.innerHTML = "<small>Nenhum endereço salvo.</small>";
+        
         addrs.forEach((a, i) => {
             addrDiv.innerHTML += `<div style="font-size:0.8rem; padding:8px; border-bottom:1px dashed #eee;"><b>${a.street}, ${a.number}</b> - ${a.city}/${a.uf} <br><small onclick="app.editAddress(${i}); app.closeModal('client-modal')" style="color:blue; cursor:pointer;">Editar</small></div>`;
         });
@@ -155,21 +193,50 @@ const auth = {
     loadClientOrders: async () => {
         const div = document.getElementById('client-orders-list');
         div.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>';
-        const { data } = await sb.from('orders').select('*').eq('customer_id', state.user.id).order('created_at', {ascending: false});
+        
+        // Pega ID como string para garantir compatibilidade
+        const uid = String(state.user.id);
+        const { data } = await sb.from('orders').select('*').eq('customer_id', uid).order('created_at', {ascending: false});
+        
         div.innerHTML = '';
-        if(!data || data.length === 0) { div.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Nenhum pedido.</p>'; return; }
+        if(!data || data.length === 0) { div.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Nenhum pedido encontrado.</p>'; return; }
+        
         data.forEach(o => {
             let progress = 5; let truckClass = ''; let statusLabel = 'Processando';
             if(o.status.includes('Pendente')) { progress = 15; statusLabel = 'Separando'; }
             if(o.status.includes('Enviado')) { progress = 60; statusLabel = 'Em Trânsito'; }
             if(o.status.includes('Entregue')) { progress = 100; statusLabel = 'Entregue'; }
             if(o.status.includes('Cancelado')) { progress = 100; truckClass = 'cancelled'; statusLabel = 'Cancelado'; }
+            
             let paidAmount = 0; let installmentsHtml = '';
             if(o.payment_status === 'Pago') { paidAmount = o.total; } else if (o.installments) {
                 try { const inst = JSON.parse(o.installments); inst.forEach(i => { if(i.paid) paidAmount += parseFloat(i.amount); }); const next = inst.find(i => !i.paid); if(next) installmentsHtml = `<div style="color:#e67e22; font-size:0.8rem;">Próx. Parcela: ${next.date.split('-').reverse().join('/')} (R$ ${parseFloat(next.amount).toFixed(2)})</div>`; } catch(e){}
             }
-            const remaining = o.total - paidAmount;
-            div.innerHTML += `<div class="client-track-card"><div class="track-header"><span class="track-id">Pedido #${o.id.slice(-4)}</span><span class="track-date">${o.date}</span></div><div style="margin-bottom:20px;"><div class="track-bar-container"><div class="track-bar-fill ${truckClass}" style="width: ${progress}%"><i class="fas fa-truck track-truck ${truckClass}"></i></div></div><div class="track-labels"><span class="${progress >= 15 ? 'active' : ''}">Pedido</span><span class="${progress >= 60 ? 'active' : ''}">Enviado</span><span class="${progress >= 100 && !truckClass ? 'active' : ''}">Entregue</span></div><div style="text-align:center; font-weight:bold; margin-top:5px; color:var(--accent); font-size:0.8rem;">Status: ${statusLabel}</div></div><div class="client-fin-box"><div class="cf-row"><span>Total:</span> <strong>R$ ${o.total.toFixed(2)}</strong></div><div class="cf-row"><span>Pago:</span> <span class="cf-status-paid">R$ ${paidAmount.toFixed(2)}</span></div>${remaining > 0.1 ? `<div class="cf-row"><span>Restante:</span> <span class="cf-status-pending">R$ ${remaining.toFixed(2)}</span></div>` : '<div style="color:var(--success); font-weight:bold; text-align:center;">Pedido Quitado!</div>'}${installmentsHtml}</div></div>`;
+            const remaining = Math.max(0, o.total - paidAmount);
+            
+            div.innerHTML += `
+            <div class="client-track-card">
+                <div class="track-header"><span class="track-id">Pedido #${o.id.slice(-4)}</span><span class="track-date">${o.date}</span></div>
+                <div style="margin-bottom:20px;">
+                    <div class="track-bar-container">
+                        <div class="track-bar-fill ${truckClass}" style="width: ${progress}%">
+                            <i class="fas fa-truck track-truck ${truckClass}"></i>
+                        </div>
+                    </div>
+                    <div class="track-labels">
+                        <span class="${progress >= 15 ? 'active' : ''}">Pedido</span>
+                        <span class="${progress >= 60 ? 'active' : ''}">Enviado</span>
+                        <span class="${progress >= 100 && !truckClass ? 'active' : ''}">Entregue</span>
+                    </div>
+                    <div style="text-align:center; font-weight:bold; margin-top:5px; color:var(--accent); font-size:0.8rem;">Status: ${statusLabel}</div>
+                </div>
+                <div class="client-fin-box">
+                    <div class="cf-row"><span>Total:</span> <strong>R$ ${o.total.toFixed(2)}</strong></div>
+                    <div class="cf-row"><span>Pago:</span> <span class="cf-status-paid">R$ ${paidAmount.toFixed(2)}</span></div>
+                    ${remaining > 0.1 ? `<div class="cf-row"><span>Restante:</span> <span class="cf-status-pending">R$ ${remaining.toFixed(2)}</span></div>` : '<div style="color:var(--success); font-weight:bold; text-align:center;">Pedido Quitado!</div>'}
+                    ${installmentsHtml}
+                </div>
+            </div>`;
         });
     }
 };
@@ -406,6 +473,7 @@ const app = {
     cQty: (idx,n) => { state.cart[idx].qty+=n; if(state.cart[idx].qty<1) state.cart[idx].qty=1; app.renderCart(); },
     toggleCart: () => document.querySelector('.sidebar').classList.toggle('open'),
     fetchCep: async (cep, prefix) => {
+        // prefix pode ser 'addr' (modal endereço), 'manual' (admin) ou 'reg' (cadastro)
         cep = cep.replace(/\D/g, '');
         if(cep.length === 8) {
             try {
@@ -656,8 +724,8 @@ const admin = {
             
             setDateAndBind('order-end', today, () => admin.renderOrders());
             setDateAndBind('order-start', firstDay, () => admin.renderOrders());
-            setDateAndBind('fin-end', today, () => admin.renderPayments()); // AGORA CHAMA RENDER PAYMENTS
-            setDateAndBind('fin-start', firstDay, () => admin.renderPayments()); // AGORA CHAMA RENDER PAYMENTS
+            setDateAndBind('fin-end', today, () => admin.renderPayments()); 
+            setDateAndBind('fin-start', firstDay, () => admin.renderPayments()); 
             
             admin.renderList(); admin.renderOrders(); admin.updateStats(); admin.renderPayments(); 
         }, 100);
@@ -750,6 +818,8 @@ const admin = {
     handleFileSelect: (input) => {
         const files = Array.from(input.files);
         if(files.length > 5) { alert("Máximo 5 arquivos"); input.value=""; return; }
+        const sizeErr = files.some(f => f.size > 5*1024*1024);
+        if(sizeErr) { alert("Arquivos devem ser menores que 5MB"); input.value=""; return; }
         state.selectedFiles = files;
         state.mainImageIndex = 0; 
         const area = document.getElementById('file-preview-area');
@@ -858,6 +928,7 @@ const admin = {
                         document.getElementById('pay-list').innerHTML = '';
                         admin.renderOrders(); 
                         admin.renderPayments(); 
+                        admin.renderFinance(); 
                     }
                     else alert("Erro ao resetar: " + error.message);
                 }
