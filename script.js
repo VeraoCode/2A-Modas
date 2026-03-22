@@ -1,1567 +1,1906 @@
-// Remove tela de carregamento após 4s (fallback de segurança)
-setTimeout(() => { const l = document.getElementById('loading-screen'); if(l) l.style.display='none'; }, 4000);
-
-// Tratamento de erros global
-window.onerror = function(msg) { 
-    const sb = document.getElementById('status-bar'); 
-    if(sb) { sb.style.display='flex'; sb.className='err'; sb.innerHTML = `⚠️ Erro: ${msg}`; } 
-    return false; 
-};
-
-// ================= CONFIG =================
-const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
-const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
-const EMAILJS_PUBLIC_KEY = 'vEXIgVw6GynR5W1qj'; 
-const EMAILJS_SERVICE_ID = 'service_3x4ghcd';
-const EMAILJS_TEMPLATE_CLIENTE = 'template_rwf0bay';
-const EMAILJS_TEMPLATE_ADMIN = 'template_rwf0bay';
-
-// ================= STATE & INIT =================
-let sb = null; 
-try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.error("Supabase Error:", e); }
-
-const state = { products: [], cart: [], current: null, var: null, qty: 1, user: null, address: null, adminOrders: [], filterStatus: 'all', filterPay: 'all', selectedFiles: [], mainImageIndex: 0 };
-const PRESETS_VOL = ['25ml','50ml','75ml','100ml','200ml','P','M','G','GG','Unico'];
-const COLOR_MAP = { 'Preto': '#000000', 'Branco': '#ffffff', 'Vermelho': '#e74c3c', 'Azul': '#3498db', 'Rosa': '#e91e63', 'Verde': '#2ecc71', 'Nude': '#e3c0a5', 'Estampado': 'linear-gradient(45deg, red, blue)', 'Bege': '#f5f5dc', 'Amarelo': '#f1c40f', 'Cinza': '#95a5a6' };
-
-const safeVal = (v) => (v === null || v === undefined || v === "null") ? "" : v;
-const setSafe = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = safeVal(val); };
-
-let autoScrollInterval; 
-
-document.addEventListener('DOMContentLoaded', () => {
-    if(window.flatpickr) flatpickr(".flatpickr-input", { dateFormat: "Y-m-d", locale: "pt", altInput: true, altFormat: "d/m/Y" });
-});
-
-// ================= AUTH =================
-const auth = {
-    user: null,
-    
-    // Verifica sessão silenciosamente
-    checkProfile: async (openModal = false) => {
-        const { data } = await sb.auth.getSession();
-        
-        if(data.session) {
-            console.log("Sessão encontrada:", data.session.user.id);
-            
-            // Tenta buscar perfil completo no banco
-            const { data: profile, error } = await sb.from('customers').select('*').eq('id', data.session.user.id).single();
-            
-            if (profile) {
-                // Perfil existe no banco, usa ele
-                state.user = profile;
-                if(profile.address) {
-                    const addrList = typeof profile.address === 'string' ? JSON.parse(profile.address) : profile.address;
-                    localStorage.setItem('2a_addrs', JSON.stringify(addrList));
-                    if(addrList.length > 0 && !state.address) {
-                        state.address = addrList[0];
-                        localStorage.setItem('2a_active_addr', JSON.stringify(state.address));
-                    }
-                }
-            } else {
-                // FALLBACK: Se não achou no banco (erro RLS ou cadastro incompleto), usa dados da sessão
-                console.warn("Perfil não encontrado no banco, usando dados da sessão.");
-                state.user = { 
-                    id: data.session.user.id, 
-                    email: data.session.user.email, 
-                    name: data.session.user.user_metadata.name || 'Cliente',
-                    phone: data.session.user.user_metadata.phone || ''
-                };
-            }
-
-            app.updateUI();
-            if(openModal) auth.openClientArea();
-        } else {
-            console.log("Nenhuma sessão ativa.");
-            state.user = null;
-            app.updateUI();
-            if(openModal) app.showModal('auth-modal');
-        }
-    },
-
-    handleHeaderClick: () => {
-        if(state.user) {
-            auth.openClientArea();
-        } else {
-            app.showModal('auth-modal');
-        }
-    },
-
-    login: async () => {
-        const email = document.getElementById('l-email').value;
-        const pass = document.getElementById('l-pass').value;
-        if(!email || !pass) return alert("Preencha todos os campos");
-        
-        const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-        if(error) return alert("Erro: " + error.message);
-        
-        app.success("Login realizado!");
-        app.closeModal('auth-modal');
-        await auth.checkProfile(true); 
-    },
-
-    register: async () => {
-        const name = document.getElementById('r-name').value;
-        const email = document.getElementById('r-email').value;
-        const pass = document.getElementById('r-pass').value;
-        const phone = document.getElementById('r-phone').value;
-        
-        // Endereço
-        const cep = document.getElementById('r-cep').value;
-        const street = document.getElementById('r-street').value;
-        const num = document.getElementById('r-num').value;
-        const bairro = document.getElementById('r-bairro').value;
-        const city = document.getElementById('r-city').value;
-        const uf = document.getElementById('r-uf').value;
-
-        if(!name || !email || !pass) return alert("Preencha dados de acesso");
-
-        const { data, error } = await sb.auth.signUp({ 
-            email, 
-            password: pass,
-            options: {
-                data: { name: name, phone: phone } // Salva no metadata também
-            }
-        });
-        
-        if(error) return alert("Erro: " + error.message);
-
-        if(data.user) {
-            // Tenta salvar na tabela customers
-            const newAddr = { name: name, phone: phone, cep: cep, street: street, number: num, bairro: bairro, city: city, uf: uf, type: 'Principal' };
-            const { error: dbError } = await sb.from('customers').insert([{ id: data.user.id, name: name, email: email, phone: phone, address: [newAddr] }]);
-            
-            if(dbError) console.error("Erro ao criar perfil no banco (Trigger deve resolver):", dbError);
-
-            app.success("Conta criada! Entrando...");
-            
-            // Faz login automático após criar
-            const { error: loginErr } = await sb.auth.signInWithPassword({ email, password: pass });
-            if(!loginErr) { 
-                app.closeModal('auth-modal'); 
-                auth.checkProfile(true); 
-            } else { 
-                auth.toggle('login'); 
-            }
-        }
-    },
-
-    logout: async () => {
-        await sb.auth.signOut();
-        state.user = null;
-        state.address = null;
-        localStorage.removeItem('2a_user');
-        localStorage.removeItem('2a_addrs');
-        localStorage.removeItem('2a_active_addr');
-        window.location.reload();
-    },
-
-    toggle: (mode) => {
-        document.getElementById('form-login').style.display = mode === 'login' ? 'block' : 'none';
-        document.getElementById('form-register').style.display = mode === 'register' ? 'block' : 'none';
-        document.getElementById('auth-title').innerText = mode === 'login' ? 'Acesso' : 'Criar Conta Completa';
-    },
-
-    openClientArea: () => {
-        if(!state.user) return;
-        document.getElementById('c-profile-name').value = state.user.name || '';
-        document.getElementById('c-profile-email').value = state.user.email || '';
-        document.getElementById('c-profile-phone').value = state.user.phone || '';
-        
-        const addrDiv = document.getElementById('c-profile-addrs');
-        addrDiv.innerHTML = '';
-        const addrs = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
-        
-        if(addrs.length === 0) addrDiv.innerHTML = "<small>Nenhum endereço salvo.</small>";
-        
-        addrs.forEach((a, i) => {
-            addrDiv.innerHTML += `<div style="font-size:0.8rem; padding:8px; border-bottom:1px dashed #eee;"><b>${a.street}, ${a.number}</b> - ${a.city}/${a.uf} <br><small onclick="app.editAddress(${i}); app.closeModal('client-modal')" style="color:blue; cursor:pointer;">Editar</small></div>`;
-        });
-        auth.loadClientOrders();
-        app.showModal('client-modal');
-    },
-
-    updateProfileData: async () => {
-        const name = document.getElementById('c-profile-name').value;
-        const phone = document.getElementById('c-profile-phone').value;
-        await sb.from('customers').update({ name: name, phone: phone }).eq('id', state.user.id);
-        state.user.name = name; state.user.phone = phone;
-        app.updateUI(); app.success("Dados atualizados!");
-    },
-
-    loadClientOrders: async () => {
-        const div = document.getElementById('client-orders-list');
-        div.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>';
-        
-        // Pega ID como string para garantir compatibilidade
-        const uid = String(state.user.id);
-        const { data } = await sb.from('orders').select('*').eq('customer_id', uid).order('created_at', {ascending: false});
-        
-        div.innerHTML = '';
-        if(!data || data.length === 0) { div.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Nenhum pedido encontrado.</p>'; return; }
-        
-        data.forEach(o => {
-            let progress = 5; let truckClass = ''; let statusLabel = 'Processando';
-            if(o.status.includes('Pendente')) { progress = 15; statusLabel = 'Separando'; }
-            if(o.status.includes('Enviado')) { progress = 60; statusLabel = 'Em Trânsito'; }
-            if(o.status.includes('Entregue')) { progress = 100; statusLabel = 'Entregue'; }
-            if(o.status.includes('Cancelado')) { progress = 100; truckClass = 'cancelled'; statusLabel = 'Cancelado'; }
-            
-            let paidAmount = 0; let installmentsHtml = '';
-            if(o.payment_status === 'Pago') { paidAmount = o.total; } else if (o.installments) {
-                try { const inst = JSON.parse(o.installments); inst.forEach(i => { if(i.paid) paidAmount += parseFloat(i.amount); }); const next = inst.find(i => !i.paid); if(next) installmentsHtml = `<div style="color:#e67e22; font-size:0.8rem;">Próx. Parcela: ${next.date.split('-').reverse().join('/')} (R$ ${parseFloat(next.amount).toFixed(2)})</div>`; } catch(e){}
-            }
-            const remaining = Math.max(0, o.total - paidAmount);
-            
-            div.innerHTML += `
-            <div class="client-track-card">
-                <div class="track-header"><span class="track-id">Pedido #${o.id.slice(-4)}</span><span class="track-date">${o.date}</span></div>
-                <div style="margin-bottom:20px;">
-                    <div class="track-bar-container">
-                        <div class="track-bar-fill ${truckClass}" style="width: ${progress}%">
-                            <i class="fas fa-truck track-truck ${truckClass}"></i>
-                        </div>
-                    </div>
-                    <div class="track-labels">
-                        <span class="${progress >= 15 ? 'active' : ''}">Pedido</span>
-                        <span class="${progress >= 60 ? 'active' : ''}">Enviado</span>
-                        <span class="${progress >= 100 && !truckClass ? 'active' : ''}">Entregue</span>
-                    </div>
-                    <div style="text-align:center; font-weight:bold; margin-top:5px; color:var(--accent); font-size:0.8rem;">Status: ${statusLabel}</div>
-                </div>
-                <div class="client-fin-box">
-                    <div class="cf-row"><span>Total:</span> <strong>R$ ${o.total.toFixed(2)}</strong></div>
-                    <div class="cf-row"><span>Pago:</span> <span class="cf-status-paid">R$ ${paidAmount.toFixed(2)}</span></div>
-                    ${remaining > 0.1 ? `<div class="cf-row"><span>Restante:</span> <span class="cf-status-pending">R$ ${remaining.toFixed(2)}</span></div>` : '<div style="color:var(--success); font-weight:bold; text-align:center;">Pedido Quitado!</div>'}
-                    ${installmentsHtml}
-                </div>
-            </div>`;
-        });
-    }
-};
-
-// ================= APP (STORE) =================
-const app = {
-    load: async () => {
-        if(!sb) return;
-        const { data, error } = await sb.from('products').select('*');
-        if(!error) { state.products = data || []; app.render(state.products); }
-    },
-    success: (msg) => {
-        const toast = document.getElementById('success-toast');
-        document.getElementById('st-text').innerText = msg;
-        toast.classList.add('active');
-        setTimeout(() => { toast.classList.remove('active'); }, 5000);
-    },
-    render: (list) => {
-        const div = document.getElementById('products-list'); if(!div) return; div.innerHTML = "";
-        if(list.length === 0) div.innerHTML = '<p style="grid-column:1/-1;text-align:center">Nenhum produto cadastrado.</p>';
-        list.forEach(p => {
-            const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-            const minP = (vars && vars.length) ? Math.min(...vars.map(v => parseFloat(v.price))) : 0;
-            const isPromo = p.is_promo ? '<span class="tag-promo">OFERTA</span>' : '';
-            let mainImg = "https://via.placeholder.com/300";
-            try {
-                const media = JSON.parse(p.image_url);
-                if(Array.isArray(media) && media.length > 0) mainImg = media[0];
-                else if(typeof p.image_url === 'string') mainImg = p.image_url;
-            } catch(e) { mainImg = p.image_url; }
-            div.innerHTML += `<div class="card" onclick="app.openModal('${p.id}')">${isPromo}<img src="${mainImg}" onerror="this.src='https://via.placeholder.com/300'"><div class="card-info"><span style="font-size:0.8rem;color:#999;text-transform:uppercase;">${p.category}</span><div style="font-weight:bold;margin:5px 0;">${p.name}</div><div style="color:var(--primary);font-weight:bold;">A partir R$ ${minP.toFixed(2)}</div><span class="tag-delivery">🚚 03 a 05 dias úteis</span></div></div>`;
-        });
-    },
-    ask: (title, msg, onYes) => {
-        document.getElementById('confirm-title').innerText = title;
-        document.getElementById('confirm-msg').innerText = msg;
-        const modal = document.getElementById('custom-confirm-modal');
-        modal.classList.add('active');
-        
-        const yesBtn = document.getElementById('btn-confirm-yes');
-        const noBtn = document.getElementById('btn-confirm-no');
-        
-        const newYes = yesBtn.cloneNode(true);
-        const newNo = noBtn.cloneNode(true);
-        yesBtn.parentNode.replaceChild(newYes, yesBtn);
-        noBtn.parentNode.replaceChild(newNo, noBtn);
-        
-        newYes.addEventListener('click', () => {
-            modal.classList.remove('active');
-            if(onYes) onYes();
-        });
-        
-        newNo.addEventListener('click', () => {
-            modal.classList.remove('active');
-        });
-    },
-    renderCart: () => {
-        const ul = document.getElementById('cart-list'); 
-        if(!ul) return; 
-        ul.innerHTML=""; 
-        let t=0;
-        
-        if(state.cart.length === 0) {
-            ul.innerHTML = `<div style="text-align:center; padding:40px 0; color:#999;">
-                <i class="fas fa-shopping-basket" style="font-size:3rem; margin-bottom:10px; opacity:0.3;"></i>
-                <p>Sua sacola está vazia</p>
-            </div>`;
-        }
-    
-        state.cart.forEach((i,idx) => {
-            t += i.price*i.qty;
-            ul.innerHTML += `
-            <li class="cart-item">
-                <img src="${i.image || 'https://via.placeholder.com/60'}" class="cart-thumb">
-                <div class="cart-details">
-                    <span class="cart-name">${i.name}</span>
-                    <span class="cart-variant">${i.variant}</span>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
-                        <div class="qty-selector">
-                            <button class="qty-btn" onclick="app.cQty(${idx},-1)">-</button>
-                            <div class="qty-val">${i.qty}</div>
-                            <button class="qty-btn" onclick="app.cQty(${idx},1)">+</button>
-                        </div>
-                        <div style="font-weight:bold; color:var(--accent);">R$ ${(i.price*i.qty).toFixed(2)}</div>
-                    </div>
-                </div>
-                <button class="btn-remove-modern" onclick="app.removeFromCart(${idx})">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </li>`;
-        });
-        
-        if(state.cart.length > 0) {
-            ul.innerHTML += `<button onclick="app.toggleCart()" class="btn-continue-shop">
-                <i class="fas fa-arrow-left"></i> Continuar Comprando
-            </button>`;
-        }
-    
-        document.getElementById('cart-total').innerText = `R$ ${t.toFixed(2)}`;
-        document.getElementById('cart-count').innerText = state.cart.length;
-    },
-    removeFromCart: (idx) => {
-        state.cart.splice(idx,1);
-        app.renderCart();
-    },
-    openPromoModal: () => {
-        const promos = state.products.filter(p => p.is_promo);
-        if(!promos.length) return alert("Sem promoções ativas.");
-        const cDiv = document.getElementById('promo-track'); cDiv.innerHTML = "";
-        const shownIds = new Set();
-        promos.forEach(p => {
-            if(shownIds.has(p.id)) return;
-            shownIds.add(p.id);
-            const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-            const minP = Math.min(...vars.map(v => v.price));
-            let mainImg = "https://via.placeholder.com/100";
-            try { const m = JSON.parse(p.image_url); mainImg = Array.isArray(m) ? m[0] : p.image_url; } catch(e) { mainImg = p.image_url; }
-            cDiv.innerHTML += `
-            <div class="promo-list-card" onclick="app.closeModal('promo-modal'); setTimeout(() => app.openModal('${p.id}'), 100)">
-                <img src="${mainImg}">
-                <div><small class="promo-price">R$ ${minP.toFixed(2)}</small><br><strong>${p.name}</strong></div>
-            </div>`;
-        });
-        app.showModal('promo-modal');
-    },
-    openModal: (id) => {
-        const p = state.products.find(x => String(x.id) === String(id));
-        if(!p) return;
-        state.current = p; state.qty=1; state.var=null;
-        let media = [];
-        try { media = JSON.parse(p.image_url); } catch(e) { media = [p.image_url]; }
-        if(!Array.isArray(media)) media = [p.image_url];
-        app.renderCarousel(media);
-        setSafe('m-title', p.name); setSafe('m-cat', p.category); setSafe('m-desc', p.description); setSafe('m-price', "Selecione...");
-        const vDiv = document.getElementById('m-vars'); vDiv.innerHTML = "";
-        const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-        if(vars) {
-            vars.forEach(v => {
-                const hasStock = parseInt(v.stock) > 0;
-                const chip = document.createElement('div');
-                chip.className = `var-chip ${!hasStock ? 'disabled' : ''}`;
-                let dot = "";
-                if(COLOR_MAP[v.name]) dot = `<div class="color-circle" style="background:${COLOR_MAP[v.name]}"></div>`;
-                chip.innerHTML = `${dot}<span>${v.name}</span><small style="opacity:0.8">R$ ${parseFloat(v.price).toFixed(2)}</small>`;
-                if(hasStock) {
-                    chip.onclick = () => {
-                        state.var = v;
-                        document.getElementById('m-price').innerText = `R$ ${parseFloat(v.price).toFixed(2)}`;
-                        Array.from(vDiv.children).forEach(c => c.classList.remove('selected'));
-                        chip.classList.add('selected');
-                    };
-                }
-                vDiv.appendChild(chip);
-            });
-        }
-        app.showModal('product-modal');
-    },
-    renderCarousel: (media) => {
-        const area = document.getElementById('m-media-area');
-        if(!media.length) { area.innerHTML = ''; return; }
-        const isVideo = (url) => url && url.match && url.match(/\.(mp4|webm)$/i);
-        let dotsHtml = '';
-        if(media.length > 1) {
-            dotsHtml = `<div class="carousel-dots">${media.map((_, i) => `<div class="carousel-dot ${i===0?'active':''}" onclick="app.swapMedia('${media[i]}', this, ${i})"></div>`).join('')}</div>`;
-        }
-        const renderMain = (url) => isVideo(url) ? `<video src="${url}" controls autoplay muted loop></video>` : `<img src="${url}">`;
-        let html = `
-            <div class="carousel-main-container" id="c-main" onmouseenter="clearInterval(autoScrollInterval)" onmouseleave="app.startAutoScroll()">
-                ${renderMain(media[0])}
-                ${dotsHtml}
-            </div>
-        `;
-        area.innerHTML = html;
-        if(media.length > 1) {
-            app.currentMediaIndex = 0;
-            app.currentMediaList = media;
-            app.startAutoScroll();
-        } else {
-            clearInterval(autoScrollInterval);
-        }
-    },
-    startAutoScroll: () => {
-        if(app.currentMediaList && app.currentMediaList.length > 1) {
-            clearInterval(autoScrollInterval);
-            autoScrollInterval = setInterval(() => {
-                let nextIndex = app.currentMediaIndex + 1;
-                if(nextIndex >= app.currentMediaList.length) nextIndex = 0;
-                const dots = document.querySelectorAll('.carousel-dot');
-                if(dots[nextIndex]) app.swapMedia(app.currentMediaList[nextIndex], dots[nextIndex], nextIndex);
-            }, 3000);
-        }
-    },
-    swapMedia: (url, dot, index) => {
-        const isVideo = (u) => u.match(/\.(mp4|webm)$/i);
-        const main = document.getElementById('c-main');
-        const imgEl = main.querySelector('img');
-        if(isVideo(url)) {
-            main.innerHTML = `<video src="${url}" controls autoplay muted loop></video>` + (main.querySelector('.carousel-dots')?.outerHTML || '');
-        } else {
-            if(imgEl) {
-                imgEl.style.opacity = 0;
-                setTimeout(() => { imgEl.src = url; imgEl.style.opacity = 1; }, 200);
-            } else {
-                main.innerHTML = `<img src="${url}">` + (main.querySelector('.carousel-dots')?.outerHTML || '');
-            }
-        }
-        if(dot) {
-            document.querySelectorAll('.carousel-dot').forEach(t => t.classList.remove('active'));
-            dot.classList.add('active');
-        }
-        if(typeof index !== 'undefined') app.currentMediaIndex = index;
-    },
-    updQty: (n) => { 
-        if (n > 0) {
-            if (!state.var) return alert("Selecione a variação primeiro.");
-            if (state.qty + n > parseInt(state.var.stock)) return alert("Estoque máximo atingido.");
-        }
-        state.qty += n; 
-        if(state.qty<1) state.qty=1; 
-        document.getElementById('m-qty').innerText = state.qty; 
-    },
-    addCart: () => {
-        if(!state.var) return alert("Selecione uma opção");
-        const existingItem = state.cart.find(i => i.name === state.current.name && i.variant === state.var.name);
-        const currentCartQty = existingItem ? existingItem.qty : 0;
-        if (currentCartQty + state.qty > parseInt(state.var.stock)) return alert(`Estoque insuficiente.`);
-        let img = state.current.image_url;
-        try { const m = JSON.parse(img); if(Array.isArray(m)) img = m[0]; } catch(e){}
-        if(existingItem) { existingItem.qty += state.qty; } else {
-            state.cart.push({name: state.current.name, variant: state.var.name, price: parseFloat(state.var.price), qty: state.qty, image: img});
-        }
-        app.renderCart(); app.closeModal('product-modal'); app.toggleCart();
-    },
-    cQty: (idx,n) => { state.cart[idx].qty+=n; if(state.cart[idx].qty<1) state.cart[idx].qty=1; app.renderCart(); },
-    toggleCart: () => document.querySelector('.sidebar').classList.toggle('open'),
-    fetchCep: async (cep, prefix) => {
-        // prefix pode ser 'addr' (modal endereço), 'manual' (admin) ou 'reg' (cadastro)
-        cep = cep.replace(/\D/g, '');
-        if(cep.length === 8) {
-            try {
-                const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-                const data = await res.json();
-                if(!data.erro) {
-                    let map = {};
-                    if(prefix === 'addr') map = { s:'addr-street', b:'addr-bairro', c:'addr-city', u:'addr-uf', n:'addr-num' };
-                    if(prefix === 'manual') map = { s:'m-client-street', b:'m-client-bairro', c:'m-client-city', u:'m-client-uf', n:'m-client-num' };
-                    if(prefix === 'reg') map = { s:'r-street', b:'r-bairro', c:'r-city', u:'r-uf', n:'r-num' };
-
-                    if(document.getElementById(map.s)) document.getElementById(map.s).value = data.logradouro;
-                    if(document.getElementById(map.b)) document.getElementById(map.b).value = data.bairro;
-                    if(document.getElementById(map.c)) document.getElementById(map.c).value = data.localidade;
-                    if(document.getElementById(map.u)) document.getElementById(map.u).value = data.uf;
-                    if(document.getElementById(map.n)) document.getElementById(map.n).focus();
-                } else { alert("CEP não encontrado."); }
-            } catch(e) { console.error(e); }
-        }
-    },
-    
-    openAddressModal: () => {
-        const list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
-        const div = document.getElementById('saved-addresses-list'); div.innerHTML="";
-        list.forEach((a,i) => {
-            const fullAddr = `${a.street}, ${a.number} - ${a.bairro}, ${a.city}/${a.uf}`;
-            div.innerHTML += `<div style="border:1px solid #eee; padding:10px; margin-bottom:5px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;"><div onclick="app.setAddr(${i})" style="cursor:pointer; flex:1;"><b>${a.type || 'Endereço'}</b>: ${fullAddr}<br><small>${a.name} (${a.phone})</small></div><div><i class="fas fa-edit" onclick="app.editAddress(${i})" style="color:blue; margin-right:10px; cursor:pointer;"></i><i class="fas fa-trash" onclick="app.delAddress(${i})" style="color:red; cursor:pointer;"></i></div></div>`;
-        });
-        app.showModal('address-modal');
-    },
-    addNewAddress: async () => {
-        const val = id => document.getElementById(id).value;
-        const a = { 
-            name: val('addr-name'), phone: val('addr-phone'), cep: val('addr-cep'), 
-            street: val('addr-street'), number: val('addr-num'), bairro: val('addr-bairro'), 
-            city: val('addr-city'), uf: val('addr-uf'), ref: val('addr-ref'), 
-            type: document.getElementById('addr-type').value 
-        };
-        
-        if(!a.name || !a.street || !a.number) return alert("Preencha campos obrigatórios.");
-        
-        let list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
-        list.push(a);
-        
-        localStorage.setItem('2a_addrs', JSON.stringify(list));
-        state.address = a; 
-        localStorage.setItem('2a_active_addr', JSON.stringify(a));
-
-        if(state.user) {
-            const { error } = await sb.from('customers').update({ address: list }).eq('id', state.user.id);
-            if(error) console.error("Erro ao salvar endereço na nuvem:", error);
-            else app.success("Endereço salvo na sua conta!");
-        } else {
-            app.success("Endereço salvo temporariamente");
-        }
-
-        app.updateUI(); 
-        app.closeModal('address-modal');
-    },
-    delAddress: async (i) => {
-        if(!confirm("Remover este endereço?")) return;
-        
-        let list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
-        list.splice(i, 1);
-        
-        localStorage.setItem('2a_addrs', JSON.stringify(list));
-        
-        if(state.user) {
-            await sb.from('customers').update({ address: list }).eq('id', state.user.id);
-        }
-        
-        app.openAddressModal(); 
-    },
-    editAddress: (i) => {
-        const list = JSON.parse(localStorage.getItem('2a_addrs'));
-        const a = list[i];
-        const setVal = (id, v) => document.getElementById(id).value = safeVal(v);
-        
-        setVal('addr-name', a.name); setVal('addr-phone', a.phone); 
-        setVal('addr-cep', a.cep); setVal('addr-street', a.street); 
-        setVal('addr-num', a.number); setVal('addr-bairro', a.bairro); 
-        setVal('addr-city', a.city); setVal('addr-uf', a.uf); setVal('addr-ref', a.ref);
-        
-        app.delAddress(i); 
-    },
-    setAddr: (i) => {
-        const list = JSON.parse(localStorage.getItem('2a_addrs'));
-        state.address = list[i]; localStorage.setItem('2a_active_addr', JSON.stringify(state.address));
-        app.updateUI(); app.closeModal('address-modal');
-    },
-    updateUI: () => {
-        const btn = document.getElementById('btn-address-trigger');
-        if(btn && state.address) { btn.classList.add('filled'); btn.innerHTML = `📍 Entregar em: ${state.address.city}/${state.address.uf} (${state.address.street})`; }
-        
-        const authArea = document.getElementById('cart-auth-area');
-        if(authArea) {
-            if(state.user) authArea.innerHTML = `<small style="color:#27ae60"><i class="fas fa-check-circle"></i> Olá, ${state.user.name}</small>`;
-            else authArea.innerHTML = `<button onclick="app.showModal('auth-modal')" style="width:100%; padding:10px; background:#f0f0f0; border:none; border-radius:8px; color:#555; font-weight:bold;"><i class="fas fa-user-circle"></i> Login / Cadastro</button>`;
-        }
-        
-        const headerBtn = document.querySelector('.login-btn-header');
-        if(headerBtn) {
-            if(state.user) {
-                const firstName = state.user.name.split(' ')[0];
-                headerBtn.innerHTML = `<i class="fas fa-user-circle"></i> Olá, ${firstName}!`;
-            } else {
-                headerBtn.innerHTML = `<i class="fas fa-user-circle"></i> Login / Cadastro`;
-            }
-        }
-    },
-    checkout: async (method) => {
-        if(!state.cart.length) return alert("Carrinho vazio");
-        if(!state.user) { alert("Por favor, faça Login ou Cadastre-se."); app.showModal('auth-modal'); return; }
-        if(!state.address) { app.openAddressModal(); return alert("Selecione entrega"); }
-        const btn = document.querySelector(method === 'whatsapp' ? '.btn-whatsapp' : '.btn-mp');
-        const btnOriginalText = btn.innerText;
-        try {
-            btn.innerText = "Registrando...";
-            const newOrderId = Date.now().toString();
-            const statusInicial = method === 'whatsapp' ? 'Pendente (WhatsApp)' : 'Pendente (Mercado Pago)';
-            const payStatus = method === 'mercadopago' ? 'Pago' : 'Pendente';
-            const orderData = await app.registerOrder(newOrderId, method === 'whatsapp' ? 'WhatsApp/Dinheiro' : 'Mercado Pago', statusInicial, payStatus);
-            await app.updateStockDatabase();
-            await app.sendEmails(orderData, state.cart, state.user.email);
-            
-            if(method === 'whatsapp') app.sendPaidOrder('Dinheiro/Combinar'); 
-            else {
-                localStorage.setItem('2a_cart', JSON.stringify(state.cart));
-                const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
-                const res = await fetch(GOOGLE_CLOUD_URL, {
-                    method:'POST', headers:{'Content-Type':'application/json'}, 
-                    body:JSON.stringify({items, buyer: { email: state.user.email, name: state.user.name }, address: state.address})
-                });
-                const data = await res.json();
-                if(data.init_point) window.location.href = data.init_point;
-                else throw new Error("Erro ao gerar link de pagamento");
-            }
-        } catch(e) { console.error(e); alert(e.message); btn.innerText = btnOriginalText; }
-    },
-    registerOrder: async (oid, method, status = 'Pendente', payStatus = 'Pendente') => {
-        if(!sb) throw new Error("Banco de dados desconectado.");
-        const total = state.cart.reduce((a,b)=>a+(b.price*b.qty),0);
-        const order = {
-            id: oid.toString(), customer_name: state.user.name, customer_email: state.user.email, customer_id: String(state.user.id), 
-            total: total, items: JSON.stringify(state.cart), address: JSON.stringify(state.address), date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
-            method: method, status: status, payment_status: payStatus, created_at: new Date().toISOString()
-        };
-        const { data, error } = await sb.from('orders').insert([order]).select();
-        if(error) throw new Error(`Erro no Banco: ${error.message}`);
-        return order; 
-    },
-    sendEmails: async (order, cartItems, recipientEmail) => {
-        if(!recipientEmail) return;
-        const itemsTxt = cartItems.map(i => `${i.qty}x ${i.name} (${i.variant}) - R$ ${i.price.toFixed(2)}`).join('\n');
-        const total = cartItems.reduce((a,b)=>a+(b.price*b.qty),0).toFixed(2);
-        let fullAddr = "Não informado";
-        try {
-            const addrObj = typeof order.address === 'string' ? JSON.parse(order.address) : order.address;
-            fullAddr = `${addrObj.street}, ${addrObj.number} - ${addrObj.city}`;
-        } catch(e) {}
-
-        const templateParams = { 
-            to_name: order.customer_name, 
-            to_email: recipientEmail, 
-            message: `PEDIDO #${order.id}\n\nPAGAMENTO: ${order.method}\n\nITENS:\n${itemsTxt}\n\nTOTAL: R$ ${total}\n\nENDEREÇO:\n${fullAddr}\n\nStatus: ${order.status}`, 
-            admin_email: 'erickveraosilva@gmail.com' 
-        };
-        if(window.emailjs) {
-            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENTE, templateParams);
-            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, {...templateParams, to_email: 'erickveraosilva@gmail.com'});
-        }
-    },
-    updateStockDatabase: async () => {
-        if(!sb) return;
-        for (const item of state.cart) {
-            const { data: prod } = await sb.from('products').select('*').eq('name', item.name).single();
-            if(prod) {
-                let vars = typeof prod.variations === 'string' ? JSON.parse(prod.variations) : prod.variations;
-                const targetVar = vars.find(v => v.name === item.variant);
-                if(targetVar) {
-                    targetVar.stock = Math.max(0, parseInt(targetVar.stock) - item.qty);
-                    await sb.from('products').update({ variations: JSON.stringify(vars) }).eq('id', prod.id);
-                }
-            }
-        }
-    },
-    sendPaidOrder: (paymentType) => {
-        let addr = state.address;
-        const fullAddr = `${addr.street}, ${addr.number} - ${addr.bairro} (${addr.city})`;
-        let msg = `*NOVO PEDIDO 2A MODAS (${state.user.name})*\n--------------------------------\n*PAGAMENTO:* ${paymentType}\n*TOTAL:* R$ ${document.getElementById('cart-total').innerText.replace('R$ ','')}\n--------------------------------\n*ENTREGA:*\n📍 ${fullAddr}\n--------------------------------\n*ITENS:*\n`;
-        state.cart.forEach(i=>{ msg += `▪ ${i.qty}x ${i.name} (${i.variant})\n`; });
-        localStorage.removeItem('2a_cart'); state.cart = []; app.renderCart(); app.toggleCart();
-        window.location.href = `https://wa.me/5567998951120?text=${encodeURIComponent(msg)}`;
-    },
-    showModal: (id) => { document.getElementById(id).classList.add('active'); history.pushState({modal:id}, null, ""); },
-    closeModal: (id) => { 
-        document.getElementById(id).classList.remove('active'); 
-        history.back();
-        if(id === 'product-modal') clearInterval(autoScrollInterval);
-    },
-    filter: (cat, btn) => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        app.render(cat==='all' ? state.products : state.products.filter(p => p.category===cat));
-    }
-};
-
-// ================= ADMIN =================
-const admin = {
-    showLogin: async () => {
-        const { data } = await sb.auth.getSession();
-        if(data.session) { admin.openPanel(); } 
-        else { app.showModal('admin-auth-modal'); }
-    },
-    verifyLogin: async () => {
-        const email = document.getElementById('admin-email').value;
-        const password = document.getElementById('admin-pass').value;
-        const btn = document.querySelector('#admin-auth-modal button');
-        const originalText = btn.innerText;
-        btn.innerText = "Autenticando..."; btn.disabled = true;
-        try {
-            const { data, error } = await sb.auth.signInWithPassword({ email: email, password: password });
-            if (error) throw error;
-            app.closeModal('admin-auth-modal');
-            admin.openPanel();
-            document.getElementById('admin-pass').value = "";
-        } catch (e) {
-            alert("Erro de acesso: " + (e.message === "Invalid login credentials" ? "E-mail ou senha incorretos" : e.message));
-        } finally {
-            btn.innerText = originalText; btn.disabled = false;
-        }
-    },
-    openPanel: () => {
-        setTimeout(() => { 
-            app.showModal('admin-modal'); 
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = today.getMonth();
-            const firstDay = new Date(year, month, 1);
-            
-            const setDateAndBind = (id, date, callback) => {
-                const el = document.getElementById(id);
-                if(el && el._flatpickr) {
-                    el._flatpickr.setDate(date);
-                    el._flatpickr.set('onChange', callback);
-                }
-            };
-            
-            setDateAndBind('order-end', today, () => admin.renderOrders());
-            setDateAndBind('order-start', firstDay, () => admin.renderOrders());
-            setDateAndBind('fin-end', today, () => admin.renderPayments()); 
-            setDateAndBind('fin-start', firstDay, () => admin.renderPayments()); 
-            
-            admin.renderList(); admin.renderOrders(); admin.updateStats(); admin.renderPayments(); 
-        }, 100);
-    },
-    logout: async () => {
-        if(confirm("Sair do modo Admin?")) {
-            await sb.auth.signOut();
-            app.closeModal('admin-modal');
-            window.location.reload(); 
-        }
-    },
-    openPartialPay: (oid, idx, amount) => {
-        document.getElementById('pp-oid').value = oid;
-        document.getElementById('pp-idx').value = idx;
-        document.getElementById('pp-total-show').value = "R$ " + parseFloat(amount).toFixed(2);
-        document.getElementById('pp-val').value = "";
-        app.showModal('partial-pay-modal');
-        setTimeout(() => document.getElementById('pp-val').focus(), 100);
-    },
-    processPartialPay: async () => {
-        const oid = document.getElementById('pp-oid').value;
-        const idx = parseInt(document.getElementById('pp-idx').value);
-        const valStr = document.getElementById('pp-val').value;
-        if(!valStr || isNaN(valStr) || parseFloat(valStr) <= 0) return alert("Valor inválido");
-        const paidVal = parseFloat(valStr);
-        app.ask("Confirmar Pagamento", `Confirma o recebimento de R$ ${paidVal.toFixed(2)}?`, async () => {
-            const { data } = await sb.from('orders').select('installments').eq('id', oid).single();
-            if(data) {
-                const arr = JSON.parse(data.installments);
-                const originalVal = parseFloat(arr[idx].amount);
-                if(paidVal >= originalVal) {
-                    arr[idx].amount = originalVal;
-                    arr[idx].paid = true;
-                } else {
-                    const remaining = originalVal - paidVal;
-                    arr[idx].amount = paidVal;
-                    arr[idx].paid = true;
-                    arr[idx].note = "Pagto Parcial";
-                    arr.splice(idx + 1, 0, {
-                        date: arr[idx].date,
-                        amount: remaining.toFixed(2),
-                        paid: false,
-                        is_remaining: true
-                    });
-                }
-                await sb.from('orders').update({ installments: JSON.stringify(arr) }).eq('id', oid);
-                app.success("Pagamento parcial registrado!");
-                app.closeModal('partial-pay-modal');
-                admin.renderPayments();
-            }
-        });
-    },
-    resendEmail: (oid) => {
-        app.ask("Reenviar E-mail", "Deseja reenviar o comprovante do pedido para o cliente?", async () => {
-            const { data } = await sb.from('orders').select('*').eq('id', oid).single();
-            if(data) {
-                let items = [];
-                try { items = JSON.parse(data.items); } catch(e){}
-                await app.sendEmails(data, items, data.customer_email);
-                app.success("E-mail disparado para fila de envio.");
-            }
-        });
-    },
-    initCheckboxes: () => {
-        const cDiv = document.getElementById('color-checks'), vDiv = document.getElementById('volume-checks');
-        if(!cDiv) return; cDiv.innerHTML = ""; vDiv.innerHTML = "";
-        Object.keys(COLOR_MAP).forEach(c => { cDiv.innerHTML += `<label><input type="checkbox" class="hidden-check" value="${c}" onchange="admin.toggleInput(this)"><span class="color-option-label" style="background:${COLOR_MAP[c]}" title="${c}"></span></label>`; });
-        PRESETS_VOL.forEach(v => { vDiv.innerHTML += `<label><input type="checkbox" class="hidden-check" value="${v}" onchange="admin.toggleInput(this)"><span class="vol-option-label">${v}</span></label>`; });
-    },
-    toggleInput: (cb) => {
-        const id = `grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`;
-        const area = document.getElementById('active-vars-area');
-        if(cb.checked) area.innerHTML += `<div id="${id}" class="var-inputs show"><strong style="grid-column:span 2">${cb.value}</strong><input type="hidden" class="v-name" value="${cb.value}"><input type="number" class="input v-cost" placeholder="Custo"><input type="number" class="input v-price" placeholder="Venda"><input type="number" class="input v-stock" placeholder="Estoque" style="grid-column:span 2"></div>`;
-        else document.getElementById(id)?.remove();
-    },
-    tab: (t) => { 
-        document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
-        const tabBtn = document.querySelector(`.admin-tab[onclick*='${t}']`);
-        if(tabBtn) tabBtn.classList.add('active');
-        ['dash','prod','orders','fin','pay', 'new-order'].forEach(i => {
-            const el = document.getElementById(`tab-${i}`);
-            if(el) el.style.display = i===t ? 'block' : 'none';
-        });
-        if(t === 'new-order') {
-            admin.populateManualProdSelect();
-            admin.manualCart = []; 
-            admin.renderManualCart();
-        }
-    },
-    handleFileSelect: (input) => {
-        const files = Array.from(input.files);
-        if(files.length > 5) { alert("Máximo 5 arquivos"); input.value=""; return; }
-        const sizeErr = files.some(f => f.size > 5*1024*1024);
-        if(sizeErr) { alert("Arquivos devem ser menores que 5MB"); input.value=""; return; }
-        state.selectedFiles = files;
-        state.mainImageIndex = 0; 
-        const area = document.getElementById('file-preview-area');
-        area.innerHTML = "";
-        files.forEach((f, idx) => {
-            const url = URL.createObjectURL(f);
-            const isImg = f.type.startsWith('image/');
-            area.innerHTML += `
-            <div class="preview-wrapper" onclick="admin.setMain(${idx})">
-                ${isImg ? `<img src="${url}" class="file-preview-item ${idx===0?'main-selected':''}" id="prev-${idx}">` 
-                        : `<video src="${url}" class="file-preview-item ${idx===0?'main-selected':''}" id="prev-${idx}"></video>`}
-                <div class="main-tag">PRINCIPAL</div>
-            </div>`;
-        });
-    },
-    setMain: (idx) => {
-        state.mainImageIndex = idx;
-        document.querySelectorAll('.file-preview-item').forEach(el => el.classList.remove('main-selected'));
-        document.getElementById(`prev-${idx}`).classList.add('main-selected');
-    },
-    save: async () => {
-        if(!sb) return;
-        const btn = document.getElementById('btn-save'); btn.innerText="Salvando..."; btn.disabled=true;
-        try {
-            const vars = [];
-            document.querySelectorAll('.var-inputs').forEach(d => {
-                const p = d.querySelector('.v-price').value, s = d.querySelector('.v-stock').value;
-                if(p && s) vars.push({ name: d.querySelector('.v-name').value, cost: d.querySelector('.v-cost').value||0, price: p, stock: s });
-            });
-            if(vars.length === 0) {
-                const gPrice = document.getElementById('f-price-global').value, gStock = document.getElementById('f-stock-global').value;
-                if(!gPrice || !gStock) throw new Error("Preencha variações OU Global");
-                vars.push({ name: 'Padrão', price: gPrice, stock: gStock, cost: document.getElementById('f-cost').value || 0 });
-            }
-            let mediaUrls = [];
-            const editId = document.getElementById('edit-id').value;
-            if(editId && state.selectedFiles.length === 0) {
-                const oldP = state.products.find(x => String(x.id) === String(editId));
-                if(oldP) { try { mediaUrls = JSON.parse(oldP.image_url); } catch(e) { mediaUrls = [oldP.image_url]; } }
-                if(!Array.isArray(mediaUrls)) mediaUrls = [oldP.image_url];
-            } else if(state.selectedFiles.length > 0) {
-                if(state.mainImageIndex > 0) {
-                    const main = state.selectedFiles.splice(state.mainImageIndex, 1)[0];
-                    state.selectedFiles.unshift(main);
-                }
-                for(let i=0; i<state.selectedFiles.length; i++) {
-                    const file = state.selectedFiles[i];
-                    const fName = 'prod_' + Date.now() + '_' + i;
-                    await sb.storage.from('images').upload(fName, file);
-                    const { data } = sb.storage.from('images').getPublicUrl(fName);
-                    mediaUrls.push(data.publicUrl);
-                }
-            }
-            const payload = {
-                name: document.getElementById('f-name').value, category: document.getElementById('f-cat').value,
-                cost_price: document.getElementById('f-cost').value || 0, description: document.getElementById('f-desc').value || "",
-                is_promo: document.getElementById('f-promo').checked, variations: JSON.stringify(vars)
-            };
-            if(mediaUrls.length > 0) payload.image_url = JSON.stringify(mediaUrls);
-            else if(!editId) payload.image_url = JSON.stringify(["https://via.placeholder.com/300"]);
-
-            if(editId) await sb.from('products').update(payload).eq('id', editId);
-            else { payload.id = Date.now(); await sb.from('products').insert([payload]); }
-            app.success("Produto Salvo com Sucesso!"); 
-            admin.clear(); await app.load(); admin.renderList(); admin.updateStats();
-        } catch(e) { alert(e.message); } finally { btn.innerText="Salvar Produto"; btn.disabled=false; }
-    },
-    edit: (id) => {
-        const p = state.products.find(x => String(x.id) === String(id));
-        document.getElementById('edit-id').value = p.id;
-        document.getElementById('f-name').value = safeVal(p.name); document.getElementById('f-desc').value = safeVal(p.description);
-        document.getElementById('f-cost').value = safeVal(p.cost_price); document.getElementById('f-promo').checked = p.is_promo;
-        admin.clear(true); document.getElementById('edit-id').value = p.id;
-        const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-        if(vars) vars.forEach(v => {
-            if(v.name === 'Padrão') { document.getElementById('f-price-global').value = v.price; document.getElementById('f-stock-global').value = v.stock; }
-            else {
-                document.querySelectorAll('.hidden-check').forEach(cb => {
-                    if(cb.value === v.name) { cb.checked = true; admin.toggleInput(cb); 
-                        setTimeout(() => { const d = document.getElementById(`grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`); if(d) { d.querySelector('.v-price').value=v.price; d.querySelector('.v-stock').value=v.stock; } }, 50); 
-                    }
-                });
-            }
-        });
-        admin.tab('prod'); 
-    },
-    del: async (id) => { if(confirm("Excluir?")) { if(sb) await sb.from('products').delete().eq('id', id); await app.load(); admin.renderList(); } },
-    clear: (soft=false) => { 
-        if(!soft) document.getElementById('edit-id').value=""; 
-        ['f-name','f-desc','f-cost','f-file','f-price-global','f-stock-global'].forEach(i=>{ const el = document.getElementById(i); if(el) el.value=""; });
-        state.selectedFiles = []; state.mainImageIndex = 0;
-        document.getElementById('file-preview-area').innerHTML = "";
-        document.getElementById('active-vars-area').innerHTML="";
-        document.querySelectorAll('.hidden-check').forEach(c => c.checked=false);
-    },
-    resetData: async () => {
-        if(confirm("ATENÇÃO: Isso apagará TODO o histórico de compras e vendas do sistema. Tem certeza?")) {
-            const confirmTxt = prompt("Digite 'DELETAR' para confirmar a limpeza total dos dados:");
-            if(confirmTxt === "DELETAR") {
-                if(sb) {
-                    const { error } = await sb.from('orders').delete().neq('id', 0);
-                    if(!error) { 
-                        app.success("Histórico resetado com sucesso.");
-                        state.adminOrders = [];
-                        document.getElementById('orders-list').innerHTML = '';
-                        document.getElementById('pay-list').innerHTML = '';
-                        admin.renderOrders(); 
-                        admin.renderPayments(); 
-                        admin.renderFinance(); 
-                    }
-                    else alert("Erro ao resetar: " + error.message);
-                }
-            } else { alert("Ação cancelada."); }
-        }
-    },
-    renderList: () => {
-        const div = document.getElementById('admin-list'); div.innerHTML="";
-        state.products.forEach(p => {
-            const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-            let stock = 0; if(vars) vars.forEach(v => stock += parseInt(v.stock||0));
-            let mainImg = "https://via.placeholder.com/50";
-            try { const m = JSON.parse(p.image_url); if(Array.isArray(m)) mainImg = m[0]; else mainImg = p.image_url; } catch(e){}
-            
-            const isSoldOut = stock === 0;
-            
-            div.innerHTML += `
-            <div class="mini-prod ${isSoldOut ? 'stock-zero' : ''}">
-                <img src="${mainImg}" onerror="this.src='https://via.placeholder.com/50'"> 
-                <div style="flex:1">
-                    <strong>${p.name}</strong><br>
-                    ${isSoldOut 
-                        ? '<span style="background:#ddd; color:#666; padding:2px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">ESGOTADO</span>' 
-                        : `<span class="stock-info" style="color:var(--success)">Estoque: ${stock}</span>`
-                    }
-                </div>
-                <div>
-                    <button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-chip-edit"><i class="fas fa-pen"></i></button> 
-                    <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none; margin-left:10px;"><i class="fas fa-trash"></i></button>
-                </div>
-            </div>`;
-        });
-    },
-    filterOrders: (status, btn) => {
-        state.filterStatus = status;
-        document.querySelectorAll('#order-filters .chip').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        admin.renderOrders(true);
-    },
-    populateManualProdSelect: () => {
-        const sel = document.getElementById('m-prod-select');
-        sel.innerHTML = '<option value="">Selecione um produto do estoque...</option>';
-        state.products.forEach(p => {
-            const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
-            vars.forEach(v => {
-                sel.innerHTML += `<option value="${p.id}|${v.name}|${v.price}|${p.name}">${p.name} - ${v.name} (R$ ${parseFloat(v.price).toFixed(2)}) - Est: ${v.stock}</option>`;
-            });
-        });
-    },
-    manualCart: [],
-    addManualItem: () => {
-        const val = document.getElementById('m-prod-select').value;
-        const qty = parseInt(document.getElementById('m-prod-qty').value);
-        if(!val || qty < 1) return alert("Selecione produto e quantidade.");
-        const [pid, vname, price, pname] = val.split('|');
-        admin.manualCart.push({ name: pname, variant: vname, price: parseFloat(price), qty: qty, image: "https://via.placeholder.com/50?text=Manual", is_stock: true, pid: pid });
-        admin.renderManualCart();
-        document.getElementById('m-prod-select').value = "";
-    },
-    addCustomItem: () => {
-        const name = document.getElementById('m-custom-item').value;
-        const price = parseFloat(document.getElementById('m-custom-price').value);
-        if(!name || !price) return alert("Preencha nome e valor.");
-        admin.manualCart.push({ name: name, variant: "Avulso", price: price, qty: 1, image: "https://via.placeholder.com/50?text=Avulso", is_stock: false });
-        admin.renderManualCart();
-        document.getElementById('m-custom-item').value=""; document.getElementById('m-custom-price').value="";
-    },
-    renderManualCart: () => {
-        const div = document.getElementById('manual-cart-list');
-        div.innerHTML = "";
-        let total = 0;
-        if(admin.manualCart.length === 0) div.innerHTML = '<div style="padding:15px; text-align:center; color:#999;">Nenhum item adicionado</div>';
-        admin.manualCart.forEach((i, idx) => {
-            total += i.price * i.qty;
-            div.innerHTML += `
-            <div class="manual-cart-item">
-                <div>
-                    <strong>${i.name}</strong> <small>(${i.variant})</small><br>
-                    ${i.qty}x R$ ${i.price.toFixed(2)}
-                </div>
-                <button onclick="admin.manualCart.splice(${idx},1); admin.renderManualCart()" style="color:red; border:none; background:none;"><i class="fas fa-trash"></i></button>
-            </div>`;
-        });
-        document.getElementById('m-total-display').innerText = `R$ ${total.toFixed(2)}`;
-    },
-    saveManualOrder: async () => {
-        if(admin.manualCart.length === 0) return alert("Adicione itens.");
-        const name = document.getElementById('m-client-name').value || "Cliente Balcão";
-        const email = document.getElementById('m-client-email').value || "manual@admin.com";
-        const phone = document.getElementById('m-client-phone').value || "";
-        const street = document.getElementById('m-client-street').value;
-        const num = document.getElementById('m-client-num').value;
-        const bairro = document.getElementById('m-client-bairro').value;
-        const city = document.getElementById('m-client-city').value;
-        const method = document.getElementById('m-payment-method').value;
-        const pStatus = document.getElementById('m-payment-status').value;
-        const addressObj = { street: street, number: num, bairro: bairro, city: city, uf: 'MS', phone: phone };
-        const total = admin.manualCart.reduce((a,b)=>a+(b.price*b.qty),0);
-        
-        const order = {
-            id: Date.now().toString(), customer_name: name, customer_email: email, customer_id: "0", 
-            total: total, items: JSON.stringify(admin.manualCart), address: JSON.stringify(addressObj),
-            date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
-            method: `Manual (${method})`, status: pStatus === 'Pago' ? 'Entregue' : 'Pendente', 
-            payment_status: pStatus, created_at: new Date().toISOString()
-        };
-
-        if(sb) {
-            const { error } = await sb.from('orders').insert([order]);
-            if(error) return alert("Erro ao salvar: " + error.message);
-            for (const item of admin.manualCart) {
-                if(item.is_stock) {
-                    const { data: prod } = await sb.from('products').select('*').eq('id', item.pid).single();
-                    if(prod) {
-                        let vars = typeof prod.variations === 'string' ? JSON.parse(prod.variations) : prod.variations;
-                        const targetVar = vars.find(v => v.name === item.variant);
-                        if(targetVar) {
-                            targetVar.stock = Math.max(0, parseInt(targetVar.stock) - item.qty);
-                            await sb.from('products').update({ variations: JSON.stringify(vars) }).eq('id', prod.id);
-                        }
-                    }
-                }
-            }
-            if(email && email.includes('@')) { app.sendEmails(order, admin.manualCart, email); }
-            app.success("Pedido Registrado com Sucesso!");
-            admin.manualCart = []; admin.renderManualCart();
-            ['m-client-name','m-client-email','m-client-phone','m-client-cep','m-client-street','m-client-num','m-client-bairro'].forEach(id => document.getElementById(id).value="");
-            admin.tab('orders'); admin.renderOrders();
-        }
-    },
-    openEntryModal: (oid, total) => {
-        document.getElementById('entry-oid').value = oid;
-        document.getElementById('entry-total').value = total;
-        document.getElementById('entry-val').value = "";
-        app.showModal('entry-modal');
-        setTimeout(() => document.getElementById('entry-val').focus(), 100);
-    },
-    confirmEntry: async () => {
-        const oid = document.getElementById('entry-oid').value;
-        const total = parseFloat(document.getElementById('entry-total').value);
-        const valStr = document.getElementById('entry-val').value;
-        if(!valStr || isNaN(valStr)) return alert("Digite um valor válido");
-        const paid = parseFloat(valStr);
-        const rest = total - paid;
-        if(paid >= total) return alert("Valor igual ou maior que o total. Use 'Quitar Tudo'.");
-        if(paid <= 0) return alert("Valor inválido.");
-        const today = new Date().toISOString().split('T')[0];
-        const nextMonth = new Date(); nextMonth.setDate(nextMonth.getDate() + 30);
-        const installments = [
-            { date: today, amount: paid.toFixed(2), paid: true },
-            { date: nextMonth.toISOString().split('T')[0], amount: rest.toFixed(2), paid: false }
-        ];
-        await sb.from('orders').update({
-            payment_status: 'Parcelado', installments: JSON.stringify(installments)
-        }).eq('id', oid);
-        app.closeModal('entry-modal');
-        app.success("Valor de Entrada inserido com sucesso!");
-        admin.renderOrders(); admin.renderPayments();
-    },
-    renderOrders: async (useCache = false) => {
-        if(!sb) return;
-        if(!useCache || !state.adminOrders.length) {
-            let query = sb.from('orders').select('*').order('created_at', {ascending:false});
-            const startStr = document.getElementById('order-start').value;
-            const endStr = document.getElementById('order-end').value;
-            if(startStr && endStr) {
-                const start = new Date(startStr + 'T00:00:00');
-                const end = new Date(endStr + 'T23:59:59');
-                query = query.gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
-            }
-            const { data } = await query;
-            state.adminOrders = data || [];
-        }
-        const div = document.getElementById('orders-list'); if(!div) return; div.innerHTML="";
-        let filtered = state.adminOrders;
-        if(state.filterStatus !== 'all') filtered = filtered.filter(o => o.status.includes(state.filterStatus));
-        if(filtered.length === 0) { div.innerHTML = "<p>Nenhum pedido encontrado.</p>"; return; }
-        filtered.forEach(o => {
-            const iList = typeof o.items==='string'?JSON.parse(o.items):o.items;
-            const itemsHtml = iList.map(i => `<div class="order-prod-row"><img src="${i.image||'https://via.placeholder.com/50'}" onerror="this.src='https://via.placeholder.com/50'"><div class="order-prod-info"><div class="order-prod-name">${i.name}</div><div class="order-prod-var">${i.variant}</div></div><div class="order-prod-qty">x${i.qty}</div></div>`).join('');
-            const addr = JSON.parse(o.address || '{}');
-            const phoneRaw = addr.phone || '';
-            const phoneClean = phoneRaw.replace(/\D/g, ''); 
-            const fullAddrString = `${addr.street || ''}, ${addr.number || ''} - ${addr.bairro || ''}, ${addr.city || ''}`;
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddrString)}`;
-            let stClass = 'st-pendente';
-            if(o.status.includes('Enviado')) stClass = 'st-enviado';
-            if(o.status.includes('Entregue')) stClass = 'st-entregue';
-            if(o.status === 'Cancelado') stClass = 'st-cancelado';
-            const payStatus = o.payment_status || 'Pendente';
-            const showPayDetails = (payStatus === 'Parcelado') ? 'block' : 'none';
-            const btnPartial = (payStatus === 'Pendente' || payStatus === 'A_pagar') 
-                ? `<button onclick="admin.openEntryModal('${o.id}', ${o.total})" class="btn-modern small outline" style="margin-top:5px; width:100%; border-color:#f39c12; color:#e67e22;"><i class="fas fa-coins"></i> Registrar Entrada/Sinal</button>` 
-                : '';
-            div.innerHTML += `
-            <div class="order-card-modern">
-                <div class="oc-header"><span class="oc-id">Pedido #${o.id.slice(-6)}</span><span class="oc-date">${o.date}</span></div>
-                <div class="oc-body">
-                    <div class="oc-section">
-                        <label>Cliente</label>
-                        <div class="oc-val">${o.customer_name}</div>
-                        <div style="font-size:0.8rem; color:#666;">${o.customer_email}</div>
-                        ${phoneClean ? `<a href="https://wa.me/55${phoneClean}" target="_blank" class="admin-wa-btn"><i class="fab fa-whatsapp"></i> Conversar no Whats</a>` : `<span style="color:#999; font-size:0.8rem;">Tel: ${phoneRaw}</span>`}
-                    </div>
-                    <div class="oc-section" style="grid-column: span 2; background:#fff; border:1px solid #eee;">
-                        <label><i class="fas fa-map-marker-alt" style="color:var(--danger)"></i> Entrega</label>
-                        <div style="font-size:0.9rem; color:#444; margin-bottom:5px;">${fullAddrString} <br> <small style="color:#777;">Ref: ${addr.ref || 'Sem referência'}</small></div>
-                        <a href="${mapLink}" target="_blank" class="btn-map">Ver no Google Maps <i class="fas fa-external-link-alt"></i></a>
-                    </div>
-                    <div class="oc-section">
-                        <label>Total</label><div class="oc-val" style="color:var(--success)">R$ ${o.total.toFixed(2)}</div>
-                    </div>
-                    <div class="oc-section">
-                        <label>Status Pedido</label>
-                        <select onchange="admin.updateStatus('${o.id}', this.value)" class="status-selector ${stClass}"><option value="Pendente" ${o.status.includes('Pendente')?'selected':''}>Pendente</option><option value="Enviado" ${o.status==='Enviado'?'selected':''}>Enviado</option><option value="Entregue" ${o.status==='Entregue'?'selected':''}>Entregue</option><option value="Cancelado" ${o.status==='Cancelado'?'selected':''}>Cancelado</option></select>
-                    </div>
-                    <div class="payment-box">
-                        <label style="font-weight:bold; color:var(--accent);">Financeiro:</label>
-                        <select onchange="admin.togglePaymentDetails(this, '${o.id}', ${o.total})" class="input" style="margin-top:5px;">
-                            <option value="A_pagar" ${(payStatus==='Pendente' || payStatus==='A_pagar')?'selected':''}>À pagar</option>
-                            <option value="Pago" ${payStatus==='Pago'?'selected':''}>Pago</option>
-                            <option value="Parcelado" ${payStatus==='Parcelado'?'selected':''}>Parcelado</option>
-                        </select>
-                        ${btnPartial}
-                        <div id="pay-det-${o.id}" class="gen-installments-area" style="display:${showPayDetails}">
-                            <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
-                                <input type="number" id="inst-n-${o.id}" class="input qty-installments-input" placeholder="Qtd Parc.">
-                                <button onclick="admin.genInstallments('${o.id}', ${o.total})" class="btn-modern outline small" style="flex:1;"><i class="fas fa-magic"></i> Gerar Parcelas</button>
-                            </div>
-                            <div id="inst-list-${o.id}"></div>
-                        </div>
-                        <button onclick="admin.updatePaymentStatus('${o.id}')" class="btn-modern success small" style="width:100%; margin-top:10px;"><i class="fas fa-save"></i> Salvar Financeiro</button>
-                    </div>
-                    <div class="oc-items-box">${itemsHtml}</div>
-                </div>
-            </div>`;
-            if(payStatus === 'Parcelado' && o.installments) {
-                try {
-                    const instData = JSON.parse(o.installments);
-                    if(Array.isArray(instData)) {
-                        document.getElementById(`inst-n-${o.id}`).value = instData.length;
-                        admin.renderInstInputs(o.id, instData);
-                    }
-                } catch(e) {}
-            }
-        });
-    },
-    togglePaymentDetails: (sel, id, total) => {
-        const div = document.getElementById(`pay-det-${id}`);
-        if(div) div.style.display = (sel.value === 'Parcelado') ? 'block' : 'none';
-    },
-    genInstallments: (id, total) => {
-        const n = parseInt(document.getElementById(`inst-n-${id}`).value);
-        if(!n || n < 1) return alert("Digite qtd parcelas");
-        const arr = [];
-        const val = (total / n).toFixed(2);
-        for(let i=0; i<n; i++) {
-            const d = new Date(); d.setDate(d.getDate() + (30 * (i+1)));
-            arr.push({ date: d.toISOString().split('T')[0], amount: val, paid: false });
-        }
-        admin.renderInstInputs(id, arr);
-    },
-    renderInstInputs: (id, arr) => {
-        const box = document.getElementById(`inst-list-${id}`);
-        box.innerHTML = "";
-        arr.forEach((item, idx) => {
-            box.innerHTML += `<div class="inst-gen-row"><span style="font-weight:bold;">${idx+1}x</span><input type="date" value="${item.date}" class="i-date"><input type="number" value="${item.amount}" class="i-amount"><label class="custom-checkbox"><input type="checkbox" class="i-check" ${item.paid?'checked':''}><span class="checkmark"></span></label></div>`;
-        });
-    },
-    updatePaymentStatus: async (id) => {
-        const div = document.getElementById(`pay-det-${id}`);
-        const row = div.parentElement;
-        const status = row.querySelector('select').value;
-        let installmentsJson = null;
-        if(status === 'Parcelado') {
-            const list = document.getElementById(`inst-list-${id}`);
-            const rows = list.querySelectorAll('.inst-gen-row');
-            const arr = [];
-            rows.forEach(r => { arr.push({ date: r.querySelector('.i-date').value, amount: r.querySelector('.i-amount').value, paid: r.querySelector('.i-check').checked }); });
-            installmentsJson = JSON.stringify(arr);
-        }
-        await sb.from('orders').update({ payment_status: status, installments: installmentsJson }).eq('id', id);
-        app.success("Financeiro salvo com sucesso!");
-        admin.renderPayments();
-    },
-    renderPayments: async () => {
-        const startStr = document.getElementById('fin-start').value;
-        const endStr = document.getElementById('fin-end').value;
-        let query = sb.from('orders').select('*').neq('status', 'Cancelado').order('created_at', {ascending: false});
-        if(startStr) query = query.gte('created_at', new Date(startStr + 'T00:00:00').toISOString());
-        if(endStr) query = query.lte('created_at', new Date(endStr + 'T23:59:59').toISOString());
-        
-        const { data } = await query;
-        const div = document.getElementById('pay-list'); 
-        if(!div) return; 
-        div.innerHTML = "";
-        
-        if(!data || data.length === 0) { div.innerHTML = "<p>Nenhum registro.</p>"; return; }
-
-        let totalRecebido = 0;
-        let totalAReceber = 0;
-
-        const clients = {};
-        data.forEach(o => {
-            const key = o.customer_email && o.customer_email.includes('@') ? o.customer_email : o.customer_name;
-            if(!clients[key]) {
-                clients[key] = {
-                    name: o.customer_name, email: o.customer_email, phone: "", 
-                    total_debt: 0, total_paid: 0, orders: []
-                };
-            }
-            try { const addr = JSON.parse(o.address || '{}'); if(addr.phone) clients[key].phone = addr.phone; } catch(e){}
-            
-            let orderPaid = 0;
-            if(o.payment_status === 'Pago') { 
-                orderPaid = o.total; 
-            } else if (o.installments) {
-                try {
-                    const inst = JSON.parse(o.installments);
-                    inst.forEach(i => { if(i.paid) orderPaid += parseFloat(i.amount); });
-                } catch(e){}
-            }
-            
-            clients[key].total_paid += orderPaid;
-            clients[key].total_debt += (o.total - orderPaid);
-            clients[key].orders.push(o);
-
-            totalRecebido += orderPaid;
-            totalAReceber += (o.total - orderPaid);
-        });
-
-        // Atualiza Cards de Resumo
-        document.getElementById('fin-real-revenue').innerText = `R$ ${totalRecebido.toFixed(2)}`;
-        document.getElementById('fin-total-created').innerText = `R$ ${totalAReceber.toFixed(2)}`;
-
-        Object.values(clients).forEach((c, index) => {
-            const debt = Math.max(0, c.total_debt);
-            const hasDebt = debt > 0.1; 
-            const phoneClean = c.phone ? c.phone.replace(/\D/g, '') : '';
-            const ordersHTML = c.orders.map(o => admin.generateOrderCardHTML(o)).join('');
-
-            div.innerHTML += `
-            <div class="client-admin-card">
-                <div class="cac-header" onclick="document.getElementById('client-body-${index}').classList.toggle('open')">
-                    <div class="cac-info">
-                        <div style="display:flex; flex-direction:column;">
-                            <h4 style="font-size:1.1rem; margin-bottom:5px;">${c.name}</h4>
-                            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                                ${phoneClean ? `
-                                    <span style="font-size:0.9rem; color:#555;"><i class="fas fa-phone"></i> ${c.phone}</span>
-                                    <a href="https://wa.me/55${phoneClean}" target="_blank" onclick="event.stopPropagation()" class="admin-wa-btn">
-                                        <i class="fab fa-whatsapp"></i> Conversar
-                                    </a>` : '<span style="color:#999;">Sem telefone</span>'}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="cac-stats">
-                        ${hasDebt ? `
-                            <div class="debt-alert-box">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <div>
-                                    <small>RECEBER</small><br>
-                                    <strong>R$ ${debt.toFixed(2)}</strong>
-                                </div>
-                            </div>
-                        ` : `
-                            <div style="text-align:right;">
-                                <small style="color:var(--success); font-weight:bold;">TUDO PAGO</small><br>
-                                <span style="color:#999; font-size:0.8rem;">Histórico OK</span>
-                            </div>
-                        `}
-                        <div style="margin-left:15px; color:#ccc;"><i class="fas fa-chevron-down"></i></div>
-                    </div>
-                </div>
-                <div id="client-body-${index}" class="cac-body">
-                    ${ordersHTML}
-                </div>
-            </div>`;
-        });
-    },
-    
-    generateOrderCardHTML: (o) => {
-        let items = []; try { items = JSON.parse(o.installments || '[]'); } catch(e) {}
-        let totalPaid = 0; 
-        const isPaidStatus = o.payment_status === 'Pago';
-        if(isPaidStatus) totalPaid = o.total;
-        if(items.length > 0) items.forEach(i => { if(i.paid) totalPaid += parseFloat(i.amount); });
-        
-        const remaining = Math.max(0, o.total - totalPaid);
-        
-        // PRODUTOS COM MINIATURA
-        let prodListHTML = '';
-        try {
-            const prods = JSON.parse(o.items);
-            prodListHTML = prods.map(i => `
-                <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px; border-bottom:1px dashed #eee; padding-bottom:5px;">
-                    <img src="${i.image || 'https://via.placeholder.com/40'}" style="width:40px; height:40px; border-radius:6px; object-fit:cover;">
-                    <div style="font-size:0.85rem;">
-                        <strong>${i.name}</strong> <small>(${i.variant})</small><br>
-                        <span style="color:#666;">${i.qty}x R$ ${i.price.toFixed(2)}</span>
-                    </div>
-                </div>
-            `).join('');
-        } catch(e) { prodListHTML = 'Erro ao carregar itens'; }
-
-        let fullAddrString = "Sem endereço registrado";
-        let mapLink = "#";
-        try {
-            const addr = JSON.parse(o.address || '{}');
-            if(addr.street) {
-                fullAddrString = `${addr.street}, ${addr.number} - ${addr.bairro}, ${addr.city}/${addr.uf}`;
-                mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddrString)}`;
-            }
-        } catch(e) {}
-
-        let instHTML = '';
-        if(o.payment_status === 'Parcelado' && items.length > 0) {
-            instHTML = `<div style="margin-top:10px; background:#fafafa; padding:10px; border:1px solid #eee; border-radius:8px;">
-                <strong style="font-size:0.8rem; color:#666;">Editar Parcelas:</strong><br>
-                ${items.map((i, idx) => `
-                    <div style="display:grid; grid-template-columns: 0.5fr 2fr 1.5fr auto; gap:5px; align-items:center; padding:8px 0; border-bottom:1px dashed #ddd;">
-                        <small style="font-weight:bold; color:#555;">${idx+1}x</small>
-                        <input type="date" value="${i.date}" class="input small-input" 
-                            onchange="admin.editInstField('${o.id}', ${idx}, 'date', this.value)" style="margin:0; font-size:0.8rem;">
-                        <input type="number" step="0.01" value="${parseFloat(i.amount).toFixed(2)}" class="input small-input" 
-                            onchange="admin.editInstField('${o.id}', ${idx}, 'amount', this.value)" style="margin:0; font-size:0.8rem;">
-                        ${i.paid 
-                            ? '<span style="color:green; font-weight:bold; font-size:0.8rem;"><i class="fas fa-check"></i></span>' 
-                            : `<button onclick="admin.quickPayInst('${o.id}', ${idx}, true)" class="btn-chip-action" title="Baixar"><i class="fas fa-check"></i></button>`
-                        }
-                    </div>
-                `).join('')}
-            </div>`;
-        }
-
-        const statusEntrega = `
-            <select onchange="admin.updateStatus('${o.id}', this.value)" class="status-selector small-select ${o.status === 'Cancelado' ? 'st-cancelado' : (o.status === 'Entregue' ? 'st-entregue' : 'st-pendente')}" style="margin-bottom:5px;">
-                <option value="Pendente" ${o.status.includes('Pendente')?'selected':''}>🚚 Pendente</option>
-                <option value="Enviado" ${o.status==='Enviado'?'selected':''}>🚀 Enviado</option>
-                <option value="Entregue" ${o.status==='Entregue'?'selected':''}>✅ Entregue</option>
-                <option value="Cancelado" ${o.status==='Cancelado'?'selected':''}>❌ Cancelado</option>
-            </select>
-        `;
-
-        const statusPagamento = `
-            <select onchange="admin.updatePaymentStatusSimple('${o.id}', this.value)" class="input small-select" style="margin:0; font-weight:bold; color:var(--accent);">
-                <option value="A_pagar" ${(o.payment_status==='Pendente' || o.payment_status==='A_pagar')?'selected':''}>⏳ À Pagar</option>
-                <option value="Pago" ${o.payment_status==='Pago'?'selected':''}>💰 Pago (Total)</option>
-                <option value="Parcelado" ${o.payment_status==='Parcelado'?'selected':''}>📅 Parcelado</option>
-            </select>
-        `;
-
-        return `
-        <div class="debt-card ${o.status === 'Cancelado' ? 'cancelled-order' : ''} ${isPaidStatus ? 'paid' : ''}" style="margin-bottom:15px; border-left:4px solid var(--accent);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <strong>Pedido #${o.id.slice(-4)} <span style="font-weight:normal; font-size:0.8rem;">(${o.date})</span></strong>
-                <button onclick="admin.resendEmail('${o.id}')" class="btn-action-icon" style="width:auto; padding:5px 10px; font-size:0.8rem;">
-                    <i class="fas fa-envelope"></i> ${o.customer_email || 'Email'}
-                </button>
-            </div>
-
-            <div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.85rem; border:1px solid #eee;">
-                <i class="fas fa-map-marker-alt" style="color:var(--danger)"></i> <strong>Entrega:</strong><br>
-                <span style="color:#555;">${fullAddrString}</span>
-                <br>
-                <a href="${mapLink}" target="_blank" class="btn-map" style="margin-top:5px; display:inline-block;">
-                    <i class="fas fa-external-link-alt"></i> Ver no Google Maps
-                </a>
-            </div>
-
-            <div style="font-size:0.85rem; color:#666; margin:5px 0;">${prodListHTML}</div>
-            
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-                <div><label style="font-size:0.7rem; font-weight:bold; color:#999;">STATUS ENTREGA</label>${statusEntrega}</div>
-                <div><label style="font-size:0.7rem; font-weight:bold; color:#999;">FINANCEIRO</label>${statusPagamento}</div>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px dashed #eee; padding-top:10px;">
-                <span style="font-size:1.1rem; font-weight:bold;">Total: R$ ${o.total.toFixed(2)}</span>
-                <span style="color:${remaining > 0.1 ? 'var(--danger)' : 'var(--success)'}; font-weight:bold;">
-                    ${remaining > 0.1 ? `Falta: R$ ${remaining.toFixed(2)}` : 'QUITADO'}
-                </span>
-            </div>
-            
-            ${instHTML}
-        </div>`;
-    },
-
-    editInstField: async (oid, idx, field, val) => {
-        if(field === 'amount' && (isNaN(val) || val < 0)) return alert("Valor inválido");
-        if(field === 'date' && !val) return alert("Data inválida");
-
-        const { data } = await sb.from('orders').select('installments').eq('id', oid).single();
-        if(data) {
-            const arr = JSON.parse(data.installments);
-            if(arr[idx]) {
-                arr[idx][field] = val; 
-                await sb.from('orders').update({ installments: JSON.stringify(arr) }).eq('id', oid);
-                setTimeout(() => admin.renderPayments(), 500); 
-            }
-        }
-    },
-
-    updatePaymentStatusSimple: async (id, status) => {
-        let updateObj = { payment_status: status };
-        await sb.from('orders').update(updateObj).eq('id', id);
-        app.success("Financeiro atualizado!");
-        admin.renderPayments(); 
-    },
-
-    expandInstallments: (id) => {
-        const el = document.getElementById(`inst-manage-${id}`);
-        if(el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
-    },
-    quickPayInst: async (oid, idx, isPaid) => {
-        const { data } = await sb.from('orders').select('installments, total').eq('id', oid).single();
-        if(data) {
-            const arr = JSON.parse(data.installments);
-            if(arr[idx]) {
-                arr[idx].paid = isPaid;
-                const allPaid = arr.every(i => i.paid);
-                let updateObj = { installments: JSON.stringify(arr) };
-                if(allPaid && confirm("Todas as parcelas foram pagas. Deseja marcar o pedido como 'Pago'?")) {
-                    updateObj.payment_status = 'Pago'; updateObj.installments = null; 
-                }
-                await sb.from('orders').update(updateObj).eq('id', oid);
-                admin.renderPayments();
-            }
-        }
-    },
-    markAsPaidFull: async (id) => {
-        if(confirm("Confirmar o recebimento TOTAL deste pedido?")) {
-            await sb.from('orders').update({ payment_status: 'Pago', installments: null }).eq('id', id);
-            admin.renderPayments(); admin.renderOrders(); 
-        }
-    },
-    renderFinance: async () => {
-        const startStr = document.getElementById('fin-start').value;
-        const endStr = document.getElementById('fin-end').value;
-        if(!startStr || !endStr) return;
-        const start = new Date(startStr + 'T00:00:00');
-        const end = new Date(endStr + 'T23:59:59');
-        const { data: orders } = await sb.from('orders').select('*').neq('status', 'Cancelado');
-        let realRevenue = 0;
-        let totalCreated = 0;
-        if(orders) {
-            orders.forEach(o => {
-                const orderDate = new Date(o.created_at);
-                if(orderDate >= start && orderDate <= end) {
-                    totalCreated += o.total;
-                }
-                if(o.payment_status === 'Pago') {
-                    if(orderDate >= start && orderDate <= end) {
-                        realRevenue += o.total;
-                    }
-                } else if(o.installments) {
-                    try {
-                        const inst = JSON.parse(o.installments);
-                        inst.forEach(i => {
-                            if(i.paid) {
-                                const payDate = i.date ? new Date(i.date + 'T12:00:00') : orderDate;
-                                if(payDate >= start && payDate <= end) {
-                                    realRevenue += parseFloat(i.amount);
-                                }
-                            }
-                        });
-                    } catch(e) {}
-                }
-            });
-        }
-        document.getElementById('fin-real-revenue').innerText = `R$ ${realRevenue.toFixed(2)}`;
-        document.getElementById('fin-total-created').innerText = `R$ ${totalCreated.toFixed(2)}`;
-    },
-    updateStatus: async (id, val) => { if(sb) await sb.from('orders').update({status: val}).eq('id', id); app.success("Status atualizado!"); admin.renderOrders(); },
-    updateStats: () => {
-        const grid = document.getElementById('dash-stock-grid'); if(!grid) return; grid.innerHTML = "";
-        let grandTotalStock = 0, grandTotalValue = 0, grandTotalCost = 0;
-        state.products.forEach(p => {
-            const vars = typeof p.variations === 'string' ? JSON.parse(p.variations || '[]') : (p.variations || []);
-            let pStock = 0, pValue = 0; 
-            vars.forEach(v => {
-                const q = parseInt(v.stock||0); const price = parseFloat(v.price||0); const cost = parseFloat(v.cost) || parseFloat(p.cost_price) || 0;
-                pStock += q; pValue += (q * price); grandTotalStock += q; grandTotalValue += (q * price); grandTotalCost += (q * cost);
-            });
-            const isSoldOut = pStock === 0;
-            
-            const cardStyle = isSoldOut ? 'background:#f0f0f0; opacity:0.8; filter:grayscale(1);' : '';
-            const color = isSoldOut ? '#888' : (pStock < 5 ? '#f39c12' : '#27ae60');
-            let mainImg = "https://via.placeholder.com/60";
-            try { const m = JSON.parse(p.image_url); if(Array.isArray(m)) mainImg = m[0]; else mainImg = p.image_url; } catch(e) {}
-            
-            grid.innerHTML += `<div class="dash-card" style="${cardStyle}">
-                ${isSoldOut ? '<span class="tag-dashboard-sold">ESGOTADO</span>' : ''}
-                <img src="${mainImg}">
-                <div style="flex:1"><strong style="font-size:0.95rem; display:block;">${p.name}</strong><small style="color:#666;">${vars.length} Var.</small><div style="margin-top:5px; font-weight:bold; color:${color}"><i class="fas fa-box"></i> ${pStock} un.</div></div>
-                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;"><div style="text-align:right; font-size:0.8rem; color:#888;">Est. Venda:<br><span style="color:var(--accent); font-weight:bold;">R$ ${pValue.toFixed(2)}</span></div><button class="btn-modern small outline" onclick="admin.edit('${p.id}')">Editar</button></div>
-            </div>`;
-        });
-        setSafe('st-rev', `R$ ${grandTotalValue.toFixed(2)}`); setSafe('st-cost', `R$ ${grandTotalCost.toFixed(2)}`); setSafe('st-qty', grandTotalStock);
-    },
-    filterPayments: (status, btn) => {
-        state.filterPay = status;
-        document.querySelectorAll('#pay-filters .chip').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        admin.renderPayments();
-    }
-};
-
-// ================= EXECUTION =================
-(async function init() {
-    if(window.emailjs) emailjs.init(EMAILJS_PUBLIC_KEY);
-    const u = localStorage.getItem('2a_user'); if(u) state.user=JSON.parse(u);
-    const a = localStorage.getItem('2a_active_addr'); if(a) state.address=JSON.parse(a);
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('status') === 'approved' && localStorage.getItem('2a_cart')) {
-        state.cart = JSON.parse(localStorage.getItem('2a_cart'));
-        await app.registerOrder(Date.now().toString(), 'Mercado Pago', 'Pendente (Pago)', 'Pago');
-        await app.updateStockDatabase(); await app.sendEmails(state.cart);
-        localStorage.removeItem('2a_cart'); window.history.replaceState({}, document.title, window.location.pathname);
-        app.success("Pagamento Confirmado!");
-    }
-    await app.load(); admin.initCheckboxes(); app.updateUI();
-    document.getElementById('loading-screen').style.display='none';
-})();
-
-document.addEventListener('keydown', (e) => { 
-    if(e.key === "Escape") { 
-        document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); 
-        const sidebar = document.querySelector('.sidebar');
-        if(sidebar && sidebar.classList.contains('open')) { app.toggleCart(); }
-        history.back(); 
-    } 
-});
-
-window.addEventListener('popstate', (e) => { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); });
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/script.js b/script.js
+index 4fe2bd35c40b8363d91061b5b5764edad973e40d..6d978e06d4d016698d4fadac72fba1f20754a307 100644
+--- a/script.js
++++ b/script.js
+@@ -1,1567 +1,335 @@
+-// Remove tela de carregamento após 4s (fallback de segurança)
+-setTimeout(() => { const l = document.getElementById('loading-screen'); if(l) l.style.display='none'; }, 4000);
+-
+-// Tratamento de erros global
+-window.onerror = function(msg) { 
+-    const sb = document.getElementById('status-bar'); 
+-    if(sb) { sb.style.display='flex'; sb.className='err'; sb.innerHTML = `⚠️ Erro: ${msg}`; } 
+-    return false; 
+-};
+-
+-// ================= CONFIG =================
+-const SUPABASE_URL = 'https://sdeslwemzhxqixmphyye.supabase.co'; 
+-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkZXNsd2Vtemh4cWl4bXBoeXllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MDUxNDUsImV4cCI6MjA4MjI4MTE0NX0.QK7PkbYOnT6nIRFZHtHsuh42EuCjMSVvdnxf7h1bD80';
+-const GOOGLE_CLOUD_URL = 'https://criarpagamentoss-967029810770.southamerica-east1.run.app'; 
+-const EMAILJS_PUBLIC_KEY = 'vEXIgVw6GynR5W1qj'; 
+-const EMAILJS_SERVICE_ID = 'service_3x4ghcd';
+-const EMAILJS_TEMPLATE_CLIENTE = 'template_rwf0bay';
+-const EMAILJS_TEMPLATE_ADMIN = 'template_rwf0bay';
+-
+-// ================= STATE & INIT =================
+-let sb = null; 
+-try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.error("Supabase Error:", e); }
+-
+-const state = { products: [], cart: [], current: null, var: null, qty: 1, user: null, address: null, adminOrders: [], filterStatus: 'all', filterPay: 'all', selectedFiles: [], mainImageIndex: 0 };
+-const PRESETS_VOL = ['25ml','50ml','75ml','100ml','200ml','P','M','G','GG','Unico'];
+-const COLOR_MAP = { 'Preto': '#000000', 'Branco': '#ffffff', 'Vermelho': '#e74c3c', 'Azul': '#3498db', 'Rosa': '#e91e63', 'Verde': '#2ecc71', 'Nude': '#e3c0a5', 'Estampado': 'linear-gradient(45deg, red, blue)', 'Bege': '#f5f5dc', 'Amarelo': '#f1c40f', 'Cinza': '#95a5a6' };
+-
+-const safeVal = (v) => (v === null || v === undefined || v === "null") ? "" : v;
+-const setSafe = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = safeVal(val); };
+-
+-let autoScrollInterval; 
+-
+-document.addEventListener('DOMContentLoaded', () => {
+-    if(window.flatpickr) flatpickr(".flatpickr-input", { dateFormat: "Y-m-d", locale: "pt", altInput: true, altFormat: "d/m/Y" });
+-});
+-
+-// ================= AUTH =================
+-const auth = {
+-    user: null,
+-    
+-    // Verifica sessão silenciosamente
+-    checkProfile: async (openModal = false) => {
+-        const { data } = await sb.auth.getSession();
+-        
+-        if(data.session) {
+-            console.log("Sessão encontrada:", data.session.user.id);
+-            
+-            // Tenta buscar perfil completo no banco
+-            const { data: profile, error } = await sb.from('customers').select('*').eq('id', data.session.user.id).single();
+-            
+-            if (profile) {
+-                // Perfil existe no banco, usa ele
+-                state.user = profile;
+-                if(profile.address) {
+-                    const addrList = typeof profile.address === 'string' ? JSON.parse(profile.address) : profile.address;
+-                    localStorage.setItem('2a_addrs', JSON.stringify(addrList));
+-                    if(addrList.length > 0 && !state.address) {
+-                        state.address = addrList[0];
+-                        localStorage.setItem('2a_active_addr', JSON.stringify(state.address));
+-                    }
+-                }
+-            } else {
+-                // FALLBACK: Se não achou no banco (erro RLS ou cadastro incompleto), usa dados da sessão
+-                console.warn("Perfil não encontrado no banco, usando dados da sessão.");
+-                state.user = { 
+-                    id: data.session.user.id, 
+-                    email: data.session.user.email, 
+-                    name: data.session.user.user_metadata.name || 'Cliente',
+-                    phone: data.session.user.user_metadata.phone || ''
+-                };
+-            }
+-
+-            app.updateUI();
+-            if(openModal) auth.openClientArea();
+-        } else {
+-            console.log("Nenhuma sessão ativa.");
+-            state.user = null;
+-            app.updateUI();
+-            if(openModal) app.showModal('auth-modal');
+-        }
+-    },
+-
+-    handleHeaderClick: () => {
+-        if(state.user) {
+-            auth.openClientArea();
+-        } else {
+-            app.showModal('auth-modal');
+-        }
+-    },
+-
+-    login: async () => {
+-        const email = document.getElementById('l-email').value;
+-        const pass = document.getElementById('l-pass').value;
+-        if(!email || !pass) return alert("Preencha todos os campos");
+-        
+-        const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+-        if(error) return alert("Erro: " + error.message);
+-        
+-        app.success("Login realizado!");
+-        app.closeModal('auth-modal');
+-        await auth.checkProfile(true); 
+-    },
+-
+-    register: async () => {
+-        const name = document.getElementById('r-name').value;
+-        const email = document.getElementById('r-email').value;
+-        const pass = document.getElementById('r-pass').value;
+-        const phone = document.getElementById('r-phone').value;
+-        
+-        // Endereço
+-        const cep = document.getElementById('r-cep').value;
+-        const street = document.getElementById('r-street').value;
+-        const num = document.getElementById('r-num').value;
+-        const bairro = document.getElementById('r-bairro').value;
+-        const city = document.getElementById('r-city').value;
+-        const uf = document.getElementById('r-uf').value;
+-
+-        if(!name || !email || !pass) return alert("Preencha dados de acesso");
+-
+-        const { data, error } = await sb.auth.signUp({ 
+-            email, 
+-            password: pass,
+-            options: {
+-                data: { name: name, phone: phone } // Salva no metadata também
+-            }
+-        });
+-        
+-        if(error) return alert("Erro: " + error.message);
+-
+-        if(data.user) {
+-            // Tenta salvar na tabela customers
+-            const newAddr = { name: name, phone: phone, cep: cep, street: street, number: num, bairro: bairro, city: city, uf: uf, type: 'Principal' };
+-            const { error: dbError } = await sb.from('customers').insert([{ id: data.user.id, name: name, email: email, phone: phone, address: [newAddr] }]);
+-            
+-            if(dbError) console.error("Erro ao criar perfil no banco (Trigger deve resolver):", dbError);
+-
+-            app.success("Conta criada! Entrando...");
+-            
+-            // Faz login automático após criar
+-            const { error: loginErr } = await sb.auth.signInWithPassword({ email, password: pass });
+-            if(!loginErr) { 
+-                app.closeModal('auth-modal'); 
+-                auth.checkProfile(true); 
+-            } else { 
+-                auth.toggle('login'); 
+-            }
+-        }
+-    },
+-
+-    logout: async () => {
+-        await sb.auth.signOut();
+-        state.user = null;
+-        state.address = null;
+-        localStorage.removeItem('2a_user');
+-        localStorage.removeItem('2a_addrs');
+-        localStorage.removeItem('2a_active_addr');
+-        window.location.reload();
+-    },
+-
+-    toggle: (mode) => {
+-        document.getElementById('form-login').style.display = mode === 'login' ? 'block' : 'none';
+-        document.getElementById('form-register').style.display = mode === 'register' ? 'block' : 'none';
+-        document.getElementById('auth-title').innerText = mode === 'login' ? 'Acesso' : 'Criar Conta Completa';
+-    },
+-
+-    openClientArea: () => {
+-        if(!state.user) return;
+-        document.getElementById('c-profile-name').value = state.user.name || '';
+-        document.getElementById('c-profile-email').value = state.user.email || '';
+-        document.getElementById('c-profile-phone').value = state.user.phone || '';
+-        
+-        const addrDiv = document.getElementById('c-profile-addrs');
+-        addrDiv.innerHTML = '';
+-        const addrs = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
+-        
+-        if(addrs.length === 0) addrDiv.innerHTML = "<small>Nenhum endereço salvo.</small>";
+-        
+-        addrs.forEach((a, i) => {
+-            addrDiv.innerHTML += `<div style="font-size:0.8rem; padding:8px; border-bottom:1px dashed #eee;"><b>${a.street}, ${a.number}</b> - ${a.city}/${a.uf} <br><small onclick="app.editAddress(${i}); app.closeModal('client-modal')" style="color:blue; cursor:pointer;">Editar</small></div>`;
+-        });
+-        auth.loadClientOrders();
+-        app.showModal('client-modal');
+-    },
+-
+-    updateProfileData: async () => {
+-        const name = document.getElementById('c-profile-name').value;
+-        const phone = document.getElementById('c-profile-phone').value;
+-        await sb.from('customers').update({ name: name, phone: phone }).eq('id', state.user.id);
+-        state.user.name = name; state.user.phone = phone;
+-        app.updateUI(); app.success("Dados atualizados!");
+-    },
+-
+-    loadClientOrders: async () => {
+-        const div = document.getElementById('client-orders-list');
+-        div.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>';
+-        
+-        // Pega ID como string para garantir compatibilidade
+-        const uid = String(state.user.id);
+-        const { data } = await sb.from('orders').select('*').eq('customer_id', uid).order('created_at', {ascending: false});
+-        
+-        div.innerHTML = '';
+-        if(!data || data.length === 0) { div.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Nenhum pedido encontrado.</p>'; return; }
+-        
+-        data.forEach(o => {
+-            let progress = 5; let truckClass = ''; let statusLabel = 'Processando';
+-            if(o.status.includes('Pendente')) { progress = 15; statusLabel = 'Separando'; }
+-            if(o.status.includes('Enviado')) { progress = 60; statusLabel = 'Em Trânsito'; }
+-            if(o.status.includes('Entregue')) { progress = 100; statusLabel = 'Entregue'; }
+-            if(o.status.includes('Cancelado')) { progress = 100; truckClass = 'cancelled'; statusLabel = 'Cancelado'; }
+-            
+-            let paidAmount = 0; let installmentsHtml = '';
+-            if(o.payment_status === 'Pago') { paidAmount = o.total; } else if (o.installments) {
+-                try { const inst = JSON.parse(o.installments); inst.forEach(i => { if(i.paid) paidAmount += parseFloat(i.amount); }); const next = inst.find(i => !i.paid); if(next) installmentsHtml = `<div style="color:#e67e22; font-size:0.8rem;">Próx. Parcela: ${next.date.split('-').reverse().join('/')} (R$ ${parseFloat(next.amount).toFixed(2)})</div>`; } catch(e){}
+-            }
+-            const remaining = Math.max(0, o.total - paidAmount);
+-            
+-            div.innerHTML += `
+-            <div class="client-track-card">
+-                <div class="track-header"><span class="track-id">Pedido #${o.id.slice(-4)}</span><span class="track-date">${o.date}</span></div>
+-                <div style="margin-bottom:20px;">
+-                    <div class="track-bar-container">
+-                        <div class="track-bar-fill ${truckClass}" style="width: ${progress}%">
+-                            <i class="fas fa-truck track-truck ${truckClass}"></i>
+-                        </div>
+-                    </div>
+-                    <div class="track-labels">
+-                        <span class="${progress >= 15 ? 'active' : ''}">Pedido</span>
+-                        <span class="${progress >= 60 ? 'active' : ''}">Enviado</span>
+-                        <span class="${progress >= 100 && !truckClass ? 'active' : ''}">Entregue</span>
+-                    </div>
+-                    <div style="text-align:center; font-weight:bold; margin-top:5px; color:var(--accent); font-size:0.8rem;">Status: ${statusLabel}</div>
+-                </div>
+-                <div class="client-fin-box">
+-                    <div class="cf-row"><span>Total:</span> <strong>R$ ${o.total.toFixed(2)}</strong></div>
+-                    <div class="cf-row"><span>Pago:</span> <span class="cf-status-paid">R$ ${paidAmount.toFixed(2)}</span></div>
+-                    ${remaining > 0.1 ? `<div class="cf-row"><span>Restante:</span> <span class="cf-status-pending">R$ ${remaining.toFixed(2)}</span></div>` : '<div style="color:var(--success); font-weight:bold; text-align:center;">Pedido Quitado!</div>'}
+-                    ${installmentsHtml}
+-                </div>
+-            </div>`;
+-        });
+-    }
+-};
+-
+-// ================= APP (STORE) =================
+-const app = {
+-    load: async () => {
+-        if(!sb) return;
+-        const { data, error } = await sb.from('products').select('*');
+-        if(!error) { state.products = data || []; app.render(state.products); }
+-    },
+-    success: (msg) => {
+-        const toast = document.getElementById('success-toast');
+-        document.getElementById('st-text').innerText = msg;
+-        toast.classList.add('active');
+-        setTimeout(() => { toast.classList.remove('active'); }, 5000);
+-    },
+-    render: (list) => {
+-        const div = document.getElementById('products-list'); if(!div) return; div.innerHTML = "";
+-        if(list.length === 0) div.innerHTML = '<p style="grid-column:1/-1;text-align:center">Nenhum produto cadastrado.</p>';
+-        list.forEach(p => {
+-            const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+-            const minP = (vars && vars.length) ? Math.min(...vars.map(v => parseFloat(v.price))) : 0;
+-            const isPromo = p.is_promo ? '<span class="tag-promo">OFERTA</span>' : '';
+-            let mainImg = "https://via.placeholder.com/300";
+-            try {
+-                const media = JSON.parse(p.image_url);
+-                if(Array.isArray(media) && media.length > 0) mainImg = media[0];
+-                else if(typeof p.image_url === 'string') mainImg = p.image_url;
+-            } catch(e) { mainImg = p.image_url; }
+-            div.innerHTML += `<div class="card" onclick="app.openModal('${p.id}')">${isPromo}<img src="${mainImg}" onerror="this.src='https://via.placeholder.com/300'"><div class="card-info"><span style="font-size:0.8rem;color:#999;text-transform:uppercase;">${p.category}</span><div style="font-weight:bold;margin:5px 0;">${p.name}</div><div style="color:var(--primary);font-weight:bold;">A partir R$ ${minP.toFixed(2)}</div><span class="tag-delivery">🚚 03 a 05 dias úteis</span></div></div>`;
+-        });
+-    },
+-    ask: (title, msg, onYes) => {
+-        document.getElementById('confirm-title').innerText = title;
+-        document.getElementById('confirm-msg').innerText = msg;
+-        const modal = document.getElementById('custom-confirm-modal');
+-        modal.classList.add('active');
+-        
+-        const yesBtn = document.getElementById('btn-confirm-yes');
+-        const noBtn = document.getElementById('btn-confirm-no');
+-        
+-        const newYes = yesBtn.cloneNode(true);
+-        const newNo = noBtn.cloneNode(true);
+-        yesBtn.parentNode.replaceChild(newYes, yesBtn);
+-        noBtn.parentNode.replaceChild(newNo, noBtn);
+-        
+-        newYes.addEventListener('click', () => {
+-            modal.classList.remove('active');
+-            if(onYes) onYes();
+-        });
+-        
+-        newNo.addEventListener('click', () => {
+-            modal.classList.remove('active');
+-        });
+-    },
+-    renderCart: () => {
+-        const ul = document.getElementById('cart-list'); 
+-        if(!ul) return; 
+-        ul.innerHTML=""; 
+-        let t=0;
+-        
+-        if(state.cart.length === 0) {
+-            ul.innerHTML = `<div style="text-align:center; padding:40px 0; color:#999;">
+-                <i class="fas fa-shopping-basket" style="font-size:3rem; margin-bottom:10px; opacity:0.3;"></i>
+-                <p>Sua sacola está vazia</p>
+-            </div>`;
+-        }
+-    
+-        state.cart.forEach((i,idx) => {
+-            t += i.price*i.qty;
+-            ul.innerHTML += `
+-            <li class="cart-item">
+-                <img src="${i.image || 'https://via.placeholder.com/60'}" class="cart-thumb">
+-                <div class="cart-details">
+-                    <span class="cart-name">${i.name}</span>
+-                    <span class="cart-variant">${i.variant}</span>
+-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+-                        <div class="qty-selector">
+-                            <button class="qty-btn" onclick="app.cQty(${idx},-1)">-</button>
+-                            <div class="qty-val">${i.qty}</div>
+-                            <button class="qty-btn" onclick="app.cQty(${idx},1)">+</button>
+-                        </div>
+-                        <div style="font-weight:bold; color:var(--accent);">R$ ${(i.price*i.qty).toFixed(2)}</div>
+-                    </div>
+-                </div>
+-                <button class="btn-remove-modern" onclick="app.removeFromCart(${idx})">
+-                    <i class="fas fa-trash-alt"></i>
+-                </button>
+-            </li>`;
+-        });
+-        
+-        if(state.cart.length > 0) {
+-            ul.innerHTML += `<button onclick="app.toggleCart()" class="btn-continue-shop">
+-                <i class="fas fa-arrow-left"></i> Continuar Comprando
+-            </button>`;
+-        }
+-    
+-        document.getElementById('cart-total').innerText = `R$ ${t.toFixed(2)}`;
+-        document.getElementById('cart-count').innerText = state.cart.length;
+-    },
+-    removeFromCart: (idx) => {
+-        state.cart.splice(idx,1);
+-        app.renderCart();
+-    },
+-    openPromoModal: () => {
+-        const promos = state.products.filter(p => p.is_promo);
+-        if(!promos.length) return alert("Sem promoções ativas.");
+-        const cDiv = document.getElementById('promo-track'); cDiv.innerHTML = "";
+-        const shownIds = new Set();
+-        promos.forEach(p => {
+-            if(shownIds.has(p.id)) return;
+-            shownIds.add(p.id);
+-            const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+-            const minP = Math.min(...vars.map(v => v.price));
+-            let mainImg = "https://via.placeholder.com/100";
+-            try { const m = JSON.parse(p.image_url); mainImg = Array.isArray(m) ? m[0] : p.image_url; } catch(e) { mainImg = p.image_url; }
+-            cDiv.innerHTML += `
+-            <div class="promo-list-card" onclick="app.closeModal('promo-modal'); setTimeout(() => app.openModal('${p.id}'), 100)">
+-                <img src="${mainImg}">
+-                <div><small class="promo-price">R$ ${minP.toFixed(2)}</small><br><strong>${p.name}</strong></div>
+-            </div>`;
+-        });
+-        app.showModal('promo-modal');
+-    },
+-    openModal: (id) => {
+-        const p = state.products.find(x => String(x.id) === String(id));
+-        if(!p) return;
+-        state.current = p; state.qty=1; state.var=null;
+-        let media = [];
+-        try { media = JSON.parse(p.image_url); } catch(e) { media = [p.image_url]; }
+-        if(!Array.isArray(media)) media = [p.image_url];
+-        app.renderCarousel(media);
+-        setSafe('m-title', p.name); setSafe('m-cat', p.category); setSafe('m-desc', p.description); setSafe('m-price', "Selecione...");
+-        const vDiv = document.getElementById('m-vars'); vDiv.innerHTML = "";
+-        const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+-        if(vars) {
+-            vars.forEach(v => {
+-                const hasStock = parseInt(v.stock) > 0;
+-                const chip = document.createElement('div');
+-                chip.className = `var-chip ${!hasStock ? 'disabled' : ''}`;
+-                let dot = "";
+-                if(COLOR_MAP[v.name]) dot = `<div class="color-circle" style="background:${COLOR_MAP[v.name]}"></div>`;
+-                chip.innerHTML = `${dot}<span>${v.name}</span><small style="opacity:0.8">R$ ${parseFloat(v.price).toFixed(2)}</small>`;
+-                if(hasStock) {
+-                    chip.onclick = () => {
+-                        state.var = v;
+-                        document.getElementById('m-price').innerText = `R$ ${parseFloat(v.price).toFixed(2)}`;
+-                        Array.from(vDiv.children).forEach(c => c.classList.remove('selected'));
+-                        chip.classList.add('selected');
+-                    };
+-                }
+-                vDiv.appendChild(chip);
+-            });
+-        }
+-        app.showModal('product-modal');
+-    },
+-    renderCarousel: (media) => {
+-        const area = document.getElementById('m-media-area');
+-        if(!media.length) { area.innerHTML = ''; return; }
+-        const isVideo = (url) => url && url.match && url.match(/\.(mp4|webm)$/i);
+-        let dotsHtml = '';
+-        if(media.length > 1) {
+-            dotsHtml = `<div class="carousel-dots">${media.map((_, i) => `<div class="carousel-dot ${i===0?'active':''}" onclick="app.swapMedia('${media[i]}', this, ${i})"></div>`).join('')}</div>`;
+-        }
+-        const renderMain = (url) => isVideo(url) ? `<video src="${url}" controls autoplay muted loop></video>` : `<img src="${url}">`;
+-        let html = `
+-            <div class="carousel-main-container" id="c-main" onmouseenter="clearInterval(autoScrollInterval)" onmouseleave="app.startAutoScroll()">
+-                ${renderMain(media[0])}
+-                ${dotsHtml}
+-            </div>
+-        `;
+-        area.innerHTML = html;
+-        if(media.length > 1) {
+-            app.currentMediaIndex = 0;
+-            app.currentMediaList = media;
+-            app.startAutoScroll();
+-        } else {
+-            clearInterval(autoScrollInterval);
+-        }
+-    },
+-    startAutoScroll: () => {
+-        if(app.currentMediaList && app.currentMediaList.length > 1) {
+-            clearInterval(autoScrollInterval);
+-            autoScrollInterval = setInterval(() => {
+-                let nextIndex = app.currentMediaIndex + 1;
+-                if(nextIndex >= app.currentMediaList.length) nextIndex = 0;
+-                const dots = document.querySelectorAll('.carousel-dot');
+-                if(dots[nextIndex]) app.swapMedia(app.currentMediaList[nextIndex], dots[nextIndex], nextIndex);
+-            }, 3000);
+-        }
+-    },
+-    swapMedia: (url, dot, index) => {
+-        const isVideo = (u) => u.match(/\.(mp4|webm)$/i);
+-        const main = document.getElementById('c-main');
+-        const imgEl = main.querySelector('img');
+-        if(isVideo(url)) {
+-            main.innerHTML = `<video src="${url}" controls autoplay muted loop></video>` + (main.querySelector('.carousel-dots')?.outerHTML || '');
+-        } else {
+-            if(imgEl) {
+-                imgEl.style.opacity = 0;
+-                setTimeout(() => { imgEl.src = url; imgEl.style.opacity = 1; }, 200);
+-            } else {
+-                main.innerHTML = `<img src="${url}">` + (main.querySelector('.carousel-dots')?.outerHTML || '');
+-            }
+-        }
+-        if(dot) {
+-            document.querySelectorAll('.carousel-dot').forEach(t => t.classList.remove('active'));
+-            dot.classList.add('active');
+-        }
+-        if(typeof index !== 'undefined') app.currentMediaIndex = index;
+-    },
+-    updQty: (n) => { 
+-        if (n > 0) {
+-            if (!state.var) return alert("Selecione a variação primeiro.");
+-            if (state.qty + n > parseInt(state.var.stock)) return alert("Estoque máximo atingido.");
+-        }
+-        state.qty += n; 
+-        if(state.qty<1) state.qty=1; 
+-        document.getElementById('m-qty').innerText = state.qty; 
+-    },
+-    addCart: () => {
+-        if(!state.var) return alert("Selecione uma opção");
+-        const existingItem = state.cart.find(i => i.name === state.current.name && i.variant === state.var.name);
+-        const currentCartQty = existingItem ? existingItem.qty : 0;
+-        if (currentCartQty + state.qty > parseInt(state.var.stock)) return alert(`Estoque insuficiente.`);
+-        let img = state.current.image_url;
+-        try { const m = JSON.parse(img); if(Array.isArray(m)) img = m[0]; } catch(e){}
+-        if(existingItem) { existingItem.qty += state.qty; } else {
+-            state.cart.push({name: state.current.name, variant: state.var.name, price: parseFloat(state.var.price), qty: state.qty, image: img});
+-        }
+-        app.renderCart(); app.closeModal('product-modal'); app.toggleCart();
+-    },
+-    cQty: (idx,n) => { state.cart[idx].qty+=n; if(state.cart[idx].qty<1) state.cart[idx].qty=1; app.renderCart(); },
+-    toggleCart: () => document.querySelector('.sidebar').classList.toggle('open'),
+-    fetchCep: async (cep, prefix) => {
+-        // prefix pode ser 'addr' (modal endereço), 'manual' (admin) ou 'reg' (cadastro)
+-        cep = cep.replace(/\D/g, '');
+-        if(cep.length === 8) {
+-            try {
+-                const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+-                const data = await res.json();
+-                if(!data.erro) {
+-                    let map = {};
+-                    if(prefix === 'addr') map = { s:'addr-street', b:'addr-bairro', c:'addr-city', u:'addr-uf', n:'addr-num' };
+-                    if(prefix === 'manual') map = { s:'m-client-street', b:'m-client-bairro', c:'m-client-city', u:'m-client-uf', n:'m-client-num' };
+-                    if(prefix === 'reg') map = { s:'r-street', b:'r-bairro', c:'r-city', u:'r-uf', n:'r-num' };
+-
+-                    if(document.getElementById(map.s)) document.getElementById(map.s).value = data.logradouro;
+-                    if(document.getElementById(map.b)) document.getElementById(map.b).value = data.bairro;
+-                    if(document.getElementById(map.c)) document.getElementById(map.c).value = data.localidade;
+-                    if(document.getElementById(map.u)) document.getElementById(map.u).value = data.uf;
+-                    if(document.getElementById(map.n)) document.getElementById(map.n).focus();
+-                } else { alert("CEP não encontrado."); }
+-            } catch(e) { console.error(e); }
+-        }
+-    },
+-    
+-    openAddressModal: () => {
+-        const list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
+-        const div = document.getElementById('saved-addresses-list'); div.innerHTML="";
+-        list.forEach((a,i) => {
+-            const fullAddr = `${a.street}, ${a.number} - ${a.bairro}, ${a.city}/${a.uf}`;
+-            div.innerHTML += `<div style="border:1px solid #eee; padding:10px; margin-bottom:5px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;"><div onclick="app.setAddr(${i})" style="cursor:pointer; flex:1;"><b>${a.type || 'Endereço'}</b>: ${fullAddr}<br><small>${a.name} (${a.phone})</small></div><div><i class="fas fa-edit" onclick="app.editAddress(${i})" style="color:blue; margin-right:10px; cursor:pointer;"></i><i class="fas fa-trash" onclick="app.delAddress(${i})" style="color:red; cursor:pointer;"></i></div></div>`;
+-        });
+-        app.showModal('address-modal');
+-    },
+-    addNewAddress: async () => {
+-        const val = id => document.getElementById(id).value;
+-        const a = { 
+-            name: val('addr-name'), phone: val('addr-phone'), cep: val('addr-cep'), 
+-            street: val('addr-street'), number: val('addr-num'), bairro: val('addr-bairro'), 
+-            city: val('addr-city'), uf: val('addr-uf'), ref: val('addr-ref'), 
+-            type: document.getElementById('addr-type').value 
+-        };
+-        
+-        if(!a.name || !a.street || !a.number) return alert("Preencha campos obrigatórios.");
+-        
+-        let list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
+-        list.push(a);
+-        
+-        localStorage.setItem('2a_addrs', JSON.stringify(list));
+-        state.address = a; 
+-        localStorage.setItem('2a_active_addr', JSON.stringify(a));
+-
+-        if(state.user) {
+-            const { error } = await sb.from('customers').update({ address: list }).eq('id', state.user.id);
+-            if(error) console.error("Erro ao salvar endereço na nuvem:", error);
+-            else app.success("Endereço salvo na sua conta!");
+-        } else {
+-            app.success("Endereço salvo temporariamente");
+-        }
+-
+-        app.updateUI(); 
+-        app.closeModal('address-modal');
+-    },
+-    delAddress: async (i) => {
+-        if(!confirm("Remover este endereço?")) return;
+-        
+-        let list = JSON.parse(localStorage.getItem('2a_addrs') || '[]');
+-        list.splice(i, 1);
+-        
+-        localStorage.setItem('2a_addrs', JSON.stringify(list));
+-        
+-        if(state.user) {
+-            await sb.from('customers').update({ address: list }).eq('id', state.user.id);
+-        }
+-        
+-        app.openAddressModal(); 
+-    },
+-    editAddress: (i) => {
+-        const list = JSON.parse(localStorage.getItem('2a_addrs'));
+-        const a = list[i];
+-        const setVal = (id, v) => document.getElementById(id).value = safeVal(v);
+-        
+-        setVal('addr-name', a.name); setVal('addr-phone', a.phone); 
+-        setVal('addr-cep', a.cep); setVal('addr-street', a.street); 
+-        setVal('addr-num', a.number); setVal('addr-bairro', a.bairro); 
+-        setVal('addr-city', a.city); setVal('addr-uf', a.uf); setVal('addr-ref', a.ref);
+-        
+-        app.delAddress(i); 
+-    },
+-    setAddr: (i) => {
+-        const list = JSON.parse(localStorage.getItem('2a_addrs'));
+-        state.address = list[i]; localStorage.setItem('2a_active_addr', JSON.stringify(state.address));
+-        app.updateUI(); app.closeModal('address-modal');
+-    },
+-    updateUI: () => {
+-        const btn = document.getElementById('btn-address-trigger');
+-        if(btn && state.address) { btn.classList.add('filled'); btn.innerHTML = `📍 Entregar em: ${state.address.city}/${state.address.uf} (${state.address.street})`; }
+-        
+-        const authArea = document.getElementById('cart-auth-area');
+-        if(authArea) {
+-            if(state.user) authArea.innerHTML = `<small style="color:#27ae60"><i class="fas fa-check-circle"></i> Olá, ${state.user.name}</small>`;
+-            else authArea.innerHTML = `<button onclick="app.showModal('auth-modal')" style="width:100%; padding:10px; background:#f0f0f0; border:none; border-radius:8px; color:#555; font-weight:bold;"><i class="fas fa-user-circle"></i> Login / Cadastro</button>`;
+-        }
+-        
+-        const headerBtn = document.querySelector('.login-btn-header');
+-        if(headerBtn) {
+-            if(state.user) {
+-                const firstName = state.user.name.split(' ')[0];
+-                headerBtn.innerHTML = `<i class="fas fa-user-circle"></i> Olá, ${firstName}!`;
+-            } else {
+-                headerBtn.innerHTML = `<i class="fas fa-user-circle"></i> Login / Cadastro`;
+-            }
+-        }
+-    },
+-    checkout: async (method) => {
+-        if(!state.cart.length) return alert("Carrinho vazio");
+-        if(!state.user) { alert("Por favor, faça Login ou Cadastre-se."); app.showModal('auth-modal'); return; }
+-        if(!state.address) { app.openAddressModal(); return alert("Selecione entrega"); }
+-        const btn = document.querySelector(method === 'whatsapp' ? '.btn-whatsapp' : '.btn-mp');
+-        const btnOriginalText = btn.innerText;
+-        try {
+-            btn.innerText = "Registrando...";
+-            const newOrderId = Date.now().toString();
+-            const statusInicial = method === 'whatsapp' ? 'Pendente (WhatsApp)' : 'Pendente (Mercado Pago)';
+-            const payStatus = method === 'mercadopago' ? 'Pago' : 'Pendente';
+-            const orderData = await app.registerOrder(newOrderId, method === 'whatsapp' ? 'WhatsApp/Dinheiro' : 'Mercado Pago', statusInicial, payStatus);
+-            await app.updateStockDatabase();
+-            await app.sendEmails(orderData, state.cart, state.user.email);
+-            
+-            if(method === 'whatsapp') app.sendPaidOrder('Dinheiro/Combinar'); 
+-            else {
+-                localStorage.setItem('2a_cart', JSON.stringify(state.cart));
+-                const items = state.cart.map(i => ({name: `${i.name} - ${i.variant}`, price: i.price, qty: i.qty}));
+-                const res = await fetch(GOOGLE_CLOUD_URL, {
+-                    method:'POST', headers:{'Content-Type':'application/json'}, 
+-                    body:JSON.stringify({items, buyer: { email: state.user.email, name: state.user.name }, address: state.address})
+-                });
+-                const data = await res.json();
+-                if(data.init_point) window.location.href = data.init_point;
+-                else throw new Error("Erro ao gerar link de pagamento");
+-            }
+-        } catch(e) { console.error(e); alert(e.message); btn.innerText = btnOriginalText; }
+-    },
+-    registerOrder: async (oid, method, status = 'Pendente', payStatus = 'Pendente') => {
+-        if(!sb) throw new Error("Banco de dados desconectado.");
+-        const total = state.cart.reduce((a,b)=>a+(b.price*b.qty),0);
+-        const order = {
+-            id: oid.toString(), customer_name: state.user.name, customer_email: state.user.email, customer_id: String(state.user.id), 
+-            total: total, items: JSON.stringify(state.cart), address: JSON.stringify(state.address), date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
+-            method: method, status: status, payment_status: payStatus, created_at: new Date().toISOString()
+-        };
+-        const { data, error } = await sb.from('orders').insert([order]).select();
+-        if(error) throw new Error(`Erro no Banco: ${error.message}`);
+-        return order; 
+-    },
+-    sendEmails: async (order, cartItems, recipientEmail) => {
+-        if(!recipientEmail) return;
+-        const itemsTxt = cartItems.map(i => `${i.qty}x ${i.name} (${i.variant}) - R$ ${i.price.toFixed(2)}`).join('\n');
+-        const total = cartItems.reduce((a,b)=>a+(b.price*b.qty),0).toFixed(2);
+-        let fullAddr = "Não informado";
+-        try {
+-            const addrObj = typeof order.address === 'string' ? JSON.parse(order.address) : order.address;
+-            fullAddr = `${addrObj.street}, ${addrObj.number} - ${addrObj.city}`;
+-        } catch(e) {}
+-
+-        const templateParams = { 
+-            to_name: order.customer_name, 
+-            to_email: recipientEmail, 
+-            message: `PEDIDO #${order.id}\n\nPAGAMENTO: ${order.method}\n\nITENS:\n${itemsTxt}\n\nTOTAL: R$ ${total}\n\nENDEREÇO:\n${fullAddr}\n\nStatus: ${order.status}`, 
+-            admin_email: 'erickveraosilva@gmail.com' 
+-        };
+-        if(window.emailjs) {
+-            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENTE, templateParams);
+-            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, {...templateParams, to_email: 'erickveraosilva@gmail.com'});
+-        }
+-    },
+-    updateStockDatabase: async () => {
+-        if(!sb) return;
+-        for (const item of state.cart) {
+-            const { data: prod } = await sb.from('products').select('*').eq('name', item.name).single();
+-            if(prod) {
+-                let vars = typeof prod.variations === 'string' ? JSON.parse(prod.variations) : prod.variations;
+-                const targetVar = vars.find(v => v.name === item.variant);
+-                if(targetVar) {
+-                    targetVar.stock = Math.max(0, parseInt(targetVar.stock) - item.qty);
+-                    await sb.from('products').update({ variations: JSON.stringify(vars) }).eq('id', prod.id);
+-                }
+-            }
+-        }
+-    },
+-    sendPaidOrder: (paymentType) => {
+-        let addr = state.address;
+-        const fullAddr = `${addr.street}, ${addr.number} - ${addr.bairro} (${addr.city})`;
+-        let msg = `*NOVO PEDIDO 2A MODAS (${state.user.name})*\n--------------------------------\n*PAGAMENTO:* ${paymentType}\n*TOTAL:* R$ ${document.getElementById('cart-total').innerText.replace('R$ ','')}\n--------------------------------\n*ENTREGA:*\n📍 ${fullAddr}\n--------------------------------\n*ITENS:*\n`;
+-        state.cart.forEach(i=>{ msg += `▪ ${i.qty}x ${i.name} (${i.variant})\n`; });
+-        localStorage.removeItem('2a_cart'); state.cart = []; app.renderCart(); app.toggleCart();
+-        window.location.href = `https://wa.me/5567998951120?text=${encodeURIComponent(msg)}`;
+-    },
+-    showModal: (id) => { document.getElementById(id).classList.add('active'); history.pushState({modal:id}, null, ""); },
+-    closeModal: (id) => { 
+-        document.getElementById(id).classList.remove('active'); 
+-        history.back();
+-        if(id === 'product-modal') clearInterval(autoScrollInterval);
+-    },
+-    filter: (cat, btn) => {
+-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+-        btn.classList.add('active');
+-        app.render(cat==='all' ? state.products : state.products.filter(p => p.category===cat));
++const state = {
++  activeCategory: 'Todos',
++  cart: [],
++  customers: [
++    { name: 'Camila Rocha', email: 'camila@email.com', phone: '(11) 99888-1122', city: 'São Paulo' },
++    { name: 'Mariana Souza', email: 'mariana@email.com', phone: '(21) 99777-4433', city: 'Rio de Janeiro' }
++  ],
++  products: [
++    {
++      id: 1,
++      name: 'Vestido Midi Elegance',
++      category: 'Moda Feminina',
++      price: 189.9,
++      stock: 12,
++      tag: 'Novo',
++      description: 'Peça sofisticada para vitrine premium com acabamento leve e visual moderno.',
++      background: 'linear-gradient(135deg, rgba(54,26,19,0.35), rgba(164,79,55,0.8)), url(https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=80)'
++    },
++    {
++      id: 2,
++      name: 'Perfume Essenza Gold',
++      category: 'Perfumes',
++      price: 129.9,
++      stock: 20,
++      tag: 'Mais vendido',
++      description: 'Fragrância marcante com apresentação refinada para campanhas sazonais.',
++      background: 'linear-gradient(135deg, rgba(54,26,19,0.35), rgba(164,79,55,0.8)), url(https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=900&q=80)'
++    },
++    {
++      id: 3,
++      name: 'Bolsa Urban Chic',
++      category: 'Acessórios',
++      price: 159.9,
++      stock: 9,
++      tag: 'Destaque',
++      description: 'Bolsa para composição de looks com textura elegante e toque contemporâneo.',
++      background: 'linear-gradient(135deg, rgba(54,26,19,0.35), rgba(164,79,55,0.8)), url(https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=900&q=80)'
++    },
++    {
++      id: 4,
++      name: 'Scarpin Classic Nude',
++      category: 'Calçados',
++      price: 219.9,
++      stock: 7,
++      tag: 'Coleção',
++      description: 'Modelo elegante para uma vitrine com foco em valor percebido e conversão.',
++      background: 'linear-gradient(135deg, rgba(54,26,19,0.35), rgba(164,79,55,0.8)), url(https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=900&q=80)'
+     }
++  ],
++  tracking: [
++    { order: '#2401', client: 'Camila Rocha', status: 'Separação', progress: 35, eta: 'Entrega prevista para 25/03', code: 'BR2399901' },
++    { order: '#2402', client: 'Mariana Souza', status: 'Em transporte', progress: 72, eta: 'Saiu para entrega em 23/03', code: 'BR2399902' },
++    { order: '#2403', client: 'Juliana Lima', status: 'Pedido confirmado', progress: 18, eta: 'Postagem em até 24h', code: 'BR2399903' }
++  ],
++  orders: [
++    { order: '#2401', client: 'Camila Rocha', status: 'Pago', shipping: 'Separação' },
++    { order: '#2402', client: 'Mariana Souza', status: 'Pago', shipping: 'Em transporte' },
++    { order: '#2403', client: 'Juliana Lima', status: 'Aguardando', shipping: 'Confirmação' }
++  ]
+ };
+ 
+-// ================= ADMIN =================
+-const admin = {
+-    showLogin: async () => {
+-        const { data } = await sb.auth.getSession();
+-        if(data.session) { admin.openPanel(); } 
+-        else { app.showModal('admin-auth-modal'); }
+-    },
+-    verifyLogin: async () => {
+-        const email = document.getElementById('admin-email').value;
+-        const password = document.getElementById('admin-pass').value;
+-        const btn = document.querySelector('#admin-auth-modal button');
+-        const originalText = btn.innerText;
+-        btn.innerText = "Autenticando..."; btn.disabled = true;
+-        try {
+-            const { data, error } = await sb.auth.signInWithPassword({ email: email, password: password });
+-            if (error) throw error;
+-            app.closeModal('admin-auth-modal');
+-            admin.openPanel();
+-            document.getElementById('admin-pass').value = "";
+-        } catch (e) {
+-            alert("Erro de acesso: " + (e.message === "Invalid login credentials" ? "E-mail ou senha incorretos" : e.message));
+-        } finally {
+-            btn.innerText = originalText; btn.disabled = false;
+-        }
+-    },
+-    openPanel: () => {
+-        setTimeout(() => { 
+-            app.showModal('admin-modal'); 
+-            const today = new Date();
+-            const year = today.getFullYear();
+-            const month = today.getMonth();
+-            const firstDay = new Date(year, month, 1);
+-            
+-            const setDateAndBind = (id, date, callback) => {
+-                const el = document.getElementById(id);
+-                if(el && el._flatpickr) {
+-                    el._flatpickr.setDate(date);
+-                    el._flatpickr.set('onChange', callback);
+-                }
+-            };
+-            
+-            setDateAndBind('order-end', today, () => admin.renderOrders());
+-            setDateAndBind('order-start', firstDay, () => admin.renderOrders());
+-            setDateAndBind('fin-end', today, () => admin.renderPayments()); 
+-            setDateAndBind('fin-start', firstDay, () => admin.renderPayments()); 
+-            
+-            admin.renderList(); admin.renderOrders(); admin.updateStats(); admin.renderPayments(); 
+-        }, 100);
+-    },
+-    logout: async () => {
+-        if(confirm("Sair do modo Admin?")) {
+-            await sb.auth.signOut();
+-            app.closeModal('admin-modal');
+-            window.location.reload(); 
+-        }
+-    },
+-    openPartialPay: (oid, idx, amount) => {
+-        document.getElementById('pp-oid').value = oid;
+-        document.getElementById('pp-idx').value = idx;
+-        document.getElementById('pp-total-show').value = "R$ " + parseFloat(amount).toFixed(2);
+-        document.getElementById('pp-val').value = "";
+-        app.showModal('partial-pay-modal');
+-        setTimeout(() => document.getElementById('pp-val').focus(), 100);
+-    },
+-    processPartialPay: async () => {
+-        const oid = document.getElementById('pp-oid').value;
+-        const idx = parseInt(document.getElementById('pp-idx').value);
+-        const valStr = document.getElementById('pp-val').value;
+-        if(!valStr || isNaN(valStr) || parseFloat(valStr) <= 0) return alert("Valor inválido");
+-        const paidVal = parseFloat(valStr);
+-        app.ask("Confirmar Pagamento", `Confirma o recebimento de R$ ${paidVal.toFixed(2)}?`, async () => {
+-            const { data } = await sb.from('orders').select('installments').eq('id', oid).single();
+-            if(data) {
+-                const arr = JSON.parse(data.installments);
+-                const originalVal = parseFloat(arr[idx].amount);
+-                if(paidVal >= originalVal) {
+-                    arr[idx].amount = originalVal;
+-                    arr[idx].paid = true;
+-                } else {
+-                    const remaining = originalVal - paidVal;
+-                    arr[idx].amount = paidVal;
+-                    arr[idx].paid = true;
+-                    arr[idx].note = "Pagto Parcial";
+-                    arr.splice(idx + 1, 0, {
+-                        date: arr[idx].date,
+-                        amount: remaining.toFixed(2),
+-                        paid: false,
+-                        is_remaining: true
+-                    });
+-                }
+-                await sb.from('orders').update({ installments: JSON.stringify(arr) }).eq('id', oid);
+-                app.success("Pagamento parcial registrado!");
+-                app.closeModal('partial-pay-modal');
+-                admin.renderPayments();
+-            }
+-        });
+-    },
+-    resendEmail: (oid) => {
+-        app.ask("Reenviar E-mail", "Deseja reenviar o comprovante do pedido para o cliente?", async () => {
+-            const { data } = await sb.from('orders').select('*').eq('id', oid).single();
+-            if(data) {
+-                let items = [];
+-                try { items = JSON.parse(data.items); } catch(e){}
+-                await app.sendEmails(data, items, data.customer_email);
+-                app.success("E-mail disparado para fila de envio.");
+-            }
+-        });
+-    },
+-    initCheckboxes: () => {
+-        const cDiv = document.getElementById('color-checks'), vDiv = document.getElementById('volume-checks');
+-        if(!cDiv) return; cDiv.innerHTML = ""; vDiv.innerHTML = "";
+-        Object.keys(COLOR_MAP).forEach(c => { cDiv.innerHTML += `<label><input type="checkbox" class="hidden-check" value="${c}" onchange="admin.toggleInput(this)"><span class="color-option-label" style="background:${COLOR_MAP[c]}" title="${c}"></span></label>`; });
+-        PRESETS_VOL.forEach(v => { vDiv.innerHTML += `<label><input type="checkbox" class="hidden-check" value="${v}" onchange="admin.toggleInput(this)"><span class="vol-option-label">${v}</span></label>`; });
+-    },
+-    toggleInput: (cb) => {
+-        const id = `grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`;
+-        const area = document.getElementById('active-vars-area');
+-        if(cb.checked) area.innerHTML += `<div id="${id}" class="var-inputs show"><strong style="grid-column:span 2">${cb.value}</strong><input type="hidden" class="v-name" value="${cb.value}"><input type="number" class="input v-cost" placeholder="Custo"><input type="number" class="input v-price" placeholder="Venda"><input type="number" class="input v-stock" placeholder="Estoque" style="grid-column:span 2"></div>`;
+-        else document.getElementById(id)?.remove();
+-    },
+-    tab: (t) => { 
+-        document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+-        const tabBtn = document.querySelector(`.admin-tab[onclick*='${t}']`);
+-        if(tabBtn) tabBtn.classList.add('active');
+-        ['dash','prod','orders','fin','pay', 'new-order'].forEach(i => {
+-            const el = document.getElementById(`tab-${i}`);
+-            if(el) el.style.display = i===t ? 'block' : 'none';
+-        });
+-        if(t === 'new-order') {
+-            admin.populateManualProdSelect();
+-            admin.manualCart = []; 
+-            admin.renderManualCart();
+-        }
+-    },
+-    handleFileSelect: (input) => {
+-        const files = Array.from(input.files);
+-        if(files.length > 5) { alert("Máximo 5 arquivos"); input.value=""; return; }
+-        const sizeErr = files.some(f => f.size > 5*1024*1024);
+-        if(sizeErr) { alert("Arquivos devem ser menores que 5MB"); input.value=""; return; }
+-        state.selectedFiles = files;
+-        state.mainImageIndex = 0; 
+-        const area = document.getElementById('file-preview-area');
+-        area.innerHTML = "";
+-        files.forEach((f, idx) => {
+-            const url = URL.createObjectURL(f);
+-            const isImg = f.type.startsWith('image/');
+-            area.innerHTML += `
+-            <div class="preview-wrapper" onclick="admin.setMain(${idx})">
+-                ${isImg ? `<img src="${url}" class="file-preview-item ${idx===0?'main-selected':''}" id="prev-${idx}">` 
+-                        : `<video src="${url}" class="file-preview-item ${idx===0?'main-selected':''}" id="prev-${idx}"></video>`}
+-                <div class="main-tag">PRINCIPAL</div>
+-            </div>`;
+-        });
+-    },
+-    setMain: (idx) => {
+-        state.mainImageIndex = idx;
+-        document.querySelectorAll('.file-preview-item').forEach(el => el.classList.remove('main-selected'));
+-        document.getElementById(`prev-${idx}`).classList.add('main-selected');
+-    },
+-    save: async () => {
+-        if(!sb) return;
+-        const btn = document.getElementById('btn-save'); btn.innerText="Salvando..."; btn.disabled=true;
+-        try {
+-            const vars = [];
+-            document.querySelectorAll('.var-inputs').forEach(d => {
+-                const p = d.querySelector('.v-price').value, s = d.querySelector('.v-stock').value;
+-                if(p && s) vars.push({ name: d.querySelector('.v-name').value, cost: d.querySelector('.v-cost').value||0, price: p, stock: s });
+-            });
+-            if(vars.length === 0) {
+-                const gPrice = document.getElementById('f-price-global').value, gStock = document.getElementById('f-stock-global').value;
+-                if(!gPrice || !gStock) throw new Error("Preencha variações OU Global");
+-                vars.push({ name: 'Padrão', price: gPrice, stock: gStock, cost: document.getElementById('f-cost').value || 0 });
+-            }
+-            let mediaUrls = [];
+-            const editId = document.getElementById('edit-id').value;
+-            if(editId && state.selectedFiles.length === 0) {
+-                const oldP = state.products.find(x => String(x.id) === String(editId));
+-                if(oldP) { try { mediaUrls = JSON.parse(oldP.image_url); } catch(e) { mediaUrls = [oldP.image_url]; } }
+-                if(!Array.isArray(mediaUrls)) mediaUrls = [oldP.image_url];
+-            } else if(state.selectedFiles.length > 0) {
+-                if(state.mainImageIndex > 0) {
+-                    const main = state.selectedFiles.splice(state.mainImageIndex, 1)[0];
+-                    state.selectedFiles.unshift(main);
+-                }
+-                for(let i=0; i<state.selectedFiles.length; i++) {
+-                    const file = state.selectedFiles[i];
+-                    const fName = 'prod_' + Date.now() + '_' + i;
+-                    await sb.storage.from('images').upload(fName, file);
+-                    const { data } = sb.storage.from('images').getPublicUrl(fName);
+-                    mediaUrls.push(data.publicUrl);
+-                }
+-            }
+-            const payload = {
+-                name: document.getElementById('f-name').value, category: document.getElementById('f-cat').value,
+-                cost_price: document.getElementById('f-cost').value || 0, description: document.getElementById('f-desc').value || "",
+-                is_promo: document.getElementById('f-promo').checked, variations: JSON.stringify(vars)
+-            };
+-            if(mediaUrls.length > 0) payload.image_url = JSON.stringify(mediaUrls);
+-            else if(!editId) payload.image_url = JSON.stringify(["https://via.placeholder.com/300"]);
+-
+-            if(editId) await sb.from('products').update(payload).eq('id', editId);
+-            else { payload.id = Date.now(); await sb.from('products').insert([payload]); }
+-            app.success("Produto Salvo com Sucesso!"); 
+-            admin.clear(); await app.load(); admin.renderList(); admin.updateStats();
+-        } catch(e) { alert(e.message); } finally { btn.innerText="Salvar Produto"; btn.disabled=false; }
+-    },
+-    edit: (id) => {
+-        const p = state.products.find(x => String(x.id) === String(id));
+-        document.getElementById('edit-id').value = p.id;
+-        document.getElementById('f-name').value = safeVal(p.name); document.getElementById('f-desc').value = safeVal(p.description);
+-        document.getElementById('f-cost').value = safeVal(p.cost_price); document.getElementById('f-promo').checked = p.is_promo;
+-        admin.clear(true); document.getElementById('edit-id').value = p.id;
+-        const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+-        if(vars) vars.forEach(v => {
+-            if(v.name === 'Padrão') { document.getElementById('f-price-global').value = v.price; document.getElementById('f-stock-global').value = v.stock; }
+-            else {
+-                document.querySelectorAll('.hidden-check').forEach(cb => {
+-                    if(cb.value === v.name) { cb.checked = true; admin.toggleInput(cb); 
+-                        setTimeout(() => { const d = document.getElementById(`grp-${cb.value.replace(/[^a-z0-9]/gi,'')}`); if(d) { d.querySelector('.v-price').value=v.price; d.querySelector('.v-stock').value=v.stock; } }, 50); 
+-                    }
+-                });
+-            }
+-        });
+-        admin.tab('prod'); 
+-    },
+-    del: async (id) => { if(confirm("Excluir?")) { if(sb) await sb.from('products').delete().eq('id', id); await app.load(); admin.renderList(); } },
+-    clear: (soft=false) => { 
+-        if(!soft) document.getElementById('edit-id').value=""; 
+-        ['f-name','f-desc','f-cost','f-file','f-price-global','f-stock-global'].forEach(i=>{ const el = document.getElementById(i); if(el) el.value=""; });
+-        state.selectedFiles = []; state.mainImageIndex = 0;
+-        document.getElementById('file-preview-area').innerHTML = "";
+-        document.getElementById('active-vars-area').innerHTML="";
+-        document.querySelectorAll('.hidden-check').forEach(c => c.checked=false);
+-    },
+-    resetData: async () => {
+-        if(confirm("ATENÇÃO: Isso apagará TODO o histórico de compras e vendas do sistema. Tem certeza?")) {
+-            const confirmTxt = prompt("Digite 'DELETAR' para confirmar a limpeza total dos dados:");
+-            if(confirmTxt === "DELETAR") {
+-                if(sb) {
+-                    const { error } = await sb.from('orders').delete().neq('id', 0);
+-                    if(!error) { 
+-                        app.success("Histórico resetado com sucesso.");
+-                        state.adminOrders = [];
+-                        document.getElementById('orders-list').innerHTML = '';
+-                        document.getElementById('pay-list').innerHTML = '';
+-                        admin.renderOrders(); 
+-                        admin.renderPayments(); 
+-                        admin.renderFinance(); 
+-                    }
+-                    else alert("Erro ao resetar: " + error.message);
+-                }
+-            } else { alert("Ação cancelada."); }
+-        }
+-    },
+-    renderList: () => {
+-        const div = document.getElementById('admin-list'); div.innerHTML="";
+-        state.products.forEach(p => {
+-            const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+-            let stock = 0; if(vars) vars.forEach(v => stock += parseInt(v.stock||0));
+-            let mainImg = "https://via.placeholder.com/50";
+-            try { const m = JSON.parse(p.image_url); if(Array.isArray(m)) mainImg = m[0]; else mainImg = p.image_url; } catch(e){}
+-            
+-            const isSoldOut = stock === 0;
+-            
+-            div.innerHTML += `
+-            <div class="mini-prod ${isSoldOut ? 'stock-zero' : ''}">
+-                <img src="${mainImg}" onerror="this.src='https://via.placeholder.com/50'"> 
+-                <div style="flex:1">
+-                    <strong>${p.name}</strong><br>
+-                    ${isSoldOut 
+-                        ? '<span style="background:#ddd; color:#666; padding:2px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">ESGOTADO</span>' 
+-                        : `<span class="stock-info" style="color:var(--success)">Estoque: ${stock}</span>`
+-                    }
+-                </div>
+-                <div>
+-                    <button onclick="admin.edit('${p.id}'); admin.tab('prod')" class="btn-chip-edit"><i class="fas fa-pen"></i></button> 
+-                    <button onclick="admin.del('${p.id}')" style="color:red;border:none;background:none; margin-left:10px;"><i class="fas fa-trash"></i></button>
+-                </div>
+-            </div>`;
+-        });
+-    },
+-    filterOrders: (status, btn) => {
+-        state.filterStatus = status;
+-        document.querySelectorAll('#order-filters .chip').forEach(c => c.classList.remove('active'));
+-        btn.classList.add('active');
+-        admin.renderOrders(true);
+-    },
+-    populateManualProdSelect: () => {
+-        const sel = document.getElementById('m-prod-select');
+-        sel.innerHTML = '<option value="">Selecione um produto do estoque...</option>';
+-        state.products.forEach(p => {
+-            const vars = typeof p.variations === 'string' ? JSON.parse(p.variations) : p.variations;
+-            vars.forEach(v => {
+-                sel.innerHTML += `<option value="${p.id}|${v.name}|${v.price}|${p.name}">${p.name} - ${v.name} (R$ ${parseFloat(v.price).toFixed(2)}) - Est: ${v.stock}</option>`;
+-            });
+-        });
+-    },
+-    manualCart: [],
+-    addManualItem: () => {
+-        const val = document.getElementById('m-prod-select').value;
+-        const qty = parseInt(document.getElementById('m-prod-qty').value);
+-        if(!val || qty < 1) return alert("Selecione produto e quantidade.");
+-        const [pid, vname, price, pname] = val.split('|');
+-        admin.manualCart.push({ name: pname, variant: vname, price: parseFloat(price), qty: qty, image: "https://via.placeholder.com/50?text=Manual", is_stock: true, pid: pid });
+-        admin.renderManualCart();
+-        document.getElementById('m-prod-select').value = "";
+-    },
+-    addCustomItem: () => {
+-        const name = document.getElementById('m-custom-item').value;
+-        const price = parseFloat(document.getElementById('m-custom-price').value);
+-        if(!name || !price) return alert("Preencha nome e valor.");
+-        admin.manualCart.push({ name: name, variant: "Avulso", price: price, qty: 1, image: "https://via.placeholder.com/50?text=Avulso", is_stock: false });
+-        admin.renderManualCart();
+-        document.getElementById('m-custom-item').value=""; document.getElementById('m-custom-price').value="";
+-    },
+-    renderManualCart: () => {
+-        const div = document.getElementById('manual-cart-list');
+-        div.innerHTML = "";
+-        let total = 0;
+-        if(admin.manualCart.length === 0) div.innerHTML = '<div style="padding:15px; text-align:center; color:#999;">Nenhum item adicionado</div>';
+-        admin.manualCart.forEach((i, idx) => {
+-            total += i.price * i.qty;
+-            div.innerHTML += `
+-            <div class="manual-cart-item">
+-                <div>
+-                    <strong>${i.name}</strong> <small>(${i.variant})</small><br>
+-                    ${i.qty}x R$ ${i.price.toFixed(2)}
+-                </div>
+-                <button onclick="admin.manualCart.splice(${idx},1); admin.renderManualCart()" style="color:red; border:none; background:none;"><i class="fas fa-trash"></i></button>
+-            </div>`;
+-        });
+-        document.getElementById('m-total-display').innerText = `R$ ${total.toFixed(2)}`;
+-    },
+-    saveManualOrder: async () => {
+-        if(admin.manualCart.length === 0) return alert("Adicione itens.");
+-        const name = document.getElementById('m-client-name').value || "Cliente Balcão";
+-        const email = document.getElementById('m-client-email').value || "manual@admin.com";
+-        const phone = document.getElementById('m-client-phone').value || "";
+-        const street = document.getElementById('m-client-street').value;
+-        const num = document.getElementById('m-client-num').value;
+-        const bairro = document.getElementById('m-client-bairro').value;
+-        const city = document.getElementById('m-client-city').value;
+-        const method = document.getElementById('m-payment-method').value;
+-        const pStatus = document.getElementById('m-payment-status').value;
+-        const addressObj = { street: street, number: num, bairro: bairro, city: city, uf: 'MS', phone: phone };
+-        const total = admin.manualCart.reduce((a,b)=>a+(b.price*b.qty),0);
+-        
+-        const order = {
+-            id: Date.now().toString(), customer_name: name, customer_email: email, customer_id: "0", 
+-            total: total, items: JSON.stringify(admin.manualCart), address: JSON.stringify(addressObj),
+-            date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
+-            method: `Manual (${method})`, status: pStatus === 'Pago' ? 'Entregue' : 'Pendente', 
+-            payment_status: pStatus, created_at: new Date().toISOString()
+-        };
+-
+-        if(sb) {
+-            const { error } = await sb.from('orders').insert([order]);
+-            if(error) return alert("Erro ao salvar: " + error.message);
+-            for (const item of admin.manualCart) {
+-                if(item.is_stock) {
+-                    const { data: prod } = await sb.from('products').select('*').eq('id', item.pid).single();
+-                    if(prod) {
+-                        let vars = typeof prod.variations === 'string' ? JSON.parse(prod.variations) : prod.variations;
+-                        const targetVar = vars.find(v => v.name === item.variant);
+-                        if(targetVar) {
+-                            targetVar.stock = Math.max(0, parseInt(targetVar.stock) - item.qty);
+-                            await sb.from('products').update({ variations: JSON.stringify(vars) }).eq('id', prod.id);
+-                        }
+-                    }
+-                }
+-            }
+-            if(email && email.includes('@')) { app.sendEmails(order, admin.manualCart, email); }
+-            app.success("Pedido Registrado com Sucesso!");
+-            admin.manualCart = []; admin.renderManualCart();
+-            ['m-client-name','m-client-email','m-client-phone','m-client-cep','m-client-street','m-client-num','m-client-bairro'].forEach(id => document.getElementById(id).value="");
+-            admin.tab('orders'); admin.renderOrders();
+-        }
+-    },
+-    openEntryModal: (oid, total) => {
+-        document.getElementById('entry-oid').value = oid;
+-        document.getElementById('entry-total').value = total;
+-        document.getElementById('entry-val').value = "";
+-        app.showModal('entry-modal');
+-        setTimeout(() => document.getElementById('entry-val').focus(), 100);
+-    },
+-    confirmEntry: async () => {
+-        const oid = document.getElementById('entry-oid').value;
+-        const total = parseFloat(document.getElementById('entry-total').value);
+-        const valStr = document.getElementById('entry-val').value;
+-        if(!valStr || isNaN(valStr)) return alert("Digite um valor válido");
+-        const paid = parseFloat(valStr);
+-        const rest = total - paid;
+-        if(paid >= total) return alert("Valor igual ou maior que o total. Use 'Quitar Tudo'.");
+-        if(paid <= 0) return alert("Valor inválido.");
+-        const today = new Date().toISOString().split('T')[0];
+-        const nextMonth = new Date(); nextMonth.setDate(nextMonth.getDate() + 30);
+-        const installments = [
+-            { date: today, amount: paid.toFixed(2), paid: true },
+-            { date: nextMonth.toISOString().split('T')[0], amount: rest.toFixed(2), paid: false }
+-        ];
+-        await sb.from('orders').update({
+-            payment_status: 'Parcelado', installments: JSON.stringify(installments)
+-        }).eq('id', oid);
+-        app.closeModal('entry-modal');
+-        app.success("Valor de Entrada inserido com sucesso!");
+-        admin.renderOrders(); admin.renderPayments();
+-    },
+-    renderOrders: async (useCache = false) => {
+-        if(!sb) return;
+-        if(!useCache || !state.adminOrders.length) {
+-            let query = sb.from('orders').select('*').order('created_at', {ascending:false});
+-            const startStr = document.getElementById('order-start').value;
+-            const endStr = document.getElementById('order-end').value;
+-            if(startStr && endStr) {
+-                const start = new Date(startStr + 'T00:00:00');
+-                const end = new Date(endStr + 'T23:59:59');
+-                query = query.gte('created_at', start.toISOString()).lte('created_at', end.toISOString());
+-            }
+-            const { data } = await query;
+-            state.adminOrders = data || [];
+-        }
+-        const div = document.getElementById('orders-list'); if(!div) return; div.innerHTML="";
+-        let filtered = state.adminOrders;
+-        if(state.filterStatus !== 'all') filtered = filtered.filter(o => o.status.includes(state.filterStatus));
+-        if(filtered.length === 0) { div.innerHTML = "<p>Nenhum pedido encontrado.</p>"; return; }
+-        filtered.forEach(o => {
+-            const iList = typeof o.items==='string'?JSON.parse(o.items):o.items;
+-            const itemsHtml = iList.map(i => `<div class="order-prod-row"><img src="${i.image||'https://via.placeholder.com/50'}" onerror="this.src='https://via.placeholder.com/50'"><div class="order-prod-info"><div class="order-prod-name">${i.name}</div><div class="order-prod-var">${i.variant}</div></div><div class="order-prod-qty">x${i.qty}</div></div>`).join('');
+-            const addr = JSON.parse(o.address || '{}');
+-            const phoneRaw = addr.phone || '';
+-            const phoneClean = phoneRaw.replace(/\D/g, ''); 
+-            const fullAddrString = `${addr.street || ''}, ${addr.number || ''} - ${addr.bairro || ''}, ${addr.city || ''}`;
+-            const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddrString)}`;
+-            let stClass = 'st-pendente';
+-            if(o.status.includes('Enviado')) stClass = 'st-enviado';
+-            if(o.status.includes('Entregue')) stClass = 'st-entregue';
+-            if(o.status === 'Cancelado') stClass = 'st-cancelado';
+-            const payStatus = o.payment_status || 'Pendente';
+-            const showPayDetails = (payStatus === 'Parcelado') ? 'block' : 'none';
+-            const btnPartial = (payStatus === 'Pendente' || payStatus === 'A_pagar') 
+-                ? `<button onclick="admin.openEntryModal('${o.id}', ${o.total})" class="btn-modern small outline" style="margin-top:5px; width:100%; border-color:#f39c12; color:#e67e22;"><i class="fas fa-coins"></i> Registrar Entrada/Sinal</button>` 
+-                : '';
+-            div.innerHTML += `
+-            <div class="order-card-modern">
+-                <div class="oc-header"><span class="oc-id">Pedido #${o.id.slice(-6)}</span><span class="oc-date">${o.date}</span></div>
+-                <div class="oc-body">
+-                    <div class="oc-section">
+-                        <label>Cliente</label>
+-                        <div class="oc-val">${o.customer_name}</div>
+-                        <div style="font-size:0.8rem; color:#666;">${o.customer_email}</div>
+-                        ${phoneClean ? `<a href="https://wa.me/55${phoneClean}" target="_blank" class="admin-wa-btn"><i class="fab fa-whatsapp"></i> Conversar no Whats</a>` : `<span style="color:#999; font-size:0.8rem;">Tel: ${phoneRaw}</span>`}
+-                    </div>
+-                    <div class="oc-section" style="grid-column: span 2; background:#fff; border:1px solid #eee;">
+-                        <label><i class="fas fa-map-marker-alt" style="color:var(--danger)"></i> Entrega</label>
+-                        <div style="font-size:0.9rem; color:#444; margin-bottom:5px;">${fullAddrString} <br> <small style="color:#777;">Ref: ${addr.ref || 'Sem referência'}</small></div>
+-                        <a href="${mapLink}" target="_blank" class="btn-map">Ver no Google Maps <i class="fas fa-external-link-alt"></i></a>
+-                    </div>
+-                    <div class="oc-section">
+-                        <label>Total</label><div class="oc-val" style="color:var(--success)">R$ ${o.total.toFixed(2)}</div>
+-                    </div>
+-                    <div class="oc-section">
+-                        <label>Status Pedido</label>
+-                        <select onchange="admin.updateStatus('${o.id}', this.value)" class="status-selector ${stClass}"><option value="Pendente" ${o.status.includes('Pendente')?'selected':''}>Pendente</option><option value="Enviado" ${o.status==='Enviado'?'selected':''}>Enviado</option><option value="Entregue" ${o.status==='Entregue'?'selected':''}>Entregue</option><option value="Cancelado" ${o.status==='Cancelado'?'selected':''}>Cancelado</option></select>
+-                    </div>
+-                    <div class="payment-box">
+-                        <label style="font-weight:bold; color:var(--accent);">Financeiro:</label>
+-                        <select onchange="admin.togglePaymentDetails(this, '${o.id}', ${o.total})" class="input" style="margin-top:5px;">
+-                            <option value="A_pagar" ${(payStatus==='Pendente' || payStatus==='A_pagar')?'selected':''}>À pagar</option>
+-                            <option value="Pago" ${payStatus==='Pago'?'selected':''}>Pago</option>
+-                            <option value="Parcelado" ${payStatus==='Parcelado'?'selected':''}>Parcelado</option>
+-                        </select>
+-                        ${btnPartial}
+-                        <div id="pay-det-${o.id}" class="gen-installments-area" style="display:${showPayDetails}">
+-                            <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+-                                <input type="number" id="inst-n-${o.id}" class="input qty-installments-input" placeholder="Qtd Parc.">
+-                                <button onclick="admin.genInstallments('${o.id}', ${o.total})" class="btn-modern outline small" style="flex:1;"><i class="fas fa-magic"></i> Gerar Parcelas</button>
+-                            </div>
+-                            <div id="inst-list-${o.id}"></div>
+-                        </div>
+-                        <button onclick="admin.updatePaymentStatus('${o.id}')" class="btn-modern success small" style="width:100%; margin-top:10px;"><i class="fas fa-save"></i> Salvar Financeiro</button>
+-                    </div>
+-                    <div class="oc-items-box">${itemsHtml}</div>
+-                </div>
+-            </div>`;
+-            if(payStatus === 'Parcelado' && o.installments) {
+-                try {
+-                    const instData = JSON.parse(o.installments);
+-                    if(Array.isArray(instData)) {
+-                        document.getElementById(`inst-n-${o.id}`).value = instData.length;
+-                        admin.renderInstInputs(o.id, instData);
+-                    }
+-                } catch(e) {}
+-            }
+-        });
+-    },
+-    togglePaymentDetails: (sel, id, total) => {
+-        const div = document.getElementById(`pay-det-${id}`);
+-        if(div) div.style.display = (sel.value === 'Parcelado') ? 'block' : 'none';
+-    },
+-    genInstallments: (id, total) => {
+-        const n = parseInt(document.getElementById(`inst-n-${id}`).value);
+-        if(!n || n < 1) return alert("Digite qtd parcelas");
+-        const arr = [];
+-        const val = (total / n).toFixed(2);
+-        for(let i=0; i<n; i++) {
+-            const d = new Date(); d.setDate(d.getDate() + (30 * (i+1)));
+-            arr.push({ date: d.toISOString().split('T')[0], amount: val, paid: false });
+-        }
+-        admin.renderInstInputs(id, arr);
+-    },
+-    renderInstInputs: (id, arr) => {
+-        const box = document.getElementById(`inst-list-${id}`);
+-        box.innerHTML = "";
+-        arr.forEach((item, idx) => {
+-            box.innerHTML += `<div class="inst-gen-row"><span style="font-weight:bold;">${idx+1}x</span><input type="date" value="${item.date}" class="i-date"><input type="number" value="${item.amount}" class="i-amount"><label class="custom-checkbox"><input type="checkbox" class="i-check" ${item.paid?'checked':''}><span class="checkmark"></span></label></div>`;
+-        });
+-    },
+-    updatePaymentStatus: async (id) => {
+-        const div = document.getElementById(`pay-det-${id}`);
+-        const row = div.parentElement;
+-        const status = row.querySelector('select').value;
+-        let installmentsJson = null;
+-        if(status === 'Parcelado') {
+-            const list = document.getElementById(`inst-list-${id}`);
+-            const rows = list.querySelectorAll('.inst-gen-row');
+-            const arr = [];
+-            rows.forEach(r => { arr.push({ date: r.querySelector('.i-date').value, amount: r.querySelector('.i-amount').value, paid: r.querySelector('.i-check').checked }); });
+-            installmentsJson = JSON.stringify(arr);
+-        }
+-        await sb.from('orders').update({ payment_status: status, installments: installmentsJson }).eq('id', id);
+-        app.success("Financeiro salvo com sucesso!");
+-        admin.renderPayments();
+-    },
+-    renderPayments: async () => {
+-        const startStr = document.getElementById('fin-start').value;
+-        const endStr = document.getElementById('fin-end').value;
+-        let query = sb.from('orders').select('*').neq('status', 'Cancelado').order('created_at', {ascending: false});
+-        if(startStr) query = query.gte('created_at', new Date(startStr + 'T00:00:00').toISOString());
+-        if(endStr) query = query.lte('created_at', new Date(endStr + 'T23:59:59').toISOString());
+-        
+-        const { data } = await query;
+-        const div = document.getElementById('pay-list'); 
+-        if(!div) return; 
+-        div.innerHTML = "";
+-        
+-        if(!data || data.length === 0) { div.innerHTML = "<p>Nenhum registro.</p>"; return; }
+-
+-        let totalRecebido = 0;
+-        let totalAReceber = 0;
+-
+-        const clients = {};
+-        data.forEach(o => {
+-            const key = o.customer_email && o.customer_email.includes('@') ? o.customer_email : o.customer_name;
+-            if(!clients[key]) {
+-                clients[key] = {
+-                    name: o.customer_name, email: o.customer_email, phone: "", 
+-                    total_debt: 0, total_paid: 0, orders: []
+-                };
+-            }
+-            try { const addr = JSON.parse(o.address || '{}'); if(addr.phone) clients[key].phone = addr.phone; } catch(e){}
+-            
+-            let orderPaid = 0;
+-            if(o.payment_status === 'Pago') { 
+-                orderPaid = o.total; 
+-            } else if (o.installments) {
+-                try {
+-                    const inst = JSON.parse(o.installments);
+-                    inst.forEach(i => { if(i.paid) orderPaid += parseFloat(i.amount); });
+-                } catch(e){}
+-            }
+-            
+-            clients[key].total_paid += orderPaid;
+-            clients[key].total_debt += (o.total - orderPaid);
+-            clients[key].orders.push(o);
+-
+-            totalRecebido += orderPaid;
+-            totalAReceber += (o.total - orderPaid);
+-        });
+-
+-        // Atualiza Cards de Resumo
+-        document.getElementById('fin-real-revenue').innerText = `R$ ${totalRecebido.toFixed(2)}`;
+-        document.getElementById('fin-total-created').innerText = `R$ ${totalAReceber.toFixed(2)}`;
+-
+-        Object.values(clients).forEach((c, index) => {
+-            const debt = Math.max(0, c.total_debt);
+-            const hasDebt = debt > 0.1; 
+-            const phoneClean = c.phone ? c.phone.replace(/\D/g, '') : '';
+-            const ordersHTML = c.orders.map(o => admin.generateOrderCardHTML(o)).join('');
+-
+-            div.innerHTML += `
+-            <div class="client-admin-card">
+-                <div class="cac-header" onclick="document.getElementById('client-body-${index}').classList.toggle('open')">
+-                    <div class="cac-info">
+-                        <div style="display:flex; flex-direction:column;">
+-                            <h4 style="font-size:1.1rem; margin-bottom:5px;">${c.name}</h4>
+-                            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+-                                ${phoneClean ? `
+-                                    <span style="font-size:0.9rem; color:#555;"><i class="fas fa-phone"></i> ${c.phone}</span>
+-                                    <a href="https://wa.me/55${phoneClean}" target="_blank" onclick="event.stopPropagation()" class="admin-wa-btn">
+-                                        <i class="fab fa-whatsapp"></i> Conversar
+-                                    </a>` : '<span style="color:#999;">Sem telefone</span>'}
+-                            </div>
+-                        </div>
+-                    </div>
+-                    
+-                    <div class="cac-stats">
+-                        ${hasDebt ? `
+-                            <div class="debt-alert-box">
+-                                <i class="fas fa-exclamation-circle"></i>
+-                                <div>
+-                                    <small>RECEBER</small><br>
+-                                    <strong>R$ ${debt.toFixed(2)}</strong>
+-                                </div>
+-                            </div>
+-                        ` : `
+-                            <div style="text-align:right;">
+-                                <small style="color:var(--success); font-weight:bold;">TUDO PAGO</small><br>
+-                                <span style="color:#999; font-size:0.8rem;">Histórico OK</span>
+-                            </div>
+-                        `}
+-                        <div style="margin-left:15px; color:#ccc;"><i class="fas fa-chevron-down"></i></div>
+-                    </div>
+-                </div>
+-                <div id="client-body-${index}" class="cac-body">
+-                    ${ordersHTML}
+-                </div>
+-            </div>`;
+-        });
+-    },
+-    
+-    generateOrderCardHTML: (o) => {
+-        let items = []; try { items = JSON.parse(o.installments || '[]'); } catch(e) {}
+-        let totalPaid = 0; 
+-        const isPaidStatus = o.payment_status === 'Pago';
+-        if(isPaidStatus) totalPaid = o.total;
+-        if(items.length > 0) items.forEach(i => { if(i.paid) totalPaid += parseFloat(i.amount); });
+-        
+-        const remaining = Math.max(0, o.total - totalPaid);
+-        
+-        // PRODUTOS COM MINIATURA
+-        let prodListHTML = '';
+-        try {
+-            const prods = JSON.parse(o.items);
+-            prodListHTML = prods.map(i => `
+-                <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px; border-bottom:1px dashed #eee; padding-bottom:5px;">
+-                    <img src="${i.image || 'https://via.placeholder.com/40'}" style="width:40px; height:40px; border-radius:6px; object-fit:cover;">
+-                    <div style="font-size:0.85rem;">
+-                        <strong>${i.name}</strong> <small>(${i.variant})</small><br>
+-                        <span style="color:#666;">${i.qty}x R$ ${i.price.toFixed(2)}</span>
+-                    </div>
+-                </div>
+-            `).join('');
+-        } catch(e) { prodListHTML = 'Erro ao carregar itens'; }
+-
+-        let fullAddrString = "Sem endereço registrado";
+-        let mapLink = "#";
+-        try {
+-            const addr = JSON.parse(o.address || '{}');
+-            if(addr.street) {
+-                fullAddrString = `${addr.street}, ${addr.number} - ${addr.bairro}, ${addr.city}/${addr.uf}`;
+-                mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddrString)}`;
+-            }
+-        } catch(e) {}
+-
+-        let instHTML = '';
+-        if(o.payment_status === 'Parcelado' && items.length > 0) {
+-            instHTML = `<div style="margin-top:10px; background:#fafafa; padding:10px; border:1px solid #eee; border-radius:8px;">
+-                <strong style="font-size:0.8rem; color:#666;">Editar Parcelas:</strong><br>
+-                ${items.map((i, idx) => `
+-                    <div style="display:grid; grid-template-columns: 0.5fr 2fr 1.5fr auto; gap:5px; align-items:center; padding:8px 0; border-bottom:1px dashed #ddd;">
+-                        <small style="font-weight:bold; color:#555;">${idx+1}x</small>
+-                        <input type="date" value="${i.date}" class="input small-input" 
+-                            onchange="admin.editInstField('${o.id}', ${idx}, 'date', this.value)" style="margin:0; font-size:0.8rem;">
+-                        <input type="number" step="0.01" value="${parseFloat(i.amount).toFixed(2)}" class="input small-input" 
+-                            onchange="admin.editInstField('${o.id}', ${idx}, 'amount', this.value)" style="margin:0; font-size:0.8rem;">
+-                        ${i.paid 
+-                            ? '<span style="color:green; font-weight:bold; font-size:0.8rem;"><i class="fas fa-check"></i></span>' 
+-                            : `<button onclick="admin.quickPayInst('${o.id}', ${idx}, true)" class="btn-chip-action" title="Baixar"><i class="fas fa-check"></i></button>`
+-                        }
+-                    </div>
+-                `).join('')}
+-            </div>`;
+-        }
+-
+-        const statusEntrega = `
+-            <select onchange="admin.updateStatus('${o.id}', this.value)" class="status-selector small-select ${o.status === 'Cancelado' ? 'st-cancelado' : (o.status === 'Entregue' ? 'st-entregue' : 'st-pendente')}" style="margin-bottom:5px;">
+-                <option value="Pendente" ${o.status.includes('Pendente')?'selected':''}>🚚 Pendente</option>
+-                <option value="Enviado" ${o.status==='Enviado'?'selected':''}>🚀 Enviado</option>
+-                <option value="Entregue" ${o.status==='Entregue'?'selected':''}>✅ Entregue</option>
+-                <option value="Cancelado" ${o.status==='Cancelado'?'selected':''}>❌ Cancelado</option>
+-            </select>
+-        `;
+-
+-        const statusPagamento = `
+-            <select onchange="admin.updatePaymentStatusSimple('${o.id}', this.value)" class="input small-select" style="margin:0; font-weight:bold; color:var(--accent);">
+-                <option value="A_pagar" ${(o.payment_status==='Pendente' || o.payment_status==='A_pagar')?'selected':''}>⏳ À Pagar</option>
+-                <option value="Pago" ${o.payment_status==='Pago'?'selected':''}>💰 Pago (Total)</option>
+-                <option value="Parcelado" ${o.payment_status==='Parcelado'?'selected':''}>📅 Parcelado</option>
+-            </select>
+-        `;
+-
+-        return `
+-        <div class="debt-card ${o.status === 'Cancelado' ? 'cancelled-order' : ''} ${isPaidStatus ? 'paid' : ''}" style="margin-bottom:15px; border-left:4px solid var(--accent);">
+-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+-                <strong>Pedido #${o.id.slice(-4)} <span style="font-weight:normal; font-size:0.8rem;">(${o.date})</span></strong>
+-                <button onclick="admin.resendEmail('${o.id}')" class="btn-action-icon" style="width:auto; padding:5px 10px; font-size:0.8rem;">
+-                    <i class="fas fa-envelope"></i> ${o.customer_email || 'Email'}
+-                </button>
+-            </div>
+-
+-            <div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:10px; font-size:0.85rem; border:1px solid #eee;">
+-                <i class="fas fa-map-marker-alt" style="color:var(--danger)"></i> <strong>Entrega:</strong><br>
+-                <span style="color:#555;">${fullAddrString}</span>
+-                <br>
+-                <a href="${mapLink}" target="_blank" class="btn-map" style="margin-top:5px; display:inline-block;">
+-                    <i class="fas fa-external-link-alt"></i> Ver no Google Maps
+-                </a>
+-            </div>
+-
+-            <div style="font-size:0.85rem; color:#666; margin:5px 0;">${prodListHTML}</div>
+-            
+-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+-                <div><label style="font-size:0.7rem; font-weight:bold; color:#999;">STATUS ENTREGA</label>${statusEntrega}</div>
+-                <div><label style="font-size:0.7rem; font-weight:bold; color:#999;">FINANCEIRO</label>${statusPagamento}</div>
+-            </div>
+-
+-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px dashed #eee; padding-top:10px;">
+-                <span style="font-size:1.1rem; font-weight:bold;">Total: R$ ${o.total.toFixed(2)}</span>
+-                <span style="color:${remaining > 0.1 ? 'var(--danger)' : 'var(--success)'}; font-weight:bold;">
+-                    ${remaining > 0.1 ? `Falta: R$ ${remaining.toFixed(2)}` : 'QUITADO'}
+-                </span>
+-            </div>
+-            
+-            ${instHTML}
+-        </div>`;
+-    },
+-
+-    editInstField: async (oid, idx, field, val) => {
+-        if(field === 'amount' && (isNaN(val) || val < 0)) return alert("Valor inválido");
+-        if(field === 'date' && !val) return alert("Data inválida");
+-
+-        const { data } = await sb.from('orders').select('installments').eq('id', oid).single();
+-        if(data) {
+-            const arr = JSON.parse(data.installments);
+-            if(arr[idx]) {
+-                arr[idx][field] = val; 
+-                await sb.from('orders').update({ installments: JSON.stringify(arr) }).eq('id', oid);
+-                setTimeout(() => admin.renderPayments(), 500); 
+-            }
+-        }
+-    },
+-
+-    updatePaymentStatusSimple: async (id, status) => {
+-        let updateObj = { payment_status: status };
+-        await sb.from('orders').update(updateObj).eq('id', id);
+-        app.success("Financeiro atualizado!");
+-        admin.renderPayments(); 
+-    },
+-
+-    expandInstallments: (id) => {
+-        const el = document.getElementById(`inst-manage-${id}`);
+-        if(el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
+-    },
+-    quickPayInst: async (oid, idx, isPaid) => {
+-        const { data } = await sb.from('orders').select('installments, total').eq('id', oid).single();
+-        if(data) {
+-            const arr = JSON.parse(data.installments);
+-            if(arr[idx]) {
+-                arr[idx].paid = isPaid;
+-                const allPaid = arr.every(i => i.paid);
+-                let updateObj = { installments: JSON.stringify(arr) };
+-                if(allPaid && confirm("Todas as parcelas foram pagas. Deseja marcar o pedido como 'Pago'?")) {
+-                    updateObj.payment_status = 'Pago'; updateObj.installments = null; 
+-                }
+-                await sb.from('orders').update(updateObj).eq('id', oid);
+-                admin.renderPayments();
+-            }
+-        }
+-    },
+-    markAsPaidFull: async (id) => {
+-        if(confirm("Confirmar o recebimento TOTAL deste pedido?")) {
+-            await sb.from('orders').update({ payment_status: 'Pago', installments: null }).eq('id', id);
+-            admin.renderPayments(); admin.renderOrders(); 
+-        }
+-    },
+-    renderFinance: async () => {
+-        const startStr = document.getElementById('fin-start').value;
+-        const endStr = document.getElementById('fin-end').value;
+-        if(!startStr || !endStr) return;
+-        const start = new Date(startStr + 'T00:00:00');
+-        const end = new Date(endStr + 'T23:59:59');
+-        const { data: orders } = await sb.from('orders').select('*').neq('status', 'Cancelado');
+-        let realRevenue = 0;
+-        let totalCreated = 0;
+-        if(orders) {
+-            orders.forEach(o => {
+-                const orderDate = new Date(o.created_at);
+-                if(orderDate >= start && orderDate <= end) {
+-                    totalCreated += o.total;
+-                }
+-                if(o.payment_status === 'Pago') {
+-                    if(orderDate >= start && orderDate <= end) {
+-                        realRevenue += o.total;
+-                    }
+-                } else if(o.installments) {
+-                    try {
+-                        const inst = JSON.parse(o.installments);
+-                        inst.forEach(i => {
+-                            if(i.paid) {
+-                                const payDate = i.date ? new Date(i.date + 'T12:00:00') : orderDate;
+-                                if(payDate >= start && payDate <= end) {
+-                                    realRevenue += parseFloat(i.amount);
+-                                }
+-                            }
+-                        });
+-                    } catch(e) {}
+-                }
+-            });
+-        }
+-        document.getElementById('fin-real-revenue').innerText = `R$ ${realRevenue.toFixed(2)}`;
+-        document.getElementById('fin-total-created').innerText = `R$ ${totalCreated.toFixed(2)}`;
+-    },
+-    updateStatus: async (id, val) => { if(sb) await sb.from('orders').update({status: val}).eq('id', id); app.success("Status atualizado!"); admin.renderOrders(); },
+-    updateStats: () => {
+-        const grid = document.getElementById('dash-stock-grid'); if(!grid) return; grid.innerHTML = "";
+-        let grandTotalStock = 0, grandTotalValue = 0, grandTotalCost = 0;
+-        state.products.forEach(p => {
+-            const vars = typeof p.variations === 'string' ? JSON.parse(p.variations || '[]') : (p.variations || []);
+-            let pStock = 0, pValue = 0; 
+-            vars.forEach(v => {
+-                const q = parseInt(v.stock||0); const price = parseFloat(v.price||0); const cost = parseFloat(v.cost) || parseFloat(p.cost_price) || 0;
+-                pStock += q; pValue += (q * price); grandTotalStock += q; grandTotalValue += (q * price); grandTotalCost += (q * cost);
+-            });
+-            const isSoldOut = pStock === 0;
+-            
+-            const cardStyle = isSoldOut ? 'background:#f0f0f0; opacity:0.8; filter:grayscale(1);' : '';
+-            const color = isSoldOut ? '#888' : (pStock < 5 ? '#f39c12' : '#27ae60');
+-            let mainImg = "https://via.placeholder.com/60";
+-            try { const m = JSON.parse(p.image_url); if(Array.isArray(m)) mainImg = m[0]; else mainImg = p.image_url; } catch(e) {}
+-            
+-            grid.innerHTML += `<div class="dash-card" style="${cardStyle}">
+-                ${isSoldOut ? '<span class="tag-dashboard-sold">ESGOTADO</span>' : ''}
+-                <img src="${mainImg}">
+-                <div style="flex:1"><strong style="font-size:0.95rem; display:block;">${p.name}</strong><small style="color:#666;">${vars.length} Var.</small><div style="margin-top:5px; font-weight:bold; color:${color}"><i class="fas fa-box"></i> ${pStock} un.</div></div>
+-                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;"><div style="text-align:right; font-size:0.8rem; color:#888;">Est. Venda:<br><span style="color:var(--accent); font-weight:bold;">R$ ${pValue.toFixed(2)}</span></div><button class="btn-modern small outline" onclick="admin.edit('${p.id}')">Editar</button></div>
+-            </div>`;
+-        });
+-        setSafe('st-rev', `R$ ${grandTotalValue.toFixed(2)}`); setSafe('st-cost', `R$ ${grandTotalCost.toFixed(2)}`); setSafe('st-qty', grandTotalStock);
+-    },
+-    filterPayments: (status, btn) => {
+-        state.filterPay = status;
+-        document.querySelectorAll('#pay-filters .chip').forEach(c => c.classList.remove('active'));
+-        btn.classList.add('active');
+-        admin.renderPayments();
+-    }
++const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
++
++const elements = {
++  categoryFilter: document.getElementById('category-filter'),
++  productGrid: document.getElementById('product-grid'),
++  customerForm: document.getElementById('customer-form'),
++  customerList: document.getElementById('customer-list'),
++  customerTotal: document.getElementById('customer-total'),
++  cartTrigger: document.getElementById('cart-trigger'),
++  cartSidebar: document.getElementById('cart-sidebar'),
++  cartItems: document.getElementById('cart-items'),
++  cartTotal: document.getElementById('cart-total'),
++  cartCount: document.getElementById('cart-count'),
++  closeCart: document.getElementById('close-cart'),
++  backdrop: document.getElementById('backdrop'),
++  trackingGrid: document.getElementById('tracking-grid'),
++  adminProductsCount: document.getElementById('admin-products-count'),
++  adminCustomersCount: document.getElementById('admin-customers-count'),
++  adminCartCount: document.getElementById('admin-cart-count'),
++  productForm: document.getElementById('product-form'),
++  adminOrderList: document.getElementById('admin-order-list'),
++  modalCustomersCount: document.getElementById('modal-customers-count'),
++  modalProductsCount: document.getElementById('modal-products-count')
+ };
+ 
+-// ================= EXECUTION =================
+-(async function init() {
+-    if(window.emailjs) emailjs.init(EMAILJS_PUBLIC_KEY);
+-    const u = localStorage.getItem('2a_user'); if(u) state.user=JSON.parse(u);
+-    const a = localStorage.getItem('2a_active_addr'); if(a) state.address=JSON.parse(a);
+-    const urlParams = new URLSearchParams(window.location.search);
+-    if (urlParams.get('status') === 'approved' && localStorage.getItem('2a_cart')) {
+-        state.cart = JSON.parse(localStorage.getItem('2a_cart'));
+-        await app.registerOrder(Date.now().toString(), 'Mercado Pago', 'Pendente (Pago)', 'Pago');
+-        await app.updateStockDatabase(); await app.sendEmails(state.cart);
+-        localStorage.removeItem('2a_cart'); window.history.replaceState({}, document.title, window.location.pathname);
+-        app.success("Pagamento Confirmado!");
+-    }
+-    await app.load(); admin.initCheckboxes(); app.updateUI();
+-    document.getElementById('loading-screen').style.display='none';
+-})();
+-
+-document.addEventListener('keydown', (e) => { 
+-    if(e.key === "Escape") { 
+-        document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); 
+-        const sidebar = document.querySelector('.sidebar');
+-        if(sidebar && sidebar.classList.contains('open')) { app.toggleCart(); }
+-        history.back(); 
+-    } 
+-});
+-
+-window.addEventListener('popstate', (e) => { document.querySelectorAll('.overlay.active').forEach(m => m.classList.remove('active')); });
++function getCategories() {
++  return ['Todos', ...new Set(state.products.map(product => product.category))];
++}
++
++function renderCategoryFilters() {
++  elements.categoryFilter.innerHTML = getCategories().map(category => `
++    <button class="filter-pill ${category === state.activeCategory ? 'active' : ''}" data-category="${category}">
++      ${category}
++    </button>
++  `).join('');
++}
++
++function renderProducts() {
++  const visibleProducts = state.activeCategory === 'Todos'
++    ? state.products
++    : state.products.filter(product => product.category === state.activeCategory);
++
++  elements.productGrid.innerHTML = visibleProducts.map(product => `
++    <article class="product-card">
++      <div class="product-card__media" style="background:${product.background};">
++        <span class="product-badge">${product.tag}</span>
++      </div>
++      <span class="product-meta">${product.category} · Estoque ${product.stock}</span>
++      <h3>${product.name}</h3>
++      <p>${product.description}</p>
++      <div class="product-card__footer">
++        <div>
++          <span class="product-price">${currency.format(product.price)}</span>
++        </div>
++        <button class="btn btn-primary add-to-cart" data-product-id="${product.id}">Adicionar</button>
++      </div>
++    </article>
++  `).join('');
++}
++
++function renderCustomers() {
++  elements.customerTotal.textContent = `${state.customers.length} clientes`;
++  elements.adminCustomersCount.textContent = state.customers.length;
++  elements.modalCustomersCount.textContent = state.customers.length;
++
++  if (!state.customers.length) {
++    elements.customerList.innerHTML = '<div class="empty-state">Nenhum cliente cadastrado ainda.</div>';
++    return;
++  }
++
++  elements.customerList.innerHTML = state.customers.map(customer => `
++    <article class="customer-item">
++      <div>
++        <strong>${customer.name}</strong>
++        <small>${customer.email}</small>
++      </div>
++      <div>
++        <strong>${customer.city}</strong>
++        <small>${customer.phone}</small>
++      </div>
++    </article>
++  `).join('');
++}
++
++function renderTracking() {
++  elements.trackingGrid.innerHTML = state.tracking.map(item => `
++    <article class="track-card">
++      <div class="track-card__header">
++        <div>
++          <span class="eyebrow">${item.order}</span>
++          <h3>${item.client}</h3>
++        </div>
++        <span class="status-pill ${item.progress >= 70 ? 'success' : 'warning'}">${item.status}</span>
++      </div>
++      <div class="track-progress"><span style="width:${item.progress}%"></span></div>
++      <div class="track-progress__labels">
++        <span>Pedido</span>
++        <span>Envio</span>
++        <span>Entrega</span>
++      </div>
++      <div class="tracking-meta">
++        <span>${item.eta}</span>
++        <span>Código de rastreio: <strong>${item.code}</strong></span>
++      </div>
++    </article>
++  `).join('');
++}
++
++function renderCart() {
++  elements.cartCount.textContent = state.cart.reduce((total, item) => total + item.quantity, 0);
++  elements.adminCartCount.textContent = elements.cartCount.textContent;
++
++  if (!state.cart.length) {
++    elements.cartItems.innerHTML = '<div class="empty-state">Seu carrinho está vazio. Adicione produtos da vitrine.</div>';
++    elements.cartTotal.textContent = currency.format(0);
++    return;
++  }
++
++  elements.cartItems.innerHTML = state.cart.map(item => `
++    <article class="cart-item">
++      <div>
++        <strong>${item.name}</strong>
++        <small>${item.category} · ${item.quantity}x</small>
++      </div>
++      <strong>${currency.format(item.price * item.quantity)}</strong>
++    </article>
++  `).join('');
++
++  const total = state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
++  elements.cartTotal.textContent = currency.format(total);
++}
++
++function renderAdminOrders() {
++  elements.adminOrderList.innerHTML = state.orders.map(order => `
++    <div class="admin-table__row">
++      <strong>${order.order}</strong>
++      <span>${order.client}</span>
++      <span>${order.status}</span>
++      <span>${order.shipping}</span>
++    </div>
++  `).join('');
++}
++
++function renderAdminCounts() {
++  elements.adminProductsCount.textContent = state.products.length;
++  elements.modalProductsCount.textContent = state.products.length;
++}
++
++function openCart() {
++  elements.cartSidebar.classList.add('open');
++  elements.backdrop.classList.add('visible');
++  elements.cartSidebar.setAttribute('aria-hidden', 'false');
++}
++
++function closeCart() {
++  elements.cartSidebar.classList.remove('open');
++  elements.backdrop.classList.remove('visible');
++  elements.cartSidebar.setAttribute('aria-hidden', 'true');
++}
++
++function openModal(id) {
++  document.getElementById(id)?.classList.add('open');
++  elements.backdrop.classList.add('visible');
++}
++
++function closeModal(id) {
++  document.getElementById(id)?.classList.remove('open');
++  if (!document.querySelector('.modal.open') && !elements.cartSidebar.classList.contains('open')) {
++    elements.backdrop.classList.remove('visible');
++  }
++}
++
++function addToCart(productId) {
++  const product = state.products.find(item => item.id === Number(productId));
++  if (!product) return;
++
++  const cartItem = state.cart.find(item => item.id === product.id);
++  if (cartItem) {
++    cartItem.quantity += 1;
++  } else {
++    state.cart.push({ ...product, quantity: 1 });
++  }
++
++  renderCart();
++  renderAdminCounts();
++  openCart();
++}
++
++function handleCustomerSubmit(event) {
++  event.preventDefault();
++
++  const customer = {
++    name: document.getElementById('customer-name').value.trim(),
++    email: document.getElementById('customer-email').value.trim(),
++    phone: document.getElementById('customer-phone').value.trim(),
++    city: document.getElementById('customer-city').value.trim()
++  };
++
++  state.customers.unshift(customer);
++  elements.customerForm.reset();
++  renderCustomers();
++}
++
++function handleProductSubmit(event) {
++  event.preventDefault();
++
++  const name = document.getElementById('product-name').value.trim();
++  const category = document.getElementById('product-category').value;
++  const price = Number(document.getElementById('product-price').value);
++  const stock = Number(document.getElementById('product-stock').value);
++
++  state.products.unshift({
++    id: Date.now(),
++    name,
++    category,
++    price,
++    stock,
++    tag: 'Novo item',
++    description: 'Produto recém-cadastrado pelo painel administrativo da loja.',
++    background: 'linear-gradient(135deg, rgba(54,26,19,0.35), rgba(164,79,55,0.8)), linear-gradient(135deg, #a44f37, #d7b49e)'
++  });
++
++  elements.productForm.reset();
++  renderCategoryFilters();
++  renderProducts();
++  renderAdminCounts();
++}
++
++function bindEvents() {
++  elements.categoryFilter.addEventListener('click', event => {
++    const button = event.target.closest('[data-category]');
++    if (!button) return;
++    state.activeCategory = button.dataset.category;
++    renderCategoryFilters();
++    renderProducts();
++  });
++
++  elements.productGrid.addEventListener('click', event => {
++    const button = event.target.closest('.add-to-cart');
++    if (!button) return;
++    addToCart(button.dataset.productId);
++  });
++
++  elements.customerForm.addEventListener('submit', handleCustomerSubmit);
++  elements.productForm.addEventListener('submit', handleProductSubmit);
++  elements.cartTrigger.addEventListener('click', openCart);
++  elements.closeCart.addEventListener('click', closeCart);
++
++  elements.backdrop.addEventListener('click', () => {
++    closeCart();
++    document.querySelectorAll('.modal.open').forEach(modal => modal.classList.remove('open'));
++  });
++
++  document.querySelectorAll('[data-open-modal]').forEach(button => {
++    button.addEventListener('click', () => openModal(button.dataset.openModal));
++  });
++
++  document.querySelectorAll('[data-close-modal]').forEach(button => {
++    button.addEventListener('click', () => closeModal(button.dataset.closeModal));
++  });
++}
++
++function init() {
++  renderCategoryFilters();
++  renderProducts();
++  renderCustomers();
++  renderCart();
++  renderTracking();
++  renderAdminOrders();
++  renderAdminCounts();
++  bindEvents();
++}
++
++init();
+ 
+EOF
+)
